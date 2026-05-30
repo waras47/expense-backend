@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS categories (
+    id    SERIAL PRIMARY KEY,
+    name  VARCHAR(100) NOT NULL,
+    color VARCHAR(20)  NOT NULL DEFAULT '#6366f1'
+);

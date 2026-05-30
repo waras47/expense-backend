@@ -2,9 +2,10 @@ package repository
 
 import (
 	"context"
+	"strings"
+
 	"expense-backend/internal/domain"
 	"expense-backend/pkg/apperror"
-	"strings"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )

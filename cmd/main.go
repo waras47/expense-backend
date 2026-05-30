@@ -2,12 +2,13 @@ package main
 
 import (
 	"context"
-	"expense-backend/internal/handler"
-	"expense-backend/internal/repository"
-	"expense-backend/internal/usecase"
 	"fmt"
 	"log"
 	"os"
+
+	"expense-backend/internal/handler"
+	"expense-backend/internal/repository"
+	"expense-backend/internal/usecase"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
