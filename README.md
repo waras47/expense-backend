@@ -21,7 +21,7 @@ Dibangun dengan **Vue 3**, **Pinia**, **Vite**, dan **Chart.js**.
 
 ---
 
-## 🏗️ Struktur Folder
+## Struktur Folder
 
 ```
 frontend/
@@ -119,7 +119,7 @@ location /api/ {
 
 ---
 
-## 📄 Halaman & Komponen
+## Halaman & Komponen
 
 ### Dashboard (`/`)
 - Kartu saldo: **Pemasukan** vs **Pengeluaran** vs **Saldo**
@@ -217,7 +217,7 @@ services:
 
 ---
 
-## 🔗 Link Terkait
+## Link Terkait
 
 - Backend Go API: [`../backend-go/`](../backend-go/)
 - Backend Rust (original): [`../backend/`](../backend/)
