@@ -1,319 +1,182 @@
-# Expense Tracer — Backend Go
+# Duitku — Frontend
 
-Backend REST API untuk aplikasi pencatatan keuangan pribadi.  
+Aplikasi pencatatan keuangan pribadi berbasis web.  
+Dibangun dengan **Vue 3**, **Pinia**, **Vite**, dan **Chart.js**.
 
-Tech requirement:
-**Go**, **Gin**, **PostgreSQL**, dan **Clean Architecture**.
-
-
-
-## Fitur
-
-| Fitur | Endpoint Prefix | Keterangan |
-|-------|----------------|------------|
-| Kategori | `/api/categories` | Manajemen kategori pengeluaran |
-| Pengeluaran | `/api/expenses` | CRUD + ringkasan bulanan & per kategori |
-| Pemasukan | `/api/incomes` | Catat gaji, freelance, bisnis, dll |
-| Hutang | `/api/debts` | Catat hutang kita ke orang lain & sebaliknya |
-| Transfer | `/api/transfers` | Transfer antar rekening / e-wallet |
-| Scan Struk | `/api/receipts/scan` | Upload foto struk → AI baca otomatis |
+> Backend API: lihat [`../backend-go/README.md`](../backend-go/README.md)
 
 ---
 
-## Arsitektur
-backend-go/
-├── cmd/
-│   └── main.go              ← Entry point + Dependency Injection
-├── internal/
-│   ├── domain/              ← Layer 1: Entity & Interface (aturan bisnis)
-│   │   ├── category.go
-│   │   ├── expense.go
-│   │   ├── income.go
-│   │   ├── debt.go
-│   │   ├── transfer.go
-│   │   └── receipt.go
-│   ├── repository/          ← Layer 2: Implementasi database (PostgreSQL)
-│   │   ├── category_repository.go
-│   │   ├── expense_repository.go
-│   │   ├── income_repository.go
-│   │   ├── debt_repository.go
-│   │   └── transfer_repository.go
-│   ├── usecase/             ← Layer 3: Logika bisnis
-│   │   ├── category_usecase.go
-│   │   ├── expense_usecase.go
-│   │   ├── income_usecase.go
-│   │   ├── debt_usecase.go
-│   │   ├── transfer_usecase.go
-│   │   └── receipt_usecase.go
-│   ├── handler/             ← Layer 4: HTTP Handler (Gin)
-│   │   ├── category_handler.go
-│   │   ├── expense_handler.go
-│   │   ├── income_handler.go
-│   │   ├── debt_handler.go
-│   │   ├── transfer_handler.go
-│   │   └── receipt_handler.go
-│   └── service/
-│       └── claude_ocr.go    ← OCR service (Claude AI Vision)
-├── pkg/
-│   └── apperror/errors.go   ← Error handling terpusat
-├── docs/                    ← Auto-generated Swagger docs
-├── migrations/              ← SQL migration files
-├── uploads/                 ← Folder penyimpanan foto struk
-└── .env
+## Fitur
+
+| Halaman | URL | Keterangan |
+|---------|-----|-----------|
+| Dashboard | `/` | Ringkasan keuangan, grafik, saldo bulan ini |
+| Pengeluaran | `/expenses` | CRUD + filter bulan & kategori |
+| Pemasukan | `/incomes` | Catat gaji, freelance, bisnis, dll |
+| Hutang | `/debts` | Catat hutang/piutang, tandai lunas |
+| Transfer | `/transfers` | Transfer antar rekening / e-wallet |
+| Scan Struk | `/receipt` | 📷 Upload foto → AI baca otomatis |
+| Kategori | `/categories` | Kelola kategori + warna |
+
+---
+
+## 🏗️ Struktur Folder
+
+```
+frontend/
+├── src/
+│   ├── api/
+│   │   └── index.js          ← Semua fungsi HTTP (axios)
+│   ├── stores/
+│   │   ├── expenseStore.js   ← State pengeluaran & kategori
+│   │   ├── incomeStore.js    ← State pemasukan
+│   │   ├── debtStore.js      ← State hutang/piutang
+│   │   └── transferStore.js  ← State transfer
+│   ├── views/
+│   │   ├── DashboardView.vue    ← Halaman utama + grafik
+│   │   ├── ExpensesView.vue     ← CRUD pengeluaran
+│   │   ├── IncomesView.vue      ← CRUD pemasukan
+│   │   ├── DebtsView.vue        ← Kelola hutang
+│   │   ├── TransfersView.vue    ← Catat transfer
+│   │   ├── ReceiptScanView.vue  ← Scan struk AI
+│   │   └── CategoriesView.vue   ← Kelola kategori
+│   ├── router/index.js       ← Konfigurasi routing
+│   ├── App.vue               ← Root component + navbar
+│   ├── main.js               ← Entry point
+│   └── style.css             ← Design system global
+├── index.html
+├── vite.config.js            ← Proxy ke backend :8081
+├── Dockerfile
+└── nginx.conf
 ```
 
-**Alur request:**  
-`HTTP Request → Handler → Usecase → Repository → PostgreSQL`
+**Alur data:**  
+`View → Store Action → API (axios) → Backend Go → PostgreSQL`
 
 ---
 
 ## Tech Stack
 
-| Komponen | Library/Tools |
-|----------|--------------|
-| Framework | [Gin](https://github.com/gin-gonic/gin) v1.10 |
-| Database | PostgreSQL + [pgx/v5](https://github.com/jackc/pgx) |
-| Desimal | [shopspring/decimal](https://github.com/shopspring/decimal) |
-| CORS | [gin-contrib/cors](https://github.com/gin-contrib/cors) |
-| Env config | [godotenv](https://github.com/joho/godotenv) |
-| OCR / AI | [Claude claude-haiku-4-5 Vision](https://www.anthropic.com) (Anthropic) |
-| Dokumentasi | [Swagger (swaggo)](https://github.com/swaggo/swag) |
+| Library | Versi | Kegunaan |
+|---------|-------|---------|
+| [Vue 3](https://vuejs.org) | 3.4 | Framework UI (Composition API) |
+| [Pinia](https://pinia.vuejs.org) | 2.1 | State management |
+| [Vue Router](https://router.vuejs.org) | 4.3 | Client-side routing |
+| [Axios](https://axios-http.com) | 1.6 | HTTP requests ke backend |
+| [Chart.js](https://chartjs.org) + vue-chartjs | 4.4 | Grafik bar & donut |
+| [Vite](https://vitejs.dev) | 5.0 | Build tool + dev server |
 
 ---
 
 ## Cara Menjalankan
 
-### 1. Prasyarat
+### Prasyarat
+- Node.js 18+
+- Backend Go sudah berjalan di port **8081**
 
-- Go 1.22+
-- PostgreSQL berjalan
-
-### 2. Clone & masuk folder
-
-```bash
-cd backend-go
-```
-
-### 3. Konfigurasi `.env`
-
-Salin dan edit file `.env`:
-
-```env
-DATABASE_URL=postgres://postgres:PASSWORD@localhost:5432/expense_tracer
-SERVER_HOST=0.0.0.0
-SERVER_PORT=8081
-UPLOAD_DIR=uploads
-
-# Untuk fitur scan struk (daftar gratis di https://console.anthropic.com)
-ANTHROPIC_API_KEY=sk-ant-xxxxx
-```
-
-### 4. Migrasi database
+### 1. Install dependency
 
 ```bash
-# Tabel awal (categories, expenses) — jika belum ada
-psql -U postgres -d expense_tracer -f migrations/001_initial.sql
-
-# Tabel baru (incomes, debts, transfers)
-psql -U postgres -d expense_tracer -f migrations/002_income_debt_transfer.sql
+cd frontend
+npm install
 ```
 
-### 5. Install dependency & jalankan
+### 2. Jalankan dev server
 
 ```bash
-go mod tidy
-go run ./cmd/main.go
+npm run dev
 ```
 
-Server berjalan di: `http://localhost:8081`  
-Swagger UI: `http://localhost:8081/swagger/index.html`
+Aplikasi buka di: **http://localhost:5173**
 
-### 6. Update Swagger docs (setelah edit anotasi handler)
+> Semua request ke `/api/*` akan di-proxy ke `http://localhost:8081` secara otomatis.
+
+### 3. Build untuk production
 
 ```bash
-swag init -g cmd/main.go --output docs
+npm run build
+# Output di folder dist/
 ```
 
 ---
 
-## Dokumentasi API (Swagger)
+## Koneksi ke Backend
 
-Setelah server jalan, buka:
+Konfigurasi proxy ada di [`vite.config.js`](vite.config.js):
 
+```js
+proxy: { '/api': { target: 'http://localhost:8081', changeOrigin: true } }
 ```
-http://localhost:8081/swagger/index.html
-```
 
-## API Reference
+Untuk production, ubah `nginx.conf`:
 
-### Kategori
-
-| Method | URL | Keterangan |
-|--------|-----|-----------|
-| `GET` | `/api/categories` | Daftar semua kategori |
-| `POST` | `/api/categories` | Buat kategori baru |
-| `DELETE` | `/api/categories/:id` | Hapus kategori |
-
-**POST body:**
-```json
-{
-  "name": "Makanan",
-  "color": "#f59e0b"
+```nginx
+location /api/ {
+  proxy_pass http://backend:8081;  # sesuaikan dengan host backend
 }
 ```
 
 ---
 
-### Pengeluaran
+## 📄 Halaman & Komponen
 
-| Method | URL | Keterangan |
-|--------|-----|-----------|
-| `GET` | `/api/expenses` | Daftar (filter: `?month=2025-05&category_id=1`) |
-| `GET` | `/api/expenses/:id` | Detail |
-| `POST` | `/api/expenses` | Buat baru |
-| `PUT` | `/api/expenses/:id` | Update |
-| `DELETE` | `/api/expenses/:id` | Hapus |
-| `GET` | `/api/expenses/summary/monthly` | Ringkasan 6 bulan |
-| `GET` | `/api/expenses/summary/category` | Ringkasan per kategori (bulan ini) |
+### Dashboard (`/`)
+- Kartu saldo: **Pemasukan** vs **Pengeluaran** vs **Saldo**
+- Kartu hutang: total hutang belum lunas & piutang belum dibayar
+- Bar chart: perbandingan pengeluaran vs pemasukan 6 bulan
+- Donut chart: pengeluaran per kategori bulan ini
+- Shortcut ke semua fitur
 
-**POST body:**
-```json
-{
-  "title": "Makan siang",
-  "amount": 25000,
-  "category_id": 1,
-  "expense_date": "2025-05-30",
-  "note": "Warteg dekat kantor"
-}
-```
+### Pengeluaran (`/expenses`)
+- Tabel pengeluaran dengan filter **bulan** & **kategori**
+- CRUD lengkap (buat, edit, hapus)
+- Ringkasan bulanan & per kategori
 
----
+### Pemasukan (`/incomes`)
+- Tabel pemasukan dengan filter bulan & kategori
+- Kategori: `salary`, `freelance`, `business`, `investment`, `gift`, `other`
+- CRUD + ringkasan 6 bulan
 
-### Pemasukan
+### Hutang (`/debts`)
+- Tab: **Semua / Hutang saya / Piutang saya**
+- Toggle: tampilkan belum lunas saja
+- Tombol **Tandai Lunas** — langsung update status
+- Indikator jatuh tempo (merah jika sudah lewat)
 
-| Method | URL | Keterangan |
-|--------|-----|-----------|
-| `GET` | `/api/incomes` | Daftar (filter: `?month=2025-05&category=salary`) |
-| `GET` | `/api/incomes/:id` | Detail |
-| `POST` | `/api/incomes` | Catat pemasukan |
-| `PUT` | `/api/incomes/:id` | Update |
-| `DELETE` | `/api/incomes/:id` | Hapus |
-| `GET` | `/api/incomes/summary/monthly` | Ringkasan 6 bulan |
+### Transfer (`/transfers`)
+- Catat perpindahan saldo: BCA → GoPay, Mandiri → OVO, dll
+- Filter per bulan & akun asal
+- Tampilan arah transfer yang jelas
 
-**Kategori yang tersedia:** `salary`, `freelance`, `business`, `investment`, `gift`, `other`
+### Scan Struk (`/receipt`)
+1. Upload foto struk (drag & drop atau klik)
+2. AI (Claude Vision) membaca struk → hasilkan data terstruktur
+3. Review hasil: nama toko, tanggal, list item, total
+4. Simpan langsung sebagai pengeluaran — sudah terisi otomatis
 
-**POST body:**
-```json
-{
-  "title": "Gaji Mei 2025",
-  "amount": 5000000,
-  "category": "salary",
-  "income_date": "2025-05-01",
-  "note": "Transfer ke BCA"
-}
-```
+> **Prasyarat scan:** `ANTHROPIC_API_KEY` harus diset di backend `.env`
+
+### Kategori (`/categories`)
+- Grid kartu kategori dengan warna
+- Color picker + 10 preset warna
+- Hapus kategori
 
 ---
 
-### Hutang
+## Design System
 
-| Method | URL | Keterangan |
-|--------|-----|-----------|
-| `GET` | `/api/debts` | Daftar (filter: `?type=owe&is_paid=false`) |
-| `GET` | `/api/debts/:id` | Detail |
-| `POST` | `/api/debts` | Catat hutang baru |
-| `PUT` | `/api/debts/:id` | Update |
-| `PATCH` | `/api/debts/:id/paid` | Tandai sudah lunas |
-| `DELETE` | `/api/debts/:id` | Hapus |
+Warna utama (CSS variables di `style.css`):
 
-**Tipe hutang:**
-- `owe` → **kita** yang berhutang ke orang lain
-- `lent` → **orang lain** yang berhutang ke kita
+| Variable | Warna | Digunakan untuk |
+|----------|-------|----------------|
+| `--red` | `#E8442A` | Tombol utama, pengeluaran |
+| `--teal` | `#2ABFA3` | Pemasukan, lunas |
+| `--yellow` | `#F5C842` | Aksen |
+| `--blue` | `#3D8EE8` | Info |
+| `--cream` | `#F5F0E8` | Background |
 
-**POST body:**
-```json
-{
-  "person_name": "Budi",
-  "amount": 150000,
-  "type": "lent",
-  "due_date": "2025-06-30",
-  "note": "Pinjam uang buat bensin"
-}
-```
-
----
-
-### Transfer
-
-| Method | URL | Keterangan |
-|--------|-----|-----------|
-| `GET` | `/api/transfers` | Daftar (filter: `?month=2025-05&from_account=BCA`) |
-| `GET` | `/api/transfers/:id` | Detail |
-| `POST` | `/api/transfers` | Catat transfer |
-| `PUT` | `/api/transfers/:id` | Update |
-| `DELETE` | `/api/transfers/:id` | Hapus |
-
-**POST body:**
-```json
-{
-  "title": "Top up GoPay",
-  "amount": 200000,
-  "from_account": "BCA",
-  "to_account": "GoPay",
-  "transfer_date": "2025-05-30",
-  "note": "Untuk transportasi minggu ini"
-}
-```
-
----
-
-### Scan Struk (AI)
-
-| Method | URL | Keterangan |
-|--------|-----|-----------|
-| `POST` | `/api/receipts/scan` | Upload foto struk |
-
-**Request:** `multipart/form-data`, field `file` (jpg/png/webp, maks 10MB)
-
-```bash
-# Contoh dengan curl:
-curl -X POST http://localhost:8081/api/receipts/scan \
-  -F "file=@struk_indomaret.jpg"
-```
-
-**Response:**
-```json
-{
-  "store_name": "Indomaret Jl. Sudirman",
-  "date": "2025-05-30",
-  "items": [
-    { "name": "Indomie Goreng", "qty": 3, "price": "3500", "subtotal": "10500" },
-    { "name": "Aqua 600ml",    "qty": 2, "price": "4000", "subtotal": "8000"  }
-  ],
-  "subtotal": "18500",
-  "tax": "0",
-  "total": "18500",
-  "payment_type": "qris",
-  "image_path": "/uploads/receipt_1748597234.jpg"
-}
-```
-
-> Hasil ini bisa langsung dipakai untuk mengisi form `POST /api/expenses`.
-
----
-
-## Skema Database
-
-```sql
--- Tabel yang sudah ada
-categories  (id, name, color)
-expenses    (id, title, amount, category_id, note, expense_date, created_at)
-
--- Tabel baru
-incomes     (id, title, amount, category, note, income_date, created_at)
-debts       (id, person_name, amount, type, due_date, is_paid, note, created_at, paid_at)
-transfers   (id, title, amount, from_account, to_account, note, transfer_date, created_at)
-```
+Font: **Syne** (heading) + **DM Sans** (body)
 
 ---
 
@@ -321,19 +184,42 @@ transfers   (id, title, amount, from_account, to_account, note, transfer_date, c
 
 ```bash
 # Build image
-docker build -t expense-tracer-go .
+docker build -t duitku-frontend .
 
-# Jalankan (pastikan PostgreSQL sudah jalan)
-docker run -p 8081:8081 \
-  -e DATABASE_URL=postgres://postgres:pass@host.docker.internal:5432/expense_tracer \
-  -e ANTHROPIC_API_KEY=sk-ant-xxxxx \
-  expense-tracer-go
+# Jalankan (dengan backend jalan di host)
+docker run -p 3000:80 duitku-frontend
+```
+
+Atau pakai `docker-compose` bersama backend:
+
+```yaml
+version: '3.8'
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+  backend:
+    build: ./backend-go
+    ports:
+      - "8081:8081"
+    environment:
+      DATABASE_URL: postgres://postgres:secret@db:5432/expense_tracer
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: expense_tracer
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
 ```
 
 ---
 
-## Referensi
+## 🔗 Link Terkait
 
-- Rust backend (referensi awal): `../backend/`
-- Swagger UI: http://localhost:8081/swagger/index.html
-- Anthropic Console (API Key): https://console.anthropic.com
+- Backend Go API: [`../backend-go/`](../backend-go/)
+- Backend Rust (original): [`../backend/`](../backend/)
+- Swagger UI (saat backend jalan): http://localhost:8081/swagger/index.html
+- GitHub Project: https://github.com/users/waras47/projects/5
