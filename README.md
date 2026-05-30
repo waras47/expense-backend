@@ -2,7 +2,7 @@
 
 Backend REST API untuk aplikasi pencatatan keuangan pribadi.  
 
-Tech requirement:
+Tech stack:
 **Go**, **Gin**, **PostgreSQL**, dan **Clean Architecture**.
 
 
@@ -21,6 +21,7 @@ Tech requirement:
 ---
 
 ## Arsitektur
+```
 backend-go/
 ├── cmd/
 │   └── main.go              ← Entry point + Dependency Injection
