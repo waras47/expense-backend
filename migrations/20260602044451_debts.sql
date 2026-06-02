@@ -7,9 +7,9 @@ CREATE TABLE debts (
     due_date DATE NOT NULL,
     is_paid BOOLEAN NOT NULL,
     note TEXT,
-    created_at TIMESTAMPZ DEFAULT CURRENT_TIMESTAMP,
-    paid_at TIMESTAMPZ,
-    updated_at TIMESTAMPZ DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    paid_at TIMESTAMPTZ,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 -- +goose Down

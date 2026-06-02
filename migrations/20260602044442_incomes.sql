@@ -3,11 +3,11 @@ CREATE TABLE incomes (
     id SERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     amount DECIMAL(15,2) NOT NULL,
-    category VARCHAR(50) DEFAULT "other",
+    category VARCHAR(50) DEFAULT 'other',
     note TEXT,
     income_date DATE NOT NULL,
-    created_at TIMESTAMPZ DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMPZ DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 -- +goose Down
