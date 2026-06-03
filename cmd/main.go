@@ -6,13 +6,16 @@ import (
 	"log"
 	"os"
 
+	expense_backend "expense-backend"
 	"expense-backend/internal/handler"
 	"expense-backend/internal/repository"
 	"expense-backend/internal/usecase"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/joho/godotenv"
+	"github.com/pressly/goose/v3"
 )
 
 func main() {
@@ -20,9 +23,9 @@ func main() {
 		log.Println("File .env tidak ditemukan, menggunakan environment variable sistem")
 	}
 
-	databaseURL := mustEnv("DATABASE_URL")
-	host := getEnv("SERVER_HOST", "0.0.0.0")
-	port := getEnv("SERVER_PORT", "8081")
+	databaseURL := mustEnv("POSTGRES_URL")
+	host := getEnv("APP_HOST", "0.0.0.0")
+	port := getEnv("APP_PORT", "8081")
 
 	pool, err := pgxpool.New(context.Background(), databaseURL)
 	if err != nil {
@@ -34,6 +37,25 @@ func main() {
 		log.Fatalf("Gagal terhubung ke database: %v", err)
 	}
 	log.Println("Terhubung ke database PostgreSQL")
+
+	// Convert pgxpool to sql.DB
+	sqlDB := stdlib.OpenDBFromPool(pool)
+	defer sqlDB.Close()
+
+	provider, err := goose.NewProvider(goose.DialectPostgres, sqlDB, expense_backend.EmbedMigrations)
+	if err != nil {
+		log.Fatalf("Gagal membuat goose provider: %v", err)
+	}
+	results, err :=  provider.Up(context.Background())
+	if  err != nil {
+		log.Fatalf("Gagal menjalankan migrations database: %v", err)
+	}
+
+	if len(results) == 0 {
+		log.Println("Database sudah up-to-date (tidak ada migrasi baru).")
+	} else {
+		log.Printf("Berhasil menjalankan %d migrasi baru!\n", len(results))
+	}
 
 	categoryRepo := repository.NewCategoryRepository(pool)
 	categoryUC := usecase.NewCategoryUsecase(categoryRepo)
