@@ -5,17 +5,16 @@ import (
 	"strconv"
 
 	"expense-backend/internal/domain"
-	"expense-backend/internal/usecase"
 	"expense-backend/pkg/apperror"
 
 	"github.com/gin-gonic/gin"
 )
 
 type CategoryHandler struct {
-	uc *usecase.CategoryUsecase
+	uc domain.CategoryUsecase
 }
 
-func NewCategoryHandler(uc *usecase.CategoryUsecase) *CategoryHandler {
+func NewCategoryHandler(uc domain.CategoryUsecase) *CategoryHandler {
 	return &CategoryHandler{uc: uc}
 }
 
@@ -26,7 +25,7 @@ func (h *CategoryHandler) RegisterRoutes(rg *gin.RouterGroup) {
 }
 
 func (h *CategoryHandler) ListCategories(c *gin.Context) {
-	categories, err := h.uc.GetAll()
+	categories, err := h.uc.GetAll(c.Request.Context())
 	if err != nil {
 		apperror.RespondError(c, err)
 		return
@@ -44,7 +43,7 @@ func (h *CategoryHandler) CreateCategory(c *gin.Context) {
 		return
 	}
 
-	category, err := h.uc.Create(payload)
+	category, err := h.uc.Create(c.Request.Context(), payload)
 	if err != nil {
 		apperror.RespondError(c, err)
 		return
@@ -59,7 +58,7 @@ func (h *CategoryHandler) DeleteCategory(c *gin.Context) {
 		return
 	}
 
-	if err := h.uc.Delete(id); err != nil {
+	if err := h.uc.Delete(c.Request.Context(), id); err != nil {
 		apperror.RespondError(c, err)
 		return
 	}
