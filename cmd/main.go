@@ -2,90 +2,52 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"log"
-	"os"
-
 	expense_backend "expense-backend"
-	"expense-backend/internal/handler"
-	"expense-backend/internal/repository"
-	"expense-backend/internal/usecase"
+	"log"
 
-	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/jackc/pgx/v5/stdlib"
-	"github.com/joho/godotenv"
+	"expense-backend/internal/config"
+	"expense-backend/internal/database"
+	"expense-backend/internal/server"
+
+	"github.com/jackc/pgx/v5/stdlib" // tambah ini
 	"github.com/pressly/goose/v3"
 )
 
 func main() {
-	if err := godotenv.Load(); err != nil {
-		log.Println("File .env tidak ditemukan, menggunakan environment variable sistem")
-	}
+	cfg := config.Load()
 
-	databaseURL := mustEnv("POSTGRES_URL")
-	host := getEnv("APP_HOST", "0.0.0.0")
-	port := getEnv("APP_PORT", "8081")
-
-	pool, err := pgxpool.New(context.Background(), databaseURL)
+	pool, err := database.Connect(cfg.DB.DSN())
 	if err != nil {
-		log.Fatalf("Gagal membuat connection pool: %v", err)
+		log.Fatalf("%v", err)
 	}
 	defer pool.Close()
+	log.Println("Connect To Database")
 
-	if err := pool.Ping(context.Background()); err != nil {
-		log.Fatalf("Gagal terhubung ke database: %v", err)
-	}
-	log.Println("Terhubung ke database PostgreSQL")
-
-	// Convert pgxpool to sql.DB
+	// Convert pgxpool -> *sql.DB untuk goose
 	sqlDB := stdlib.OpenDBFromPool(pool)
 	defer sqlDB.Close()
 
+	// run migration
 	provider, err := goose.NewProvider(goose.DialectPostgres, sqlDB, expense_backend.EmbedMigrations)
 	if err != nil {
 		log.Fatalf("Gagal membuat goose provider: %v", err)
 	}
-	results, err :=  provider.Up(context.Background())
-	if  err != nil {
-		log.Fatalf("Gagal menjalankan migrations database: %v", err)
+
+	results, err := provider.Up(context.Background())
+	if err != nil {
+		log.Fatalf("Gagal menjalankan migrations: %v", err)
 	}
 
 	if len(results) == 0 {
-		log.Println("Database sudah up-to-date (tidak ada migrasi baru).")
+		log.Println("Database sudah up-to-date.")
 	} else {
 		log.Printf("Berhasil menjalankan %d migrasi baru!\n", len(results))
 	}
 
-	categoryRepo := repository.NewCategoryRepository(pool)
-	categoryUC := usecase.NewCategoryUsecase(categoryRepo)
-	categoryH := handler.NewCategoryHandler(categoryUC)
-
-	r := gin.Default()
-
-	api := r.Group("/api")
-	categoryH.RegisterRoutes(api.Group("/categories"))
-
-	addr := fmt.Sprintf("%s:%s", host, port)
-	log.Printf("Server running at http://%s", addr)
-	log.Printf("API: http://localhost:%s/api/categories", port)
-
-	if err := r.Run(addr); err != nil {
-		log.Fatalf("Server gagal berjalan: %v", err)
+	// Start server setelah migrasi selesai
+	srv := server.New(cfg, pool)
+	log.Printf("Server running at http://%s", cfg.Address())
+	if err := srv.Run(); err != nil {
+		log.Fatalf("Server failed to start: %v", err)
 	}
-}
-
-func mustEnv(key string) string {
-	val := os.Getenv(key)
-	if val == "" {
-		log.Fatalf("Environment variable %s harus diset", key)
-	}
-	return val
-}
-
-func getEnv(key, fallback string) string {
-	if val := os.Getenv(key); val != "" {
-		return val
-	}
-	return fallback
 }
