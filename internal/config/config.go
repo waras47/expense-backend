@@ -1,5 +1,3 @@
-// Package config — membaca konfigurasi dari environment (.env).
-// Semua urusan "baca env" terpusat di sini, tidak tersebar di main.
 package config
 
 import (
@@ -10,8 +8,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// DatabaseConfig — konfigurasi koneksi database terpisah per bagian
-// (bukan satu URL), supaya lebih mudah dibaca & diatur.
 type DatabaseConfig struct {
 	Host     string
 	Port     string
@@ -21,14 +17,12 @@ type DatabaseConfig struct {
 	SSLMode  string
 }
 
-// Config menampung semua pengaturan aplikasi.
 type Config struct {
 	DB         DatabaseConfig
 	ServerHost string
 	ServerPort string
 }
 
-// Load membaca .env (jika ada) lalu mengembalikan Config.
 func Load() *Config {
 	_ = godotenv.Load() // abaikan error: boleh jalan tanpa .env
 
@@ -46,8 +40,6 @@ func Load() *Config {
 	}
 }
 
-// DSN menyusun connection string PostgreSQL dari field-field terpisah.
-// Contoh: postgres://user:pass@localhost:5432/dbname?sslmode=disable
 func (d DatabaseConfig) DSN() string {
 	return fmt.Sprintf(
 		"postgres://%s:%s@%s:%s/%s?sslmode=%s",
@@ -55,7 +47,6 @@ func (d DatabaseConfig) DSN() string {
 	)
 }
 
-// Address → contoh: "0.0.0.0:8082"
 func (c *Config) Address() string {
 	return c.ServerHost + ":" + c.ServerPort
 }

@@ -1,5 +1,3 @@
-// Package database — menangani koneksi ke PostgreSQL.
-// Dipisah dari main supaya bisa dipakai ulang & mudah dites.
 package database
 
 import (
