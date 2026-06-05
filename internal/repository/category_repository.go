@@ -14,12 +14,12 @@ type categoryRepo struct {
 	db *pgxpool.Pool
 }
 
-func NewCategoryRepository(db *pgxpool.Pool) domain.CategoryRepository {
+func NewPostgresCategoryRepository(db *pgxpool.Pool) domain.CategoryRepository {
 	return &categoryRepo{db: db}
 }
 
-func (r *categoryRepo) FindAll() ([]domain.Category, error) {
-	rows, err := r.db.Query(context.Background(),
+func (r *categoryRepo) FindAll(ctx context.Context) ([]domain.Category, error) {
+	rows, err := r.db.Query(ctx,
 		"SELECT id, name, color FROM categories ORDER BY name")
 	if err != nil {
 		return nil, apperror.NewInternal()
@@ -37,7 +37,7 @@ func (r *categoryRepo) FindAll() ([]domain.Category, error) {
 	return categories, nil
 }
 
-func (r *categoryRepo) FindByID(id int) (*domain.Category, error) {
+func (r *categoryRepo) FindByID(ctx context.Context, id int) (*domain.Category, error) {
 	var c domain.Category
 	err := r.db.QueryRow(context.Background(),
 		"SELECT id, name, color FROM categories WHERE id = $1", id).
@@ -48,7 +48,7 @@ func (r *categoryRepo) FindByID(id int) (*domain.Category, error) {
 	return &c, nil
 }
 
-func (r *categoryRepo) Create(payload domain.CategoryPayload) (*domain.Category, error) {
+func (r *categoryRepo) Create(ctx context.Context, payload domain.CategoryPayload) (*domain.Category, error) {
 	if strings.TrimSpace(payload.Name) == "" {
 		return nil, apperror.NewValidation("Nama kategori tidak boleh kosong")
 	}
@@ -66,11 +66,11 @@ func (r *categoryRepo) Create(payload domain.CategoryPayload) (*domain.Category,
 		return nil, apperror.NewInternal()
 	}
 
-	return r.FindByID(id)
+	return r.FindByID(ctx, id)
 }
 
-func (r *categoryRepo) Delete(id int) error {
-	if _, err := r.FindByID(id); err != nil {
+func (r *categoryRepo) Delete(ctx context.Context, id int) error {
+	if _, err := r.FindByID(ctx, id); err != nil {
 		return err
 	}
 

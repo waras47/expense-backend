@@ -46,8 +46,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("Gagal membuat goose provider: %v", err)
 	}
-	results, err :=  provider.Up(context.Background())
-	if  err != nil {
+	results, err := provider.Up(context.Background())
+	if err != nil {
 		log.Fatalf("Gagal menjalankan migrations database: %v", err)
 	}
 
@@ -57,7 +57,7 @@ func main() {
 		log.Printf("Berhasil menjalankan %d migrasi baru!\n", len(results))
 	}
 
-	categoryRepo := repository.NewCategoryRepository(pool)
+	categoryRepo := repository.NewPostgresCategoryRepository(pool)
 	categoryUC := usecase.NewCategoryUsecase(categoryRepo)
 	categoryH := handler.NewCategoryHandler(categoryUC)
 

@@ -2,6 +2,7 @@ package main_test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -21,11 +22,11 @@ type mockCategoryRepo struct {
 	deleteFn   func(int) error
 }
 
-func (m *mockCategoryRepo) FindAll() ([]domain.Category, error) {
+func (m *mockCategoryRepo) FindAll(ctx context.Context) ([]domain.Category, error) {
 	return m.categories, nil
 }
 
-func (m *mockCategoryRepo) FindByID(id int) (*domain.Category, error) {
+func (m *mockCategoryRepo) FindByID(ctx context.Context, id int) (*domain.Category, error) {
 	for _, c := range m.categories {
 		if c.ID == id {
 			return &c, nil
@@ -34,7 +35,7 @@ func (m *mockCategoryRepo) FindByID(id int) (*domain.Category, error) {
 	return nil, apperror.NewNotFound()
 }
 
-func (m *mockCategoryRepo) Create(payload domain.CategoryPayload) (*domain.Category, error) {
+func (m *mockCategoryRepo) Create(ctx context.Context, payload domain.CategoryPayload) (*domain.Category, error) {
 	if m.createFn != nil {
 		return m.createFn(payload)
 	}
@@ -45,7 +46,7 @@ func (m *mockCategoryRepo) Create(payload domain.CategoryPayload) (*domain.Categ
 	return &domain.Category{ID: 1, Name: payload.Name, Color: color}, nil
 }
 
-func (m *mockCategoryRepo) Delete(id int) error {
+func (m *mockCategoryRepo) Delete(ctx context.Context, id int) error {
 	if m.deleteFn != nil {
 		return m.deleteFn(id)
 	}
