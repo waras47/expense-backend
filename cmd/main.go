@@ -32,10 +32,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("Gagal membuat goose provider: %v", err)
 	}
-
 	results, err := provider.Up(context.Background())
 	if err != nil {
-		log.Fatalf("Gagal menjalankan migrations: %v", err)
+		log.Fatalf("Gagal menjalankan migrations database: %v", err)
 	}
 
 	if len(results) == 0 {

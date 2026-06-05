@@ -1,23 +1,26 @@
 package usecase
 
-import "expense-backend/internal/domain"
+import (
+	"context"
+	"expense-backend/internal/domain"
+)
 
-type CategoryUsecase struct {
+type categoryUsecase struct {
 	repo domain.CategoryRepository
 }
 
-func NewCategoryUsecase(repo domain.CategoryRepository) *CategoryUsecase {
-	return &CategoryUsecase{repo: repo}
+func NewCategoryUsecase(repo domain.CategoryRepository) domain.CategoryUsecase {
+	return &categoryUsecase{repo: repo}
 }
 
-func (uc *CategoryUsecase) GetAll() ([]domain.Category, error) {
-	return uc.repo.FindAll()
+func (uc *categoryUsecase) GetAll(ctx context.Context) ([]domain.Category, error) {
+	return uc.repo.FindAll(ctx)
 }
 
-func (uc *CategoryUsecase) Create(payload domain.CategoryPayload) (*domain.Category, error) {
-	return uc.repo.Create(payload)
+func (uc *categoryUsecase) Create(ctx context.Context, payload domain.CategoryPayload) (*domain.Category, error) {
+	return uc.repo.Create(ctx, payload)
 }
 
-func (uc *CategoryUsecase) Delete(id int) error {
-	return uc.repo.Delete(id)
+func (uc *categoryUsecase) Delete(ctx context.Context, id int) error {
+	return uc.repo.Delete(ctx, id)
 }
