@@ -8,7 +8,7 @@ CREATE TABLE debts (
     is_paid BOOLEAN NOT NULL,
     note TEXT,
     paid_at TIMESTAMPTZ(0),
-    is_deleted BOOLEAN,
+    is_deleted BOOLEAN DEFAULT false,
     created_at TIMESTAMPTZ(0) DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ(0) DEFAULT CURRENT_TIMESTAMP
 );

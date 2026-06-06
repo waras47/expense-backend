@@ -6,7 +6,7 @@ CREATE TABLE incomes (
     category VARCHAR(50) DEFAULT 'other',
     note TEXT,
     income_date DATE NOT NULL,
-    is_deleted BOOLEAN,
+    is_deleted BOOLEAN DEFAULT false,
     created_at TIMESTAMPTZ(0) DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ(0) DEFAULT CURRENT_TIMESTAMP
 );
