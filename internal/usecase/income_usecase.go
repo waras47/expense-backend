@@ -17,7 +17,7 @@ func (uc *incomeUsecae) GetAll(ctx context.Context) ([]domain.Income, error) {
 	return nil, nil
 }
 
-func (uc *incomeUsecae) Create(ctx context.Context, payload domain.IncomePayload) (*domain.Income, error) {
+func (uc *incomeUsecae) Create(ctx context.Context, payload domain.CreateIncomePayload) (*domain.Income, error) {
 	return nil, nil
 }
 
