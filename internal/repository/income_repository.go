@@ -5,13 +5,72 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"expense-backend/internal/domain"
 	"expense-backend/pkg/apperror"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/shopspring/decimal"
 )
+
+type IncomeModel struct {
+	ID         int                `db:"id"`          // NOT NULL
+	Title      string             `db:"title"`       // NOT NULL
+	Amount     decimal.Decimal    `db:"amount"`      // NOT NULL
+	Category   string             `db:"category_id"` // NOT NULL
+	Note       pgtype.Text        `db:"note"`        // NULLABLE
+	IncomeDate pgtype.Date        `db:"income_date"` // NOT NULL
+	IsDeleted  bool               `db:"is_deleted"`  // NOT NULL
+	CreatedAt  time.Time          `db:"created_at"`  // NOT NULL
+	UpdatedAt  pgtype.Timestamptz `db:"updated_at"`  // NULLABLE
+}
+
+// Note:
+// 1. Pendekatan memisahkan domain dan model memastikan domain steril tidak bergantung dengan database.
+// 2. Penggunaan pgtype memastikan jika data dari domain adalah default value, makan akan merubah value jadi null sehingga dapat men-trigger default value di database.
+func (m *IncomeModel) ToIncomeDomain() domain.Income {
+	return domain.Income{
+		ID:         m.ID,
+		Title:      m.Title,
+		Amount:     m.Amount,
+		Note:       m.Note.String, // Convert back pgtype.Text to string
+		Category:   m.Category,
+		IncomeDate: m.IncomeDate.Time,
+		IsDeleted:  m.IsDeleted,
+		CreatedAt:  m.CreatedAt,
+		UpdatedAt:  m.UpdatedAt.Time, // Convert back pgtype.Timestamptz to time.Time
+	}
+}
+
+func ToIncomeModel(income *domain.Income) *IncomeModel {
+	return &IncomeModel{
+		ID:        income.ID,
+		Title:     income.Title,
+		Amount:    income.Amount,
+		Category:  income.Category,
+		IsDeleted: income.IsDeleted,
+		CreatedAt: income.CreatedAt,
+
+		// Convert time.Time to pgtype.Date,
+		IncomeDate: pgtype.Date{
+			Time:  income.IncomeDate,
+			Valid: !income.IncomeDate.IsZero(),
+		},
+		// Convert string to pgtype.Text,
+		Note: pgtype.Text{
+			String: income.Note,
+			Valid:  income.Note != "",
+		},
+		// Convert time.Time to pgtype.Timestamptz
+		UpdatedAt: pgtype.Timestamptz{
+			Time:  income.UpdatedAt,
+			Valid: !income.UpdatedAt.IsZero(),
+		},
+	}
+}
 
 type incomeRepo struct {
 	db *pgxpool.Pool
@@ -22,8 +81,10 @@ func NewPostgresIncomeRepository(db *pgxpool.Pool) domain.IncomeRepository {
 }
 
 func (r *incomeRepo) Create(ctx context.Context, income *domain.Income) (*domain.Income, error) {
-	query := `INSERT INTO incomes SET title, amount, category, note, income_date, created_at, updated_at 
-			  VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`
+	model := ToIncomeModel(income)
+
+	query := `INSERT INTO incomes SET title, amount, category, note, income_date, is_deleted
+			  VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, created_at`
 
 	err := r.db.QueryRow(ctx, query,
 		income.Title,
@@ -31,22 +92,22 @@ func (r *incomeRepo) Create(ctx context.Context, income *domain.Income) (*domain
 		income.Category,
 		income.Note,
 		income.IncomeDate,
-		income.CreatedAt,
-		income.UpdatedAt,
-	).Scan(income.ID)
+		income.IsDeleted,
+	).Scan(&model.ID, &model.CreatedAt)
 
 	if err != nil {
 		slog.Error("Failed to create new income", "error", err)
 		return nil, apperror.NewInternal()
 	}
 
-	return income, nil
+	resultIncome := model.ToIncomeDomain()
+	return &resultIncome, nil
 }
 
 // TODO : Jika ditambah akun, tambahkan juga kondisi WHERE id akun
 func (r *incomeRepo) FindAll(ctx context.Context, limit, offset int) ([]domain.Income, error) {
 	query := `SELECT id, title, amount, category, note, income_date, created_at, updated_at
-			  FROM incomes`
+			  FROM incomes WHERE is_deleted = false`
 
 	var args []any
 	if limit > 0 {
@@ -61,10 +122,15 @@ func (r *incomeRepo) FindAll(ctx context.Context, limit, offset int) ([]domain.I
 	}
 
 	// rows.Close sudah di handle di dalam pgx.Collect
-	incomes, err := pgx.CollectRows(rows, pgx.RowToStructByName[domain.Income])
+	rowsIncome, err := pgx.CollectRows(rows, pgx.RowToStructByName[IncomeModel])
 	if err != nil {
 		slog.Error("Failed to collect rows", "error", err)
 		return nil, apperror.NewInternal()
+	}
+
+	incomes := make([]domain.Income, len(rowsIncome))
+	for i, income := range rowsIncome {
+		incomes[i] = income.ToIncomeDomain()
 	}
 
 	return incomes, nil
@@ -72,7 +138,7 @@ func (r *incomeRepo) FindAll(ctx context.Context, limit, offset int) ([]domain.I
 
 func (r *incomeRepo) FindByID(ctx context.Context, id int) (*domain.Income, error) {
 	query := `SELECT id, title, amount, category, note, income_date, created_at, updated_at 
-			  FROM incomes WHERE id = $1`
+			  FROM incomes WHERE id = $1 AND is_deleted = false`
 
 	rows, err := r.db.Query(ctx, query, id)
 	if err != nil {
@@ -81,7 +147,7 @@ func (r *incomeRepo) FindByID(ctx context.Context, id int) (*domain.Income, erro
 	}
 
 	// rows.Close sudah di handle di dalam pgx.Collect
-	income, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByName[domain.Income])
+	income, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByName[IncomeModel])
 
 	if err != nil {
 		slog.Error("Failed to retive income", "error", err)
@@ -91,11 +157,17 @@ func (r *incomeRepo) FindByID(ctx context.Context, id int) (*domain.Income, erro
 
 		return nil, apperror.NewInternal()
 	}
-	return income, nil
+
+	incomeDomain := income.ToIncomeDomain()
+	return &incomeDomain, nil
+}
+
+func (r *incomeRepo) Update(ctx context.Context, income *domain.Income) error {
+	return nil
 }
 
 func (r *incomeRepo) Delete(ctx context.Context, id int) error {
-	query := `DELETE FROM income WHERE id = $1`
+	query := `UPDATE income SET is_deleted = true WHERE id = $1`
 	commandTag, err := r.db.Exec(ctx, query, id)
 	if err != nil {
 		slog.Error(fmt.Sprintf("Failed to delete data with id: %d", id), "error", err)
