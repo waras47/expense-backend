@@ -12,4 +12,4 @@ CREATE TABLE incomes (
 );
 
 -- +goose Down
-DROP TABLE incomes;
+DROP TABLE IF EXISTS incomes;

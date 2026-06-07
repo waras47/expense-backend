@@ -14,4 +14,4 @@ CREATE TABLE debts (
 );
 
 -- +goose Down
-DROP TABLE debts;
+DROP TABLE IF EXISTS debts;

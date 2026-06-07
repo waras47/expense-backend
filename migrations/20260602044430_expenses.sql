@@ -12,4 +12,4 @@ CREATE TABLE expenses (
 );
 
 -- +goose Down
-DROP TABLE expenses;
+DROP TABLE IF EXISTS expenses;
