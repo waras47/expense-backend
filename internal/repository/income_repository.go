@@ -17,7 +17,7 @@ import (
 )
 
 type IncomeModel struct {
-	ID         int                `db:"id"`          // NOT NULL
+	ID         int64              `db:"id"`          // NOT NULL
 	Title      string             `db:"title"`       // NOT NULL
 	Amount     decimal.Decimal    `db:"amount"`      // NOT NULL
 	Category   string             `db:"category_id"` // NOT NULL
@@ -105,7 +105,7 @@ func (r *incomeRepo) Create(ctx context.Context, income *domain.Income) (*domain
 }
 
 // TODO : Jika ditambah akun, tambahkan juga kondisi WHERE id akun
-func (r *incomeRepo) FindAll(ctx context.Context, limit, offset int) ([]domain.Income, error) {
+func (r *incomeRepo) FindAll(ctx context.Context, limit, offset int64) ([]domain.Income, error) {
 	query := `SELECT id, title, amount, category, note, income_date, created_at, updated_at
 			  FROM incomes WHERE is_deleted = false`
 
@@ -136,7 +136,7 @@ func (r *incomeRepo) FindAll(ctx context.Context, limit, offset int) ([]domain.I
 	return incomes, nil
 }
 
-func (r *incomeRepo) FindByID(ctx context.Context, id int) (*domain.Income, error) {
+func (r *incomeRepo) FindByID(ctx context.Context, id int64) (*domain.Income, error) {
 	query := `SELECT id, title, amount, category, note, income_date, created_at, updated_at 
 			  FROM incomes WHERE id = $1 AND is_deleted = false`
 
@@ -150,11 +150,10 @@ func (r *incomeRepo) FindByID(ctx context.Context, id int) (*domain.Income, erro
 	income, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByName[IncomeModel])
 
 	if err != nil {
-		slog.Error("Failed to retive income", "error", err)
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, apperror.ErrNotFound
 		}
-
+		slog.Error("Failed to retive income", "error", err)
 		return nil, apperror.NewInternal()
 	}
 
@@ -180,7 +179,7 @@ func (r *incomeRepo) Update(ctx context.Context, income *domain.Income) error {
 	return nil
 }
 
-func (r *incomeRepo) Delete(ctx context.Context, id int) error {
+func (r *incomeRepo) Delete(ctx context.Context, id int64) error {
 	query := `UPDATE income SET is_deleted = true WHERE id = $1`
 	commandTag, err := r.db.Exec(ctx, query, id)
 	if err != nil {
@@ -194,10 +193,10 @@ func (r *incomeRepo) Delete(ctx context.Context, id int) error {
 	return nil
 }
 
-func (r *incomeRepo) CountAll(ctx context.Context) int {
+func (r *incomeRepo) CountAll(ctx context.Context) int64 {
 	query := `SELECT COUNT(1) FROM income`
 
-	var count int
+	var count int64
 	if err := r.db.QueryRow(ctx, query).Scan(&count); err != nil {
 		slog.Error("Failed to count income", "error", err)
 		return 0

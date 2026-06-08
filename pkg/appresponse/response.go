@@ -28,8 +28,7 @@ type Paginate struct {
 	Prev       *string `json:"prev,omitempty"`
 }
 
-// Example url: http://<domain>/<path>?page=<number>
-
+// Example url: [GET] http://<domain>/<path>?page=<number>
 func CratePaginateResponse(page, limit, total int, urlPath string) *Paginate {
 	toIntPointer := func(val int) *int {
 		return &val
