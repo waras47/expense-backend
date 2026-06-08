@@ -163,6 +163,20 @@ func (r *incomeRepo) FindByID(ctx context.Context, id int) (*domain.Income, erro
 }
 
 func (r *incomeRepo) Update(ctx context.Context, income *domain.Income) error {
+	query := `UPDATE incomes 
+			  SET title = $1, amount = $2, category = $3, note = $4, income_date = $5, updated_at = CURRENT_TIMESTAMP(0)
+			  WHERE id = $6`
+
+	commandTag, err := r.db.Exec(ctx, query, income.Title, income.Amount, income.Category, income.Note, income.IncomeDate, income.ID)
+	if err != nil {
+		slog.Error(fmt.Sprintf("Failed to update date with id: %d", income.ID))
+		return apperror.NewInternal()
+	}
+
+	if commandTag.RowsAffected() == 0 {
+		return apperror.NewUpdateFailed()
+	}
+
 	return nil
 }
 

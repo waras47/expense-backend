@@ -21,6 +21,10 @@ func (e *AppError) Error() string {
 	return e.Message
 }
 
+func NewUpdateFailed() *AppError {
+	return &AppError{Code: http.StatusBadRequest, Message: "No data was updated."}
+}
+
 func NewDeleteFailed() *AppError {
 	return &AppError{Code: http.StatusBadRequest, Message: "No data was deleted."}
 }
