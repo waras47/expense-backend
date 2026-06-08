@@ -6,9 +6,10 @@ CREATE TABLE expenses (
     category_id INTEGER REFERENCES categories(id) ON DELETE RESTRICT,
     note TEXT,
     expense_date DATE DEFAULT CURRENT_DATE,
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+    is_deleted BOOLEAN DEFAULT false,
+    created_at TIMESTAMPTZ(0) DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ(0) DEFAULT CURRENT_TIMESTAMP
 );
 
 -- +goose Down
-DROP TABLE expenses;
+DROP TABLE IF EXISTS expenses;

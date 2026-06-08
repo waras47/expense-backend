@@ -25,13 +25,16 @@ func main() {
 
 	// Convert pgxpool -> *sql.DB untuk goose
 	sqlDB := stdlib.OpenDBFromPool(pool)
-	defer sqlDB.Close()
+
+	// Register Inline Migrations Goose
+	database.RegisterMigrationTimezone(cfg.DB.Name, cfg.Location.TimeZone)
 
 	// run migration
 	provider, err := goose.NewProvider(goose.DialectPostgres, sqlDB, expense_backend.EmbedMigrations)
 	if err != nil {
 		log.Fatalf("Gagal membuat goose provider: %v", err)
 	}
+
 	results, err := provider.Up(context.Background())
 	if err != nil {
 		log.Fatalf("Gagal menjalankan migrations database: %v", err)
@@ -42,6 +45,10 @@ func main() {
 	} else {
 		log.Printf("Berhasil menjalankan %d migrasi baru!\n", len(results))
 	}
+
+	// Close sqlDb & provider afeter finish running migrations
+	sqlDB.Close()
+	provider.Close()
 
 	// Start server setelah migrasi selesai
 	srv := server.New(cfg, pool)

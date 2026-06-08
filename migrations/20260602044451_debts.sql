@@ -7,10 +7,11 @@ CREATE TABLE debts (
     due_date DATE NOT NULL,
     is_paid BOOLEAN NOT NULL,
     note TEXT,
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    paid_at TIMESTAMPTZ,
-    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+    paid_at TIMESTAMPTZ(0),
+    is_deleted BOOLEAN DEFAULT false,
+    created_at TIMESTAMPTZ(0) DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ(0) DEFAULT CURRENT_TIMESTAMP
 );
 
 -- +goose Down
-DROP TABLE debts;
+DROP TABLE IF EXISTS debts;

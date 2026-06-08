@@ -19,8 +19,13 @@ type DatabaseConfig struct {
 
 type Config struct {
 	DB         DatabaseConfig
+	Location   Location
 	ServerHost string
 	ServerPort string
+}
+
+type Location struct {
+	TimeZone string
 }
 
 func Load() *Config {
@@ -34,6 +39,9 @@ func Load() *Config {
 			Password: getEnv("DATABASE_PASSWORD", ""),
 			Name:     mustEnv("DATABASE_NAME"),
 			SSLMode:  getEnv("DATABASE_SSLMODE", "disable"),
+		},
+		Location: Location{
+			TimeZone: getEnv("TIMEZONE", "Asia/Jakarta"),
 		},
 		ServerHost: getEnv("SERVER_HOST", "0.0.0.0"),
 		ServerPort: getEnv("SERVER_PORT", "8082"),

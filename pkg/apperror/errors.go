@@ -21,6 +21,10 @@ func (e *AppError) Error() string {
 	return e.Message
 }
 
+func NewDeleteFailed() *AppError {
+	return &AppError{Code: http.StatusBadRequest, Message: "No data was deleted."}
+}
+
 func NewNotFound() *AppError {
 	return &AppError{Code: http.StatusNotFound, Message: "Data tidak ditemukan"}
 }
