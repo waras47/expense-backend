@@ -83,11 +83,12 @@ type CreateIncomePayload struct {
 
 func (p *CreateIncomePayload) ToDomain() *Income {
 	return &Income{
-		Title:     p.Title,
-		Amount:    p.Amount,
-		Category:  p.Category,
-		Note:      p.Note,
-		IsDeleted: false,
+		Title:      p.Title,
+		Amount:     p.Amount,
+		Category:   p.Category,
+		Note:       p.Note,
+		IsDeleted:  false,
+		IncomeDate: p.IncomeDate,
 	}
 }
 
