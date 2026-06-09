@@ -54,9 +54,9 @@ func (uc *incomeUsecase) GetAll(ctx context.Context, page, limit int64) ([]domai
 		}
 	}
 
-	count := uc.repo.CountAll(ctx)
+	countAll := uc.repo.CountAll(ctx)
 
-	return resp, count, nil
+	return resp, countAll, nil
 }
 
 func (uc *incomeUsecase) Create(ctx context.Context, createPayload domain.CreateIncomePayload) (*domain.IncomeResponse, error) {
