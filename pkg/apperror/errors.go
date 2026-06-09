@@ -17,6 +17,17 @@ type AppError struct {
 	Message string
 }
 
+// Custom method is, used when checking error with package errors.Is()
+func (e *AppError) Is(target error) bool {
+	// Type assertion
+	t, ok := target.(*AppError)
+	if !ok {
+		return false
+	}
+
+	return (t.Message == e.Message) && (t.Code == e.Code)
+}
+
 func (e *AppError) Error() string {
 	return e.Message
 }
