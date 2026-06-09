@@ -44,7 +44,6 @@ func (m *mockIncomeData) LoadIncomes(total int64) {
 
 	m.incomes = incomes
 }
-
 func (m *mockIncomeData) findOneIncome(id int64) *domain.Income {
 	for _, income := range m.incomes {
 		if income.ID == id {
@@ -53,7 +52,6 @@ func (m *mockIncomeData) findOneIncome(id int64) *domain.Income {
 	}
 	return nil
 }
-
 func (m *mockIncomeData) findIncomes(limit, offset int64) []domain.Income {
 	// 1. If mock data is empty, return an empty slice immediately
 	totalCount := int64(len(m.incomes))
@@ -175,6 +173,15 @@ func TestGetIncome(t *testing.T) {
 			wantErr:     true,
 			expectedErr: apperror.NewInternal(),
 		},
+		{
+			name: "Not found get data",
+			mockFindByIDRepo: func(ctx context.Context, id int64) (*domain.Income, error) {
+				return nil, apperror.NewNotFound()
+			},
+			getID:       int64(1),
+			wantErr:     true,
+			expectedErr: apperror.NewNotFound(),
+		},
 	}
 
 	for _, tt := range tests {
@@ -197,7 +204,6 @@ func TestGetIncome(t *testing.T) {
 		})
 	}
 }
-
 func TestGetAllIncome(t *testing.T) {
 	total := int64(111)
 	mockIncome := mockIncomeData{}
@@ -293,6 +299,178 @@ func TestGetAllIncome(t *testing.T) {
 				assert.NoError(t, err)
 				assert.NotNil(t, res)
 				assert.Equal(t, tt.expectedCount, int64(len(res)))
+			}
+		})
+	}
+}
+func TestDeleteIncome(t *testing.T) {
+	tests := []struct {
+		name             string
+		deleteID         int64
+		mockDeleteRepo   func(ctx context.Context, id int64) error
+		mockFindByIDRepo func(ctx context.Context, id int64) (*domain.Income, error)
+		wantErr          bool
+		expectedErr      error
+	}{
+		{
+			name:     "Succeded delete data",
+			deleteID: int64(1),
+			mockDeleteRepo: func(ctx context.Context, id int64) error {
+				return nil
+			},
+			mockFindByIDRepo: func(ctx context.Context, id int64) (*domain.Income, error) {
+				return &domain.Income{}, nil
+			},
+			wantErr:     false,
+			expectedErr: nil,
+		},
+		{
+			name:     "Failed delete not found data",
+			deleteID: int64(1),
+			mockDeleteRepo: func(ctx context.Context, id int64) error {
+				return nil
+			},
+			mockFindByIDRepo: func(ctx context.Context, id int64) (*domain.Income, error) {
+				return nil, apperror.NewNotFound()
+			},
+			wantErr:     true,
+			expectedErr: apperror.NewNotFound(),
+		},
+		{
+			name:     "Failed delete data",
+			deleteID: int64(1),
+			mockDeleteRepo: func(ctx context.Context, id int64) error {
+				return apperror.NewInternal()
+			},
+			mockFindByIDRepo: func(ctx context.Context, id int64) (*domain.Income, error) {
+				return &domain.Income{}, nil
+			},
+			wantErr:     true,
+			expectedErr: apperror.NewInternal(),
+		},
+		{
+			name:     "No affected delete data",
+			deleteID: int64(1),
+			mockDeleteRepo: func(ctx context.Context, id int64) error {
+				return apperror.NewDeleteFailed()
+			},
+			mockFindByIDRepo: func(ctx context.Context, id int64) (*domain.Income, error) {
+				return &domain.Income{}, nil
+			},
+			wantErr:     true,
+			expectedErr: apperror.NewDeleteFailed(),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			repo := &mock.MockIncomeRepository{
+				DeleteFunc:   tt.mockDeleteRepo,
+				FindByIDFunc: tt.mockFindByIDRepo,
+			}
+
+			uc := usecase.NewIncomeUsecase(repo)
+			err := uc.Delete(context.Background(), tt.deleteID)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+				assert.ErrorIs(t, tt.expectedErr, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Nil(t, err)
+			}
+		})
+	}
+}
+func TestUpdatencome(t *testing.T) {
+	tests := []struct {
+		name             string
+		updateID         int64
+		mockUpdateRepo   func(ctx context.Context, income *domain.Income) error
+		mockFindByIDRepo func(ctx context.Context, id int64) (*domain.Income, error)
+		wantErr          bool
+		expectedErr      error
+	}{
+		{
+			name:     "Succeded update data",
+			updateID: int64(1),
+			mockUpdateRepo: func(ctx context.Context, income *domain.Income) error {
+				return nil
+			},
+			mockFindByIDRepo: func(ctx context.Context, id int64) (*domain.Income, error) {
+				return &domain.Income{}, nil
+			},
+			wantErr:     false,
+			expectedErr: nil,
+		},
+		{
+			name:     "Found data but failed to update data",
+			updateID: int64(1),
+			mockUpdateRepo: func(ctx context.Context, income *domain.Income) error {
+				return apperror.NewInternal()
+			},
+			mockFindByIDRepo: func(ctx context.Context, id int64) (*domain.Income, error) {
+				return &domain.Income{}, nil
+			},
+			wantErr:     true,
+			expectedErr: apperror.NewInternal(),
+		},
+		{
+			name:     "Failed update data no affected",
+			updateID: int64(1),
+			mockUpdateRepo: func(ctx context.Context, income *domain.Income) error {
+				return apperror.NewUpdateFailed()
+			},
+			mockFindByIDRepo: func(ctx context.Context, id int64) (*domain.Income, error) {
+				return &domain.Income{}, nil
+			},
+			wantErr:     true,
+			expectedErr: apperror.NewUpdateFailed(),
+		},
+		{
+			name:     "Failed not found data",
+			updateID: int64(1),
+			mockUpdateRepo: func(ctx context.Context, income *domain.Income) error {
+				return apperror.NewUpdateFailed()
+			},
+			mockFindByIDRepo: func(ctx context.Context, id int64) (*domain.Income, error) {
+				return nil, apperror.NewNotFound()
+			},
+			wantErr:     true,
+			expectedErr: apperror.NewNotFound(),
+		},
+		{
+			name:     "Failed error get data",
+			updateID: int64(1),
+			mockUpdateRepo: func(ctx context.Context, income *domain.Income) error {
+				return nil
+			},
+			mockFindByIDRepo: func(ctx context.Context, id int64) (*domain.Income, error) {
+				return nil, apperror.NewInternal()
+			},
+			wantErr:     true,
+			expectedErr: apperror.NewInternal(),
+		},
+	}
+
+	var mockUpdateIncomePayload = domain.UpdateIncomePayload{}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			repo := &mock.MockIncomeRepository{
+				UpdateFunc:   tt.mockUpdateRepo,
+				FindByIDFunc: tt.mockFindByIDRepo,
+			}
+
+			uc := usecase.NewIncomeUsecase(repo)
+			err := uc.Update(context.Background(), tt.updateID, mockUpdateIncomePayload)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+				assert.ErrorIs(t, tt.expectedErr, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Nil(t, err)
 			}
 		})
 	}
