@@ -153,7 +153,7 @@ func TestFindAll(t *testing.T) {
 		for _, tt := range tests {
 			t.Run(tt.name, func(t *testing.T) {
 				incomes, err := repo.FindAll(context.Background(), tt.limit, tt.offset)
-				t.Logf("%v", incomes)
+				// t.Logf("%v", incomes)
 				if tt.wantErr {
 					assert.Error(t, err)
 					assert.ErrorIs(t, tt.expectedErr, err)
@@ -283,6 +283,60 @@ func TestUpdate(t *testing.T) {
 				assert.Equal(t, income.Category, newData.Category)
 				assert.Equal(t, income.Title, newData.Title)
 				assert.Equal(t, income.IncomeDate, newData.IncomeDate)
+			}
+		})
+	}
+}
+
+func TestCountAll(t *testing.T) {
+	db := testDB.SetupDB(t)
+	total := seedIncome(t, db, 10)
+
+	tests := []struct {
+		name        string
+		addDataFunc func() int64
+		wantErr     bool
+		expectedErr error
+	}{
+		{
+			name: "Count current total",
+			addDataFunc: func() (add int64) {
+				add = 0
+				return
+			},
+			wantErr:     false,
+			expectedErr: nil,
+		},
+		{
+			name: "Count total + add 10 data",
+			addDataFunc: func() (add int64) {
+				add = seedIncome(t, db, 10)
+				return
+			},
+			wantErr:     false,
+			expectedErr: nil,
+		},
+		{
+			name: "Count total + add more 10 data",
+			addDataFunc: func() (add int64) {
+				add = seedIncome(t, db, 10)
+				return
+			},
+			wantErr:     false,
+			expectedErr: nil,
+		},
+	}
+
+	repo := repository.NewPostgresIncomeRepository(db)
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			total += tt.addDataFunc()
+			count := repo.CountAll(context.Background())
+			if tt.wantErr {
+				assert.Equal(t, int64(0), count)
+			} else {
+				assert.Equal(t, total, count)
 			}
 		})
 	}

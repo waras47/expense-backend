@@ -184,7 +184,7 @@ func (r *incomeRepo) Delete(ctx context.Context, id int64) error {
 	commandTag, err := r.db.Exec(ctx, query, id)
 	if err != nil {
 		slog.Error(fmt.Sprintf("Failed to delete data with id: %d", id), "error", err)
-		return err
+		return apperror.NewInternal()
 	}
 
 	if commandTag.RowsAffected() == 0 {
