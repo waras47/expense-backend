@@ -166,3 +166,52 @@ func TestFindAll(t *testing.T) {
 		}
 	}
 }
+
+func TestFindByID(t *testing.T) {
+	db := testDB.SetupDB(t)
+
+	tests := []struct {
+		name        string
+		seedData    func(t *testing.T, db *pgxpool.Pool) int64
+		wantErr     bool
+		expectedErr error
+	}{
+		{
+			name: "Succeded find data by ID",
+			seedData: func(t *testing.T, db *pgxpool.Pool) int64 {
+				seedIncome(t, db, 10)
+				return seedIncome(t, db, 1)
+			},
+			wantErr:     false,
+			expectedErr: nil,
+		},
+		{
+			name: "Not found find data by ID",
+			seedData: func(t *testing.T, db *pgxpool.Pool) int64 {
+				seedIncome(t, db, 10)
+				return 1000
+			},
+			wantErr:     true,
+			expectedErr: apperror.ErrNotFound,
+		},
+	}
+
+	repo := repository.NewPostgresIncomeRepository(db)
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			id := tt.seedData(t, db)
+			income, err := repo.FindByID(context.Background(), id)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+				assert.ErrorIs(t, tt.expectedErr, err)
+				assert.Nil(t, income)
+			} else {
+				assert.NoError(t, err)
+				assert.NotEmpty(t, income)
+				assert.Equal(t, id, income.ID)
+			}
+		})
+	}
+}
