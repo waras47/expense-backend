@@ -341,3 +341,43 @@ func TestCountAll(t *testing.T) {
 		})
 	}
 }
+
+func TestDelete(t *testing.T) {
+	db := testDB.SetupDB(t)
+	total := seedIncome(t, db, 20)
+	id := seedIncome(t, db, 1)
+	total += 1
+
+	tests := []struct {
+		name        string
+		wantErr     bool
+		expectedErr error
+	}{
+		{
+			name:        "Succeded delete",
+			wantErr:     false,
+			expectedErr: nil,
+		},
+		{
+			name:        "No delete affected",
+			wantErr:     true,
+			expectedErr: apperror.NewDeleteFailed(),
+		},
+	}
+
+	repo := repository.NewPostgresIncomeRepository(db)
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := repo.Delete(context.Background(), id)
+			if tt.wantErr {
+				assert.Error(t, err)
+				assert.ErrorIs(t, tt.expectedErr, err)
+			} else {
+				assert.NoError(t, err)
+				count := repo.CountAll(context.Background())
+				assert.Equal(t, total-1, count)
+			}
+		})
+	}
+}

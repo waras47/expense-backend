@@ -180,7 +180,7 @@ func (r *incomeRepo) Update(ctx context.Context, income *domain.Income) error {
 }
 
 func (r *incomeRepo) Delete(ctx context.Context, id int64) error {
-	query := `UPDATE incomes SET is_deleted = true WHERE id = $1`
+	query := `UPDATE incomes SET is_deleted = true WHERE id = $1 AND is_deleted = false`
 	commandTag, err := r.db.Exec(ctx, query, id)
 	if err != nil {
 		slog.Error(fmt.Sprintf("Failed to delete data with id: %d", id), "error", err)
@@ -194,7 +194,7 @@ func (r *incomeRepo) Delete(ctx context.Context, id int64) error {
 }
 
 func (r *incomeRepo) CountAll(ctx context.Context) int64 {
-	query := `SELECT COUNT(1) FROM incomes`
+	query := `SELECT COUNT(1) FROM incomes WHERE is_deleted = false`
 
 	var count int64
 	if err := r.db.QueryRow(ctx, query).Scan(&count); err != nil {
