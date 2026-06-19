@@ -20,7 +20,7 @@ type IncomeModel struct {
 	ID         int64              `db:"id"`          // NOT NULL
 	Title      string             `db:"title"`       // NOT NULL
 	Amount     decimal.Decimal    `db:"amount"`      // NOT NULL
-	Category   string             `db:"category_id"` // NOT NULL
+	Category   string             `db:"category"`    // NOT NULL
 	Note       pgtype.Text        `db:"note"`        // NULLABLE
 	IncomeDate pgtype.Date        `db:"income_date"` // NOT NULL
 	IsDeleted  bool               `db:"is_deleted"`  // NOT NULL
@@ -106,7 +106,7 @@ func (r *incomeRepo) Create(ctx context.Context, income *domain.Income) (*domain
 
 // TODO : Jika ditambah akun, tambahkan juga kondisi WHERE id akun
 func (r *incomeRepo) FindAll(ctx context.Context, limit, offset int64) ([]domain.Income, error) {
-	query := `SELECT id, title, amount, category, note, income_date, created_at, updated_at
+	query := `SELECT id, title, amount, category, note, income_date, is_deleted, created_at, updated_at
 			  FROM incomes WHERE is_deleted = false`
 
 	var args []any
@@ -117,6 +117,7 @@ func (r *incomeRepo) FindAll(ctx context.Context, limit, offset int64) ([]domain
 
 	rows, err := r.db.Query(ctx, query, args...)
 	if err != nil {
+		fmt.Printf("Failed retrive incomes: %v", err)
 		slog.Error("Failed retrive incomes", "error", err)
 		return nil, apperror.NewInternal()
 	}
@@ -124,14 +125,19 @@ func (r *incomeRepo) FindAll(ctx context.Context, limit, offset int64) ([]domain
 	// rows.Close sudah di handle di dalam pgx.Collect
 	rowsIncome, err := pgx.CollectRows(rows, pgx.RowToStructByName[IncomeModel])
 	if err != nil {
+		fmt.Printf("Failed to collect rows: %v", err)
 		slog.Error("Failed to collect rows", "error", err)
 		return nil, apperror.NewInternal()
 	}
+
+	fmt.Printf("Data model %v", rowsIncome)
 
 	incomes := make([]domain.Income, len(rowsIncome))
 	for i, income := range rowsIncome {
 		incomes[i] = income.ToIncomeDomain()
 	}
+
+	fmt.Printf("Data domain %v", incomes)
 
 	return incomes, nil
 }
