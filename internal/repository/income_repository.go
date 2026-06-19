@@ -83,7 +83,7 @@ func NewPostgresIncomeRepository(db *pgxpool.Pool) domain.IncomeRepository {
 func (r *incomeRepo) Create(ctx context.Context, income *domain.Income) (*domain.Income, error) {
 	model := ToIncomeModel(income)
 
-	query := `INSERT INTO incomes SET title, amount, category, note, income_date, is_deleted
+	query := `INSERT INTO incomes (title, amount, category, note, income_date, is_deleted)
 			  VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, created_at`
 
 	err := r.db.QueryRow(ctx, query,
@@ -111,7 +111,7 @@ func (r *incomeRepo) FindAll(ctx context.Context, limit, offset int64) ([]domain
 
 	var args []any
 	if limit > 0 {
-		query += `LIMIT $1 OFFSET $2`
+		query += ` LIMIT $1 OFFSET $2`
 		args = append(args, limit, offset)
 	}
 
@@ -180,7 +180,7 @@ func (r *incomeRepo) Update(ctx context.Context, income *domain.Income) error {
 }
 
 func (r *incomeRepo) Delete(ctx context.Context, id int64) error {
-	query := `UPDATE income SET is_deleted = true WHERE id = $1`
+	query := `UPDATE incomes SET is_deleted = true WHERE id = $1`
 	commandTag, err := r.db.Exec(ctx, query, id)
 	if err != nil {
 		slog.Error(fmt.Sprintf("Failed to delete data with id: %d", id), "error", err)
@@ -194,7 +194,7 @@ func (r *incomeRepo) Delete(ctx context.Context, id int64) error {
 }
 
 func (r *incomeRepo) CountAll(ctx context.Context) int64 {
-	query := `SELECT COUNT(1) FROM income`
+	query := `SELECT COUNT(1) FROM incomes`
 
 	var count int64
 	if err := r.db.QueryRow(ctx, query).Scan(&count); err != nil {
