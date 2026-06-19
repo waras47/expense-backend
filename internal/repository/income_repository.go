@@ -117,7 +117,6 @@ func (r *incomeRepo) FindAll(ctx context.Context, limit, offset int64) ([]domain
 
 	rows, err := r.db.Query(ctx, query, args...)
 	if err != nil {
-		fmt.Printf("Failed retrive incomes: %v", err)
 		slog.Error("Failed retrive incomes", "error", err)
 		return nil, apperror.NewInternal()
 	}
@@ -125,25 +124,20 @@ func (r *incomeRepo) FindAll(ctx context.Context, limit, offset int64) ([]domain
 	// rows.Close sudah di handle di dalam pgx.Collect
 	rowsIncome, err := pgx.CollectRows(rows, pgx.RowToStructByName[IncomeModel])
 	if err != nil {
-		fmt.Printf("Failed to collect rows: %v", err)
 		slog.Error("Failed to collect rows", "error", err)
 		return nil, apperror.NewInternal()
 	}
-
-	fmt.Printf("Data model %v", rowsIncome)
 
 	incomes := make([]domain.Income, len(rowsIncome))
 	for i, income := range rowsIncome {
 		incomes[i] = income.ToIncomeDomain()
 	}
 
-	fmt.Printf("Data domain %v", incomes)
-
 	return incomes, nil
 }
 
 func (r *incomeRepo) FindByID(ctx context.Context, id int64) (*domain.Income, error) {
-	query := `SELECT id, title, amount, category, note, income_date, created_at, updated_at 
+	query := `SELECT id, title, amount, category, note, income_date, is_deleted, created_at, updated_at 
 			  FROM incomes WHERE id = $1 AND is_deleted = false`
 
 	rows, err := r.db.Query(ctx, query, id)
@@ -159,7 +153,7 @@ func (r *incomeRepo) FindByID(ctx context.Context, id int64) (*domain.Income, er
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, apperror.ErrNotFound
 		}
-		slog.Error("Failed to retive income", "error", err)
+		slog.Error("Failed to collect income", "error", err)
 		return nil, apperror.NewInternal()
 	}
 
