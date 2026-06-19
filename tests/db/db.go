@@ -49,8 +49,6 @@ func SetupDB(t *testing.T) *pgxpool.Pool {
 		t.Fatal(err)
 	}
 
-	t.Log(connStr)
-
 	config, err := pgxpool.ParseConfig(connStr)
 	if err != nil {
 		t.Fatal(err)

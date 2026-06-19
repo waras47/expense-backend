@@ -16,8 +16,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var tanggal = time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.UTC)
+
 func seedIncome(t *testing.T, db *pgxpool.Pool, total int64) int64 {
-	tanggal := time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.UTC)
 
 	if total > 1 {
 		query := `INSERT INTO incomes (title, amount, category, note, income_date, is_deleted)
@@ -211,6 +212,77 @@ func TestFindByID(t *testing.T) {
 				assert.NoError(t, err)
 				assert.NotEmpty(t, income)
 				assert.Equal(t, id, income.ID)
+			}
+		})
+	}
+}
+
+func TestUpdate(t *testing.T) {
+	db := testDB.SetupDB(t)
+
+	newAmount, err := decimal.NewFromString("120000.00")
+	if err != nil {
+		t.Error(err)
+	}
+	tests := []struct {
+		name          string
+		preUpdateFunc func() (int64, domain.Income)
+		wantErr       bool
+		expectedErr   error
+	}{
+		{
+			name: "Succeded update income",
+			preUpdateFunc: func() (id int64, newData domain.Income) {
+				id = seedIncome(t, db, 1)
+				newData = domain.Income{
+					ID:         id,
+					Title:      "New Title",
+					Amount:     newAmount,
+					Category:   "New Cate",
+					Note:       "New Note",
+					IncomeDate: tanggal,
+				}
+				return
+			},
+			wantErr:     false,
+			expectedErr: nil,
+		},
+		{
+			name: "No affected update income",
+			preUpdateFunc: func() (id int64, newData domain.Income) {
+				id = seedIncome(t, db, 1)
+				newData = domain.Income{
+					ID:         1000,
+					Title:      "New Title",
+					Amount:     newAmount,
+					Category:   "New Cate",
+					Note:       "New Note",
+					IncomeDate: tanggal,
+				}
+				return
+			},
+			wantErr:     true,
+			expectedErr: apperror.NewUpdateFailed(),
+		},
+	}
+
+	repo := repository.NewPostgresIncomeRepository(db)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			id, newData := tt.preUpdateFunc()
+			err := repo.Update(context.Background(), &newData)
+			if tt.wantErr {
+				assert.Error(t, err)
+				assert.ErrorIs(t, tt.expectedErr, err)
+			} else {
+				income, err2 := repo.FindByID(context.Background(), id)
+				assert.NoError(t, err)
+				assert.NoError(t, err2)
+				assert.Equal(t, income.ID, id)
+				assert.Equal(t, income.Amount.String(), newData.Amount.String())
+				assert.Equal(t, income.Category, newData.Category)
+				assert.Equal(t, income.Title, newData.Title)
+				assert.Equal(t, income.IncomeDate, newData.IncomeDate)
 			}
 		})
 	}
