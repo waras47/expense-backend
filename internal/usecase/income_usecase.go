@@ -13,18 +13,17 @@ func NewIncomeUsecase(repo domain.IncomeRepository) domain.IncomeUsecase {
 	return &incomeUsecase{repo: repo}
 }
 
-func (uc *incomeUsecase) Get(ctx context.Context, id int64) (*domain.IncomeResponse, error) {
+func (uc *incomeUsecase) Get(ctx context.Context, id int64) (*domain.Income, error) {
 	income, err := uc.repo.FindByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	resp := income.ToResponse()
-	return &resp, nil
+	return income, nil
 }
 
 // TODO: tambahkan parameter id akun jika ada akun
-func (uc *incomeUsecase) GetAll(ctx context.Context, page, limit int64) ([]domain.IncomeResponse, int64, error) {
+func (uc *incomeUsecase) GetAll(ctx context.Context, page, limit int64) ([]domain.Income, int64, error) {
 	// Validation minimal
 	if page < 1 {
 		page = 1
@@ -45,36 +44,22 @@ func (uc *incomeUsecase) GetAll(ctx context.Context, page, limit int64) ([]domai
 		return nil, 0, err
 	}
 
-	// Prepare return
-	var resp = []domain.IncomeResponse{}
-	if len(incomes) > 0 {
-		resp = make([]domain.IncomeResponse, len(incomes))
-		for i, row := range incomes {
-			resp[i] = row.ToResponse()
-		}
-	}
-
 	countAll := uc.repo.CountAll(ctx)
 
-	return resp, countAll, nil
+	return incomes, countAll, nil
 }
 
-func (uc *incomeUsecase) Create(ctx context.Context, createPayload domain.CreateIncomePayload) (*domain.IncomeResponse, error) {
+func (uc *incomeUsecase) Create(ctx context.Context, input *domain.Income) (*domain.Income, error) {
 	/* Validation payload handled by gin with validation/v10 */
-
-	// Cast payload to domain
-	newIncome := createPayload.ToDomain()
-
-	income, err := uc.repo.Create(ctx, newIncome)
+	income, err := uc.repo.Create(ctx, input)
 	if err != nil {
 		return nil, err
 	}
 
-	resp := income.ToResponse()
-	return &resp, nil
+	return income, nil
 }
 
-func (uc *incomeUsecase) Update(ctx context.Context, id int64, updatePayload domain.UpdateIncomePayload) error {
+func (uc *incomeUsecase) Update(ctx context.Context, id int64, input *domain.Income) error {
 	// Curent update is replacing with new data.
 	income, err := uc.repo.FindByID(ctx, id)
 	if err != nil {
@@ -82,7 +67,7 @@ func (uc *incomeUsecase) Update(ctx context.Context, id int64, updatePayload dom
 	}
 
 	// Merge existing income data with new data from payload then do Update
-	if err := uc.repo.Update(ctx, updatePayload.MergeToDomain(income)); err != nil {
+	if err := uc.repo.Update(ctx, income.MergeWithNewData(income)); err != nil {
 		return err
 	}
 

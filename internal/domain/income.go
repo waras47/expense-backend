@@ -20,24 +20,24 @@ type Income struct {
 	UpdatedAt  time.Time
 }
 
-// Converts the domain model to the response format. This process validates default values, replaces them with null, and ensures the 'omitempty' tag works correctly.
-func (income *Income) ToResponse() IncomeResponse {
-	res := IncomeResponse{
-		ID:         income.ID,
-		Title:      income.Title,
-		Amount:     income.Amount,
-		Category:   income.Category,
-		Note:       income.Note,
-		IncomeDate: income.IncomeDate,
-		IsDeleted:  income.IsDeleted,
-		CreatedAt:  income.CreatedAt,
+// Merge non default value from new data
+func (i *Income) MergeWithNewData(income *Income) *Income {
+	if income.Title != "" {
+		i.Title = income.Title
 	}
-
-	if !income.UpdatedAt.IsZero() {
-		res.UpdatedAt = &income.UpdatedAt
+	if !income.Amount.IsZero() {
+		i.Amount = income.Amount
 	}
-
-	return res
+	if income.Category != "" {
+		i.Category = income.Category
+	}
+	if income.Note != "" {
+		i.Note = income.Note
+	}
+	if !income.IncomeDate.IsZero() {
+		i.IncomeDate = income.IncomeDate
+	}
+	return income
 }
 
 // Repossitory Interface
@@ -52,69 +52,9 @@ type IncomeRepository interface {
 
 // Usecase Interface
 type IncomeUsecase interface {
-	Get(ctx context.Context, id int64) (*IncomeResponse, error)
-	GetAll(ctx context.Context, page, limit int64) ([]IncomeResponse, int64, error)
-	Create(ctx context.Context, payload CreateIncomePayload) (*IncomeResponse, error)
-	Update(ctx context.Context, id int64, payload UpdateIncomePayload) error
+	Get(ctx context.Context, id int64) (*Income, error)
+	GetAll(ctx context.Context, page, limit int64) ([]Income, int64, error)
+	Create(ctx context.Context, input *Income) (*Income, error)
+	Update(ctx context.Context, id int64, input *Income) error
 	Delete(ctx context.Context, id int64) error
-}
-
-// Response
-type IncomeResponse struct {
-	ID         int64           `json:"id"`
-	Title      string          `json:"title"`
-	Amount     decimal.Decimal `json:"amount"`
-	Category   string          `json:"category"`
-	Note       string          `json:"note,omitempty"`
-	IncomeDate time.Time       `json:"income_date"`
-	IsDeleted  bool            `json:"is_deleted"`
-	CreatedAt  time.Time       `json:"created_at"`
-	UpdatedAt  *time.Time      `json:"updated_at,omitempty"`
-}
-
-// Payloads
-type CreateIncomePayload struct {
-	Title      string          `json:"title" binding:"required,min=1,max=100"`
-	Amount     decimal.Decimal `json:"amount" binding:"required,gt=0"`
-	Category   string          `json:"category_id" binding:"required,min=1,max=100"`
-	Note       string          `json:"note" binding:"max=255"`
-	IncomeDate time.Time       `json:"income_date" binding:"required,lte" time_format:"2006-01-02"`
-}
-
-func (p *CreateIncomePayload) ToDomain() *Income {
-	return &Income{
-		Title:      p.Title,
-		Amount:     p.Amount,
-		Category:   p.Category,
-		Note:       p.Note,
-		IsDeleted:  false,
-		IncomeDate: p.IncomeDate,
-	}
-}
-
-type UpdateIncomePayload struct {
-	Title      *string          `json:"title" binding:"omitnil,min=1,max=100"`
-	Amount     *decimal.Decimal `json:"amount" binding:"omitempty,gt=0"`
-	Category   *string          `json:"category_id" binding:"omitnil,min=1,max=100"`
-	Note       *string          `json:"note" binding:"omitnil,max=255"`
-	IncomeDate *time.Time       `json:"income_date" binding:"omitnil,lte" time_format:"2006-01-02"`
-}
-
-func (p *UpdateIncomePayload) MergeToDomain(income *Income) *Income {
-	if p.Title != nil {
-		income.Title = *p.Title
-	}
-	if p.Amount != nil {
-		income.Amount = *p.Amount
-	}
-	if p.Category != nil {
-		income.Category = *p.Category
-	}
-	if p.Note != nil {
-		income.Note = *p.Note
-	}
-	if p.IncomeDate != nil {
-		income.IncomeDate = *p.IncomeDate
-	}
-	return income
 }

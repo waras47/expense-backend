@@ -77,7 +77,7 @@ func (m *mockIncomeData) findIncomes(limit, offset int64) []domain.Income {
 }
 
 func TestCreateIncome(t *testing.T) {
-	var mockCreatePayloadIncome = domain.CreateIncomePayload{
+	var mockCreateIncome = domain.Income{
 		Title:      "Mock Title",
 		Amount:     decimal.NewFromBigInt(big.NewInt(12000), 2),
 		Category:   "Mock Category",
@@ -86,11 +86,11 @@ func TestCreateIncome(t *testing.T) {
 	}
 
 	tests := []struct {
-		name              string
-		mockCreateRepo    func(ctx context.Context, income *domain.Income) (*domain.Income, error)
-		mockCreatePayload domain.CreateIncomePayload
-		wantErr           bool
-		expectedErr       error
+		name             string
+		mockCreateRepo   func(ctx context.Context, income *domain.Income) (*domain.Income, error)
+		mockCreateIncome domain.Income
+		wantErr          bool
+		expectedErr      error
 	}{
 		{
 			name: "Succeded create data",
@@ -102,18 +102,18 @@ func TestCreateIncome(t *testing.T) {
 				data := model.ToIncomeDomain()
 				return &data, nil
 			},
-			mockCreatePayload: mockCreatePayloadIncome,
-			wantErr:           false,
-			expectedErr:       nil,
+			mockCreateIncome: mockCreateIncome,
+			wantErr:          false,
+			expectedErr:      nil,
 		},
 		{
 			name: "Failed create data",
 			mockCreateRepo: func(ctx context.Context, income *domain.Income) (*domain.Income, error) {
 				return nil, apperror.NewInternal()
 			},
-			mockCreatePayload: mockCreatePayloadIncome,
-			wantErr:           true,
-			expectedErr:       apperror.NewInternal(),
+			mockCreateIncome: mockCreateIncome,
+			wantErr:          true,
+			expectedErr:      apperror.NewInternal(),
 		},
 	}
 
@@ -124,7 +124,7 @@ func TestCreateIncome(t *testing.T) {
 			}
 
 			uc := usecase.NewIncomeUsecase(mockRepo)
-			res, err := uc.Create(context.Background(), tt.mockCreatePayload)
+			res, err := uc.Create(context.Background(), &tt.mockCreateIncome)
 
 			if tt.wantErr {
 				assert.Error(t, err)
@@ -134,11 +134,11 @@ func TestCreateIncome(t *testing.T) {
 				assert.NoError(t, err)
 				assert.NotNil(t, res)
 				assert.Equal(t, int64(1), res.ID)
-				assert.Equal(t, tt.mockCreatePayload.Title, res.Title)
-				assert.Equal(t, tt.mockCreatePayload.Amount, res.Amount)
-				assert.Equal(t, tt.mockCreatePayload.Category, res.Category)
-				assert.Equal(t, tt.mockCreatePayload.Note, res.Note)
-				assert.Equal(t, tt.mockCreatePayload.IncomeDate, res.IncomeDate)
+				assert.Equal(t, tt.mockCreateIncome.Title, res.Title)
+				assert.Equal(t, tt.mockCreateIncome.Amount, res.Amount)
+				assert.Equal(t, tt.mockCreateIncome.Category, res.Category)
+				assert.Equal(t, tt.mockCreateIncome.Note, res.Note)
+				assert.Equal(t, tt.mockCreateIncome.IncomeDate, res.IncomeDate)
 			}
 
 		})
@@ -453,7 +453,7 @@ func TestUpdatencome(t *testing.T) {
 		},
 	}
 
-	var mockUpdateIncomePayload = domain.UpdateIncomePayload{}
+	var mockUpdateIncome = domain.Income{}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -463,7 +463,7 @@ func TestUpdatencome(t *testing.T) {
 			}
 
 			uc := usecase.NewIncomeUsecase(repo)
-			err := uc.Update(context.Background(), tt.updateID, mockUpdateIncomePayload)
+			err := uc.Update(context.Background(), tt.updateID, &mockUpdateIncome)
 
 			if tt.wantErr {
 				assert.Error(t, err)
