@@ -8,7 +8,10 @@ import (
 	"expense-backend/internal/usecase"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/shopspring/decimal"
 )
 
 type Server struct {
@@ -21,10 +24,23 @@ type handlers struct {
 	// TODO: Add handler new module handler here
 }
 
+func ValidateDecimalMoreThanZero(fl validator.FieldLevel) bool {
+	d, ok := fl.Field().Interface().(*decimal.Decimal)
+	if !ok {
+		return false
+	}
+	return d.GreaterThan(decimal.Zero)
+}
+
 func New(cfg *config.Config, pool *pgxpool.Pool) *Server {
 	h := wireHandlers(pool)
 
 	engine := gin.Default()
+	// Register custom validator
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("positive_decimal", ValidateDecimalMoreThanZero)
+	}
+
 	registerMiddleware(engine)
 	registerRoutes(engine, h)
 
