@@ -26,8 +26,43 @@ func NewIncomeHandler(uc domain.IncomeUsecase) *IncomeHandler {
 
 func (h *IncomeHandler) RegisterRoutes(rg *gin.RouterGroup) {
 	rg.GET("", h.ListIncomes)
+	rg.POST("", h.CreateIncome)
 }
 
+func (h *IncomeHandler) CreateIncome(c *gin.Context) {
+	var payloadIncome reqDto.CreateIncomePayload
+	if err := c.ShouldBindJSON(&payloadIncome); err != nil {
+		var validationErr validator.ValidationErrors
+		if errors.As(err, &validationErr) {
+			appresponse.RespondError(c, http.StatusBadRequest, "validation failed", apperror.NewBadRequest(help.Ptr(validationErr.Error())))
+			return
+		}
+		appresponse.RespondError(c, http.StatusBadRequest, "invalid create payload", apperror.NewBadRequest(help.Ptr(err.Error())))
+		return
+	}
+
+	newIncome := &domain.Income{
+		Title:      payloadIncome.Title,
+		Amount:     payloadIncome.Amount,
+		Category:   payloadIncome.Category,
+		Note:       payloadIncome.Note,
+		IncomeDate: payloadIncome.IncomeDate,
+	}
+
+	income, err := h.uc.Create(c.Request.Context(), newIncome)
+	if err != nil {
+		var appErr *apperror.AppError
+		if errors.As(err, &appErr) {
+			appresponse.RespondError(c, appErr.GetCode(), "failed to create new income", err)
+			return
+		}
+		appresponse.RespondError(c, http.StatusInternalServerError, "failed to create new income", err)
+		return
+	}
+
+	incomeResponse := resDto.NewIncomeResponse(income)
+	appresponse.ResponseSuccess(c, http.StatusCreated, "succeded create new income", &incomeResponse, nil)
+}
 func (h *IncomeHandler) ListIncomes(c *gin.Context) {
 	var paginateQuery reqDto.PaginateQuery
 	if err := c.ShouldBindQuery(&paginateQuery); err != nil {
