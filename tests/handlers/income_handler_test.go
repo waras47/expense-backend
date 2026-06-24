@@ -233,7 +233,6 @@ func TestCreateIncome(t *testing.T) {
 				assert.False(t, res.Success)
 				assert.NotNil(t, res.Error)
 				assert.Equal(t, tt.expectedCode, res.Error.Code)
-				fmt.Println(res.Error.Message)
 			} else {
 				assert.True(t, res.Success)
 				assert.NotNil(t, res.Data)
