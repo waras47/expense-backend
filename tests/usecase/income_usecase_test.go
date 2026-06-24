@@ -6,8 +6,8 @@ import (
 	"expense-backend/internal/repository"
 	"expense-backend/internal/usecase"
 	"expense-backend/pkg/apperror"
-	"expense-backend/tests/mock"
-	mocks "expense-backend/tests/mock"
+	main_test "expense-backend/tests"
+	"expense-backend/tests/usecase/mock"
 	"fmt"
 	"math/big"
 	"testing"
@@ -17,9 +17,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var loc = time.FixedZone("Asia/Jakarta", int((7 * time.Hour).Seconds()))
-var mockDate = time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, loc)
-var mockTime = time.Now().In(loc)
+var mockDate = time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, main_test.Loc)
+var mockTime = time.Now().In(main_test.Loc)
 
 type mockIncomeData struct {
 	incomes []domain.Income
@@ -119,7 +118,7 @@ func TestCreateIncome(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockRepo := &mocks.MockIncomeRepository{
+			mockRepo := &mock.MockIncomeRepository{
 				CreateFunc: tt.mockCreateRepo,
 			}
 
@@ -186,7 +185,7 @@ func TestGetIncome(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			repo := &mocks.MockIncomeRepository{
+			repo := &mock.MockIncomeRepository{
 				FindByIDFunc: tt.mockFindByIDRepo,
 			}
 
