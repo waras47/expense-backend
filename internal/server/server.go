@@ -25,7 +25,7 @@ type handlers struct {
 }
 
 func ValidateDecimalMoreThanZero(fl validator.FieldLevel) bool {
-	d, ok := fl.Field().Interface().(*decimal.Decimal)
+	d, ok := fl.Field().Interface().(decimal.Decimal)
 	if !ok {
 		return false
 	}
