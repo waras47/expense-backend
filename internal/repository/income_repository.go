@@ -97,7 +97,7 @@ func (r *incomeRepo) Create(ctx context.Context, income *domain.Income) (*domain
 
 	if err != nil {
 		slog.Error("Failed to create new income", "error", err)
-		return nil, apperror.NewInternal()
+		return nil, apperror.NewInternal(nil)
 	}
 
 	resultIncome := model.ToIncomeDomain()
@@ -118,14 +118,14 @@ func (r *incomeRepo) FindAll(ctx context.Context, limit, offset int64) ([]domain
 	rows, err := r.db.Query(ctx, query, args...)
 	if err != nil {
 		slog.Error("Failed retrive incomes", "error", err)
-		return nil, apperror.NewInternal()
+		return nil, apperror.NewInternal(nil)
 	}
 
 	// rows.Close sudah di handle di dalam pgx.Collect
 	rowsIncome, err := pgx.CollectRows(rows, pgx.RowToStructByName[IncomeModel])
 	if err != nil {
 		slog.Error("Failed to collect rows", "error", err)
-		return nil, apperror.NewInternal()
+		return nil, apperror.NewInternal(nil)
 	}
 
 	incomes := make([]domain.Income, len(rowsIncome))
@@ -143,7 +143,7 @@ func (r *incomeRepo) FindByID(ctx context.Context, id int64) (*domain.Income, er
 	rows, err := r.db.Query(ctx, query, id)
 	if err != nil {
 		slog.Error("Failed retrive incomes", "error", err)
-		return nil, apperror.NewInternal()
+		return nil, apperror.NewInternal(nil)
 	}
 
 	// rows.Close sudah di handle di dalam pgx.Collect
@@ -151,10 +151,10 @@ func (r *incomeRepo) FindByID(ctx context.Context, id int64) (*domain.Income, er
 
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, apperror.ErrNotFound
+			return nil, apperror.NewNotFound()
 		}
 		slog.Error("Failed to collect income", "error", err)
-		return nil, apperror.NewInternal()
+		return nil, apperror.NewInternal(nil)
 	}
 
 	incomeDomain := income.ToIncomeDomain()
@@ -169,7 +169,7 @@ func (r *incomeRepo) Update(ctx context.Context, income *domain.Income) error {
 	commandTag, err := r.db.Exec(ctx, query, income.Title, income.Amount, income.Category, income.Note, income.IncomeDate, income.ID)
 	if err != nil {
 		slog.Error(fmt.Sprintf("Failed to update date with id: %d", income.ID))
-		return apperror.NewInternal()
+		return apperror.NewInternal(nil)
 	}
 
 	if commandTag.RowsAffected() == 0 {
@@ -184,7 +184,7 @@ func (r *incomeRepo) Delete(ctx context.Context, id int64) error {
 	commandTag, err := r.db.Exec(ctx, query, id)
 	if err != nil {
 		slog.Error(fmt.Sprintf("Failed to delete data with id: %d", id), "error", err)
-		return apperror.NewInternal()
+		return apperror.NewInternal(nil)
 	}
 
 	if commandTag.RowsAffected() == 0 {

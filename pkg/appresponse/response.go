@@ -85,14 +85,14 @@ func RespondError(c *gin.Context, status int, message string, err error) {
 	c.JSON(status, Response[any]{
 		Success: false,
 		Message: message,
-		Error:   apperror.NewInternal(),
+		Error:   apperror.NewInternal(nil),
 		Meta: Meta{
 			Timestamp: time.Now().UTC(),
 		},
 	})
 }
 
-func ResponseSuccess[T any](c *gin.Context, status int, message string, data *T, paginate *Paginate) {
+func RespondSuccess[T any](c *gin.Context, status int, message string, data *T, paginate *Paginate) {
 	c.JSON(status, Response[T]{
 		Success: true,
 		Message: message,

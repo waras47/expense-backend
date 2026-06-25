@@ -85,7 +85,7 @@ func TestCreate(t *testing.T) {
 			name:        "Timeout create Income",
 			context:     ctx,
 			wantErr:     true,
-			expectedErr: apperror.NewInternal(),
+			expectedErr: apperror.NewInternal(nil),
 		},
 	}
 
@@ -190,6 +190,7 @@ func TestFindByID(t *testing.T) {
 			name: "Not found find data by ID",
 			seedData: func(t *testing.T, db *pgxpool.Pool) int64 {
 				seedIncome(t, db, 10)
+				// return random id
 				return 1000
 			},
 			wantErr:     true,

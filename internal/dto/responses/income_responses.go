@@ -2,6 +2,7 @@ package dto
 
 import (
 	"expense-backend/internal/domain"
+	"expense-backend/pkg/apperror"
 	"time"
 
 	"github.com/shopspring/decimal"
@@ -21,7 +22,10 @@ type IncomeResponse struct {
 }
 
 // Converts the domain model to the response format. This process validates default values, replaces them with null, and ensures the 'omitempty' tag works correctly.
-func NewIncomeResponse(income *domain.Income) IncomeResponse {
+func NewIncomeResponse(income *domain.Income) (IncomeResponse, error) {
+	if income == nil {
+		return IncomeResponse{}, apperror.NewInternal(nil)
+	}
 	res := IncomeResponse{
 		ID:         income.ID,
 		Title:      income.Title,
@@ -37,5 +41,5 @@ func NewIncomeResponse(income *domain.Income) IncomeResponse {
 		res.UpdatedAt = &income.UpdatedAt
 	}
 
-	return res
+	return res, nil
 }

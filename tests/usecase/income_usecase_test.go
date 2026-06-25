@@ -108,11 +108,11 @@ func TestCreateIncome(t *testing.T) {
 		{
 			name: "Failed create data",
 			mockCreateRepo: func(ctx context.Context, income *domain.Income) (*domain.Income, error) {
-				return nil, apperror.NewInternal()
+				return nil, apperror.NewInternal(nil)
 			},
 			mockCreateIncome: mockCreateIncome,
 			wantErr:          true,
-			expectedErr:      apperror.NewInternal(),
+			expectedErr:      apperror.NewInternal(nil),
 		},
 	}
 
@@ -166,11 +166,11 @@ func TestGetIncome(t *testing.T) {
 		{
 			name: "Failed get data",
 			mockFindByIDRepo: func(ctx context.Context, id int64) (*domain.Income, error) {
-				return nil, apperror.NewInternal()
+				return nil, apperror.NewInternal(nil)
 			},
 			getID:       int64(1),
 			wantErr:     true,
-			expectedErr: apperror.NewInternal(),
+			expectedErr: apperror.NewInternal(nil),
 		},
 		{
 			name: "Not found get data",
@@ -269,11 +269,11 @@ func TestGetAllIncome(t *testing.T) {
 			page:  0,
 			limit: 0,
 			mockFindAllRepo: func(ctx context.Context, limit, offset int64) ([]domain.Income, error) {
-				return nil, apperror.NewInternal()
+				return nil, apperror.NewInternal(nil)
 			},
 			expectedCount: 0,
 			wantErr:       true,
-			expectedErr:   apperror.NewInternal(),
+			expectedErr:   apperror.NewInternal(nil),
 		},
 	}
 
@@ -339,13 +339,13 @@ func TestDeleteIncome(t *testing.T) {
 			name:     "Failed delete data",
 			deleteID: int64(1),
 			mockDeleteRepo: func(ctx context.Context, id int64) error {
-				return apperror.NewInternal()
+				return apperror.NewInternal(nil)
 			},
 			mockFindByIDRepo: func(ctx context.Context, id int64) (*domain.Income, error) {
 				return &domain.Income{}, nil
 			},
 			wantErr:     true,
-			expectedErr: apperror.NewInternal(),
+			expectedErr: apperror.NewInternal(nil),
 		},
 		{
 			name:     "No affected delete data",
@@ -406,13 +406,13 @@ func TestUpdatencome(t *testing.T) {
 			name:     "Found data but failed to update data",
 			updateID: int64(1),
 			mockUpdateRepo: func(ctx context.Context, income *domain.Income) error {
-				return apperror.NewInternal()
+				return apperror.NewInternal(nil)
 			},
 			mockFindByIDRepo: func(ctx context.Context, id int64) (*domain.Income, error) {
 				return &domain.Income{}, nil
 			},
 			wantErr:     true,
-			expectedErr: apperror.NewInternal(),
+			expectedErr: apperror.NewInternal(nil),
 		},
 		{
 			name:     "Failed update data no affected",
@@ -445,10 +445,10 @@ func TestUpdatencome(t *testing.T) {
 				return nil
 			},
 			mockFindByIDRepo: func(ctx context.Context, id int64) (*domain.Income, error) {
-				return nil, apperror.NewInternal()
+				return nil, apperror.NewInternal(nil)
 			},
 			wantErr:     true,
-			expectedErr: apperror.NewInternal(),
+			expectedErr: apperror.NewInternal(nil),
 		},
 	}
 

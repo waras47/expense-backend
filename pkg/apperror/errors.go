@@ -30,10 +30,6 @@ func (e *AppError) Error() string {
 	return e.Message
 }
 
-func (e *AppError) GetCode() int {
-	return e.Code
-}
-
 func NewUpdateFailed() *AppError {
 	return &AppError{Code: http.StatusBadRequest, Message: "No data was updated."}
 }
@@ -50,8 +46,12 @@ func NewValidation(msg string) *AppError {
 	return &AppError{Code: http.StatusBadRequest, Message: "Validasi gagal: " + msg}
 }
 
-func NewInternal() *AppError {
-	return &AppError{Code: http.StatusInternalServerError, Message: "Terjadi kesalahan pada server"}
+func NewInternal(message *string) *AppError {
+	defaultMessage := "Terjadi kesalahan pada server"
+	if message != nil {
+		defaultMessage = *message
+	}
+	return &AppError{Code: http.StatusInternalServerError, Message: defaultMessage}
 }
 
 func NewBadRequest(message *string) *AppError {
