@@ -189,7 +189,7 @@ func TestCreateIncome(t *testing.T) {
 				"income_date": mockIncome.IncomeDate,
 			},
 			createFunc: func(ctx context.Context, input *domain.Income) (*domain.Income, error) {
-				return nil, apperror.NewInternal()
+				return nil, apperror.NewInternal(nil)
 			},
 			wantErr:         true,
 			expectedMessage: "failed to create new income",
@@ -207,7 +207,7 @@ func TestCreateIncome(t *testing.T) {
 				"income_date": mockIncome.IncomeDate,
 			},
 			createFunc: func(ctx context.Context, input *domain.Income) (*domain.Income, error) {
-				return nil, apperror.NewInternal()
+				return nil, apperror.NewInternal(nil)
 			},
 			wantErr:         true,
 			expectedMessage: "invalid create payload",
@@ -345,7 +345,7 @@ func TestListIncome(t *testing.T) {
 			name: "Failed retrieve incomes",
 			getAllFunc: func(ctx context.Context, page, limit int64) ([]domain.Income, int64, error) {
 				incomes := generateMockIncomes(0)
-				return incomes, 0, apperror.NewInternal()
+				return incomes, 0, apperror.NewInternal(nil)
 			},
 			path:            "/api/incomes",
 			wantErr:         true,
@@ -373,6 +373,83 @@ func TestListIncome(t *testing.T) {
 				assert.NotNil(t, res.Error)
 				assert.Equal(t, tt.expectedCode, res.Error.Code)
 				fmt.Println(res.Error.Message)
+			} else {
+				assert.True(t, res.Success)
+				assert.NotNil(t, res.Data)
+			}
+		})
+	}
+}
+
+func TestFindOneIncome(t *testing.T) {
+	mockIncome := generateMockIncomes(1)[0]
+	tests := []struct {
+		name            string
+		path            string
+		getFunc         func(ctx context.Context, id int64) (*domain.Income, error)
+		wantErr         bool
+		expectedCode    int
+		expectedMessage string
+	}{
+		{
+			name: "Succeded get income",
+			path: "/api/incomes/1",
+			getFunc: func(ctx context.Context, id int64) (*domain.Income, error) {
+				return &mockIncome, nil
+			},
+			wantErr:         false,
+			expectedCode:    http.StatusOK,
+			expectedMessage: "income retrieved",
+		},
+		{
+			name: "Invalid id",
+			path: "/api/incomes/invalid_id",
+			getFunc: func(ctx context.Context, id int64) (*domain.Income, error) {
+				return &mockIncome, nil
+			},
+			wantErr:         true,
+			expectedCode:    http.StatusBadRequest,
+			expectedMessage: "invalid param id",
+		},
+		{
+			name: "Income not found",
+			path: "/api/incomes/1",
+			getFunc: func(ctx context.Context, id int64) (*domain.Income, error) {
+				return nil, apperror.NewNotFound()
+			},
+			wantErr:         true,
+			expectedCode:    http.StatusNotFound,
+			expectedMessage: "failed to get income",
+		},
+		{
+			name: "Failed to get income",
+			path: "/api/incomes/1",
+			getFunc: func(ctx context.Context, id int64) (*domain.Income, error) {
+				return nil, apperror.NewInternal(nil)
+			},
+			wantErr:         true,
+			expectedCode:    http.StatusInternalServerError,
+			expectedMessage: "failed to get income",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			uc := &mock.MockIncomeUsecase{
+				GetFunc: tt.getFunc,
+			}
+			r := setupIncomeHandler(uc)
+			w := mock.NewRequest(r, "GET", tt.path, nil)
+			var res appresponse.Response[domain.Income]
+			err := json.Unmarshal(w.Body.Bytes(), &res)
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expectedCode, w.Code)
+			assert.Equal(t, tt.expectedMessage, res.Message)
+			if tt.wantErr {
+				fmt.Println(w.Body.String())
+				assert.False(t, res.Success)
+				assert.NotNil(t, res.Error)
+				assert.Equal(t, tt.expectedCode, res.Error.Code)
 			} else {
 				assert.True(t, res.Success)
 				assert.NotNil(t, res.Data)

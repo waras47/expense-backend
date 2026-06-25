@@ -5,12 +5,14 @@ import (
 	"errors"
 	"expense-backend/internal/domain"
 	reqDto "expense-backend/internal/dto/requests"
+	dto "expense-backend/internal/dto/responses"
 	resDto "expense-backend/internal/dto/responses"
 	"expense-backend/pkg/apperror"
 	"expense-backend/pkg/appresponse"
 	help "expense-backend/pkg/helpers"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -27,6 +29,7 @@ func NewIncomeHandler(uc domain.IncomeUsecase) *IncomeHandler {
 func (h *IncomeHandler) RegisterRoutes(rg *gin.RouterGroup) {
 	rg.GET("", h.ListIncomes)
 	rg.POST("", h.CreateIncome)
+	rg.GET("/:id", h.FindOneIncome)
 }
 
 func (h *IncomeHandler) CreateIncome(c *gin.Context) {
@@ -53,16 +56,21 @@ func (h *IncomeHandler) CreateIncome(c *gin.Context) {
 	if err != nil {
 		var appErr *apperror.AppError
 		if errors.As(err, &appErr) {
-			appresponse.RespondError(c, appErr.GetCode(), "failed to create new income", err)
+			appresponse.RespondError(c, appErr.Code, "failed to create new income", appErr)
 			return
 		}
-		appresponse.RespondError(c, http.StatusInternalServerError, "failed to create new income", err)
+		appresponse.RespondError(c, http.StatusInternalServerError, "failed to create new income", apperror.NewInternal(help.Ptr(err.Error())))
 		return
 	}
 
-	incomeResponse := resDto.NewIncomeResponse(income)
-	appresponse.ResponseSuccess(c, http.StatusCreated, "succeded create new income", &incomeResponse, nil)
+	incomeResponse, err := resDto.NewIncomeResponse(income)
+	if err != nil {
+		appresponse.RespondError(c, http.StatusInternalServerError, "failed process income", err)
+		return
+	}
+	appresponse.RespondSuccess(c, http.StatusCreated, "succeded create new income", &incomeResponse, nil)
 }
+
 func (h *IncomeHandler) ListIncomes(c *gin.Context) {
 	var paginateQuery reqDto.PaginateQuery
 	if err := c.ShouldBindQuery(&paginateQuery); err != nil {
@@ -79,18 +87,49 @@ func (h *IncomeHandler) ListIncomes(c *gin.Context) {
 	if err != nil {
 		var appErr *apperror.AppError
 		if errors.As(err, &appErr) {
-			appresponse.RespondError(c, appErr.GetCode(), "failed get incomes", err)
+			appresponse.RespondError(c, appErr.Code, "failed get incomes", appErr)
 			return
 		}
-		appresponse.RespondError(c, http.StatusInternalServerError, "failed get incomes", err)
+		appresponse.RespondError(c, http.StatusInternalServerError, "failed get incomes", apperror.NewInternal(help.Ptr(err.Error())))
 		return
 	}
 
 	var incomeResponses = make([]resDto.IncomeResponse, len(incomes))
 	for i, income := range incomes {
-		incomeResponses[i] = resDto.NewIncomeResponse(&income)
+		incomeResponses[i], err = resDto.NewIncomeResponse(&income)
+		if err != nil {
+			appresponse.RespondError(c, http.StatusInternalServerError, "failed process income", err)
+			return
+		}
 	}
 
 	paginateRes := appresponse.CratePaginateResponse(c, paginateQuery.Page, paginateQuery.Limit, total)
-	appresponse.ResponseSuccess(c, http.StatusOK, "incomes retrieved", &incomeResponses, paginateRes)
+	appresponse.RespondSuccess(c, http.StatusOK, "incomes retrieved", &incomeResponses, paginateRes)
+}
+
+func (h *IncomeHandler) FindOneIncome(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		appresponse.RespondError(c, http.StatusBadRequest, "invalid param id", apperror.NewBadRequest(help.Ptr(err.Error())))
+		return
+	}
+
+	income, err := h.uc.Get(c.Request.Context(), int64(id))
+	if err != nil {
+		var appErr *apperror.AppError
+		if errors.As(err, &appErr) {
+			appresponse.RespondError(c, appErr.Code, "failed to get income", appErr)
+			return
+		}
+		appresponse.RespondError(c, http.StatusInternalServerError, "failed to get income", apperror.NewInternal(help.Ptr(err.Error())))
+		return
+	}
+
+	incomeResponse, err := dto.NewIncomeResponse(income)
+	if err != nil {
+		appresponse.RespondError(c, http.StatusInternalServerError, "failed process income", err)
+		return
+	}
+	appresponse.RespondSuccess(c, http.StatusOK, "income retrieved", &incomeResponse, nil)
 }
