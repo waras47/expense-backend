@@ -30,6 +30,7 @@ func (h *IncomeHandler) RegisterRoutes(rg *gin.RouterGroup) {
 	rg.GET("", h.ListIncomes)
 	rg.POST("", h.CreateIncome)
 	rg.GET("/:id", h.FindOneIncome)
+	rg.PUT("/:id", h.UpdateIncome)
 }
 
 func (h *IncomeHandler) CreateIncome(c *gin.Context) {
@@ -132,4 +133,45 @@ func (h *IncomeHandler) FindOneIncome(c *gin.Context) {
 		return
 	}
 	appresponse.RespondSuccess(c, http.StatusOK, "income retrieved", &incomeResponse, nil)
+}
+
+func (h *IncomeHandler) UpdateIncome(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		appresponse.RespondError(c, http.StatusBadRequest, "invalid param id", apperror.NewBadRequest(help.Ptr(err.Error())))
+		return
+	}
+
+	var payloadIncome reqDto.UpdateIncomePayload
+	if err = c.ShouldBindJSON(&payloadIncome); err != nil {
+		var validationErr validator.ValidationErrors
+		if errors.As(err, &validationErr) {
+			appresponse.RespondError(c, http.StatusBadRequest, "validation failed", apperror.NewBadRequest(help.Ptr(validationErr.Error())))
+			return
+		}
+		appresponse.RespondError(c, http.StatusBadRequest, "invalid update payload", apperror.NewBadRequest(help.Ptr(err.Error())))
+		return
+	}
+
+	updateIncome := &domain.Income{
+		Title:      *payloadIncome.Title,
+		Amount:     *payloadIncome.Amount,
+		Category:   *payloadIncome.Category,
+		Note:       *payloadIncome.Note,
+		IncomeDate: *payloadIncome.IncomeDate,
+	}
+
+	err = h.uc.Update(c.Request.Context(), int64(id), updateIncome)
+	if err != nil {
+		var appErr *apperror.AppError
+		if errors.As(err, &appErr) {
+			appresponse.RespondError(c, appErr.Code, "failed to update income", appErr)
+			return
+		}
+		appresponse.RespondError(c, http.StatusInternalServerError, "failed to update income", apperror.NewInternal(help.Ptr(err.Error())))
+		return
+	}
+
+	appresponse.RespondSuccess(c, http.StatusOK, "income retrieved", &domain.Income{}, nil)
 }
