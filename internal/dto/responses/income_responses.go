@@ -24,7 +24,8 @@ type IncomeResponse struct {
 // Converts the domain model to the response format. This process validates default values, replaces them with null, and ensures the 'omitempty' tag works correctly.
 func NewIncomeResponse(income *domain.Income) (IncomeResponse, error) {
 	if income == nil {
-		return IncomeResponse{}, apperror.NewInternal(nil)
+		msg := "nil income"
+		return IncomeResponse{}, apperror.NewInternal(&msg)
 	}
 	res := IncomeResponse{
 		ID:         income.ID,

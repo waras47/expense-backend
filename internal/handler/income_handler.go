@@ -11,6 +11,7 @@ import (
 	"expense-backend/pkg/appresponse"
 	help "expense-backend/pkg/helpers"
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -45,12 +46,17 @@ func (h *IncomeHandler) CreateIncome(c *gin.Context) {
 		return
 	}
 
+	incomeDate, errParse := help.ParseDate(payloadIncome.IncomeDate)
+	if errParse != nil {
+		appresponse.RespondError(c, http.StatusBadRequest, "failed parsing date", apperror.NewBadRequest(help.Ptr(errParse.Error())))
+		return
+	}
 	newIncome := &domain.Income{
 		Title:      payloadIncome.Title,
 		Amount:     payloadIncome.Amount,
 		Category:   payloadIncome.Category,
 		Note:       payloadIncome.Note,
-		IncomeDate: payloadIncome.IncomeDate,
+		IncomeDate: incomeDate,
 	}
 
 	income, err := h.uc.Create(c.Request.Context(), newIncome)
@@ -75,6 +81,10 @@ func (h *IncomeHandler) CreateIncome(c *gin.Context) {
 func (h *IncomeHandler) ListIncomes(c *gin.Context) {
 	var paginateQuery reqDto.PaginateQuery
 	if err := c.ShouldBindQuery(&paginateQuery); err != nil {
+		if errors.Is(err, io.EOF) {
+			appresponse.RespondError(c, http.StatusBadRequest, "payload is empty", apperror.NewBadRequest(help.Ptr("request body is empty")))
+			return
+		}
 		var validationErr validator.ValidationErrors
 		if errors.As(err, &validationErr) {
 			appresponse.RespondError(c, http.StatusBadRequest, "validation failed", apperror.NewBadRequest(help.Ptr(validationErr.Error())))
@@ -145,6 +155,10 @@ func (h *IncomeHandler) UpdateIncome(c *gin.Context) {
 
 	var payloadIncome reqDto.UpdateIncomePayload
 	if err = c.ShouldBindJSON(&payloadIncome); err != nil {
+		if errors.Is(err, io.EOF) {
+			appresponse.RespondError(c, http.StatusBadRequest, "payload is empty", apperror.NewBadRequest(help.Ptr("request body is empty")))
+			return
+		}
 		var validationErr validator.ValidationErrors
 		if errors.As(err, &validationErr) {
 			appresponse.RespondError(c, http.StatusBadRequest, "validation failed", apperror.NewBadRequest(help.Ptr(validationErr.Error())))
@@ -154,15 +168,29 @@ func (h *IncomeHandler) UpdateIncome(c *gin.Context) {
 		return
 	}
 
-	updateIncome := &domain.Income{
-		Title:      *payloadIncome.Title,
-		Amount:     *payloadIncome.Amount,
-		Category:   *payloadIncome.Category,
-		Note:       *payloadIncome.Note,
-		IncomeDate: *payloadIncome.IncomeDate,
+	var updateIncome domain.Income
+	if payloadIncome.Title != nil {
+		updateIncome.Title = *payloadIncome.Title
+	}
+	if payloadIncome.Amount != nil {
+		updateIncome.Amount = *payloadIncome.Amount
+	}
+	if payloadIncome.Category != nil {
+		updateIncome.Category = *payloadIncome.Category
+	}
+	if payloadIncome.Note != nil {
+		updateIncome.Note = *payloadIncome.Note
+	}
+	if payloadIncome.IncomeDate != nil {
+		incomeDate, errParse := help.ParseDate(*payloadIncome.IncomeDate)
+		if errParse != nil {
+			appresponse.RespondError(c, http.StatusBadRequest, "failed parsing date", apperror.NewBadRequest(help.Ptr(errParse.Error())))
+			return
+		}
+		updateIncome.IncomeDate = incomeDate
 	}
 
-	err = h.uc.Update(c.Request.Context(), int64(id), updateIncome)
+	err = h.uc.Update(c.Request.Context(), int64(id), &updateIncome)
 	if err != nil {
 		var appErr *apperror.AppError
 		if errors.As(err, &appErr) {
