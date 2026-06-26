@@ -32,6 +32,7 @@ func (h *IncomeHandler) RegisterRoutes(rg *gin.RouterGroup) {
 	rg.POST("", h.CreateIncome)
 	rg.GET("/:id", h.FindOneIncome)
 	rg.PUT("/:id", h.UpdateIncome)
+	rg.DELETE("/:id", h.DeleteIncome)
 }
 
 func (h *IncomeHandler) CreateIncome(c *gin.Context) {
@@ -198,6 +199,28 @@ func (h *IncomeHandler) UpdateIncome(c *gin.Context) {
 			return
 		}
 		appresponse.RespondError(c, http.StatusInternalServerError, "failed to update income", apperror.NewInternal(help.Ptr(err.Error())))
+		return
+	}
+
+	appresponse.RespondSuccess(c, http.StatusOK, "income retrieved", &domain.Income{}, nil)
+}
+
+func (h *IncomeHandler) DeleteIncome(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		appresponse.RespondError(c, http.StatusBadRequest, "invalid param id", apperror.NewBadRequest(help.Ptr(err.Error())))
+		return
+	}
+
+	err = h.uc.Delete(c.Request.Context(), int64(id))
+	if err != nil {
+		var appErr *apperror.AppError
+		if errors.As(err, &appErr) {
+			appresponse.RespondError(c, appErr.Code, "failed to delete income", appErr)
+			return
+		}
+		appresponse.RespondError(c, http.StatusInternalServerError, "failed to delete income", apperror.NewInternal(help.Ptr(err.Error())))
 		return
 	}
 

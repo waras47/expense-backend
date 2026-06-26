@@ -732,3 +732,91 @@ func TestUpdateIncome(t *testing.T) {
 		})
 	}
 }
+
+func TestDeleteIncome(t *testing.T) {
+	tests := []struct {
+		name            string
+		path            string
+		deleteFunc      func(c context.Context, id int64) error
+		wantErr         bool
+		expectedCode    int
+		expectedMessage string
+	}{
+		{
+			name: "Succeded delete income",
+			path: "/api/incomes/1",
+			deleteFunc: func(c context.Context, id int64) error {
+				return nil
+			},
+			wantErr:         false,
+			expectedCode:    http.StatusOK,
+			expectedMessage: "income retrieved",
+		},
+		{
+			name:            "Invalid delete id",
+			path:            "/api/incomes/invalid_id",
+			wantErr:         true,
+			expectedCode:    http.StatusBadRequest,
+			expectedMessage: "invalid param id",
+		},
+		{
+			name: "Income not found",
+			path: "/api/incomes/1",
+			deleteFunc: func(c context.Context, id int64) error {
+				return apperror.NewNotFound()
+			},
+			wantErr:         true,
+			expectedCode:    http.StatusNotFound,
+			expectedMessage: "failed to delete income",
+		},
+		{
+			name: "Delete failed",
+			path: "/api/incomes/1",
+			deleteFunc: func(c context.Context, id int64) error {
+				return apperror.NewInternal(nil)
+			},
+			wantErr:         true,
+			expectedCode:    http.StatusInternalServerError,
+			expectedMessage: "failed to delete income",
+		},
+		{
+			name: "Nothing deleted",
+			path: "/api/incomes/1",
+			deleteFunc: func(c context.Context, id int64) error {
+				return apperror.NewDeleteFailed()
+			},
+			wantErr:         true,
+			expectedCode:    http.StatusBadRequest,
+			expectedMessage: "failed to delete income",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			uc := &mock.MockIncomeUsecase{
+				DeleteFunc: tt.deleteFunc,
+			}
+			r := setupIncomeHandler(uc)
+			w := mock.NewRequest(r, "DELETE", tt.path, nil)
+			var res appresponse.Response[domain.Income]
+			err := json.Unmarshal(w.Body.Bytes(), &res)
+
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expectedCode, w.Code)
+			assert.Equal(t, tt.expectedMessage, res.Message)
+
+			if tt.wantErr {
+				fmt.Println(w.Body.String())
+				assert.False(t, res.Success)
+				assert.NotNil(t, res.Error)
+				assert.Equal(t, tt.expectedCode, res.Error.Code)
+			} else {
+				if res.Error != nil {
+					t.Log("error: ", res.Error.Message)
+				}
+				assert.True(t, res.Success)
+				assert.NotNil(t, res.Data)
+			}
+		})
+	}
+}
