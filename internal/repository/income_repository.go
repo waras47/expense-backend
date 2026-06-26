@@ -17,15 +17,15 @@ import (
 )
 
 type IncomeModel struct {
-	ID         int64              `db:"id"`          // NOT NULL
-	Title      string             `db:"title"`       // NOT NULL
-	Amount     decimal.Decimal    `db:"amount"`      // NOT NULL
-	Category   string             `db:"category"`    // NOT NULL
-	Note       pgtype.Text        `db:"note"`        // NULLABLE
-	IncomeDate pgtype.Date        `db:"income_date"` // NOT NULL
-	IsDeleted  bool               `db:"is_deleted"`  // NOT NULL
-	CreatedAt  time.Time          `db:"created_at"`  // NOT NULL
-	UpdatedAt  pgtype.Timestamptz `db:"updated_at"`  // NULLABLE
+	ID         int64              `db:"id"`
+	Title      string             `db:"title"`
+	Amount     decimal.Decimal    `db:"amount"`
+	Category   string             `db:"category"`
+	Note       pgtype.Text        `db:"note"`
+	IncomeDate pgtype.Date        `db:"income_date"`
+	IsDeleted  bool               `db:"is_deleted"`
+	CreatedAt  time.Time          `db:"created_at"`
+	UpdatedAt  pgtype.Timestamptz `db:"updated_at"`
 }
 
 // Note:

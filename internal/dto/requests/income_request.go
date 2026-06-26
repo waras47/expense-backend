@@ -12,18 +12,6 @@ type CreateIncomePayload struct {
 	Note       string          `json:"note" binding:"max=255"`
 	IncomeDate string          `json:"income_date" binding:"required,datetime=2006-01-02"`
 }
-
-// func (p *CreateIncomePayload) ToDomain() *domain.Income {
-// 	return &domain.Income{
-// 		Title:      p.Title,
-// 		Amount:     p.Amount,
-// 		Category:   p.Category,
-// 		Note:       p.Note,
-// 		IsDeleted:  false,
-// 		IncomeDate: p.IncomeDate,
-// 	}
-// }
-
 type UpdateIncomePayload struct {
 	Title      *string          `json:"title" binding:"omitnil,min=1,max=100"`
 	Amount     *decimal.Decimal `json:"amount" binding:"omitempty,positive_decimal"`
