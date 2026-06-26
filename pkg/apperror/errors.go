@@ -3,8 +3,6 @@ package apperror
 import (
 	"errors"
 	"net/http"
-
-	"github.com/gin-gonic/gin"
 )
 
 var (
@@ -48,19 +46,22 @@ func NewValidation(msg string) *AppError {
 	return &AppError{Code: http.StatusBadRequest, Message: "Validasi gagal: " + msg}
 }
 
-func NewInternal() *AppError {
-	return &AppError{Code: http.StatusInternalServerError, Message: "Terjadi kesalahan pada server"}
+func NewInternal(message *string) *AppError {
+	defaultMessage := "Terjadi kesalahan pada server"
+	if message != nil {
+		defaultMessage = *message
+	}
+	return &AppError{Code: http.StatusInternalServerError, Message: defaultMessage}
+}
+
+func NewBadRequest(message *string) *AppError {
+	defaultMessage := "Invalid input data"
+	if message != nil {
+		defaultMessage = *message
+	}
+	return &AppError{Code: http.StatusBadRequest, Message: defaultMessage}
 }
 
 type ErrorResponse struct {
 	Error string `json:"error"`
-}
-
-func RespondError(c *gin.Context, err error) {
-	var appErr *AppError
-	if errors.As(err, &appErr) {
-		c.JSON(appErr.Code, gin.H{"error": appErr.Message})
-		return
-	}
-	c.JSON(http.StatusInternalServerError, gin.H{"error": "Terjadi kesalahan pada server"})
 }

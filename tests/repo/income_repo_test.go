@@ -60,7 +60,7 @@ func TestCreate(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Nanosecond)
 	db := testDB.SetupDB(t)
 
-	dummyIncome := domain.CreateIncomePayload{
+	dummyIncome := domain.Income{
 		Title:      "test",
 		Amount:     decimal.NewFromBigInt(big.NewInt(200000), 2),
 		Category:   "test_category",
@@ -85,7 +85,7 @@ func TestCreate(t *testing.T) {
 			name:        "Timeout create Income",
 			context:     ctx,
 			wantErr:     true,
-			expectedErr: apperror.NewInternal(),
+			expectedErr: apperror.NewInternal(nil),
 		},
 	}
 
@@ -93,7 +93,7 @@ func TestCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			income, err := repo.Create(tt.context, dummyIncome.ToDomain())
+			income, err := repo.Create(tt.context, &dummyIncome)
 			if tt.wantErr {
 				assert.Error(t, err)
 				assert.ErrorIs(t, tt.expectedErr, err)
@@ -190,6 +190,7 @@ func TestFindByID(t *testing.T) {
 			name: "Not found find data by ID",
 			seedData: func(t *testing.T, db *pgxpool.Pool) int64 {
 				seedIncome(t, db, 10)
+				// return random id
 				return 1000
 			},
 			wantErr:     true,

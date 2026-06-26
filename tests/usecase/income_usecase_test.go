@@ -6,8 +6,8 @@ import (
 	"expense-backend/internal/repository"
 	"expense-backend/internal/usecase"
 	"expense-backend/pkg/apperror"
-	"expense-backend/tests/mock"
-	mocks "expense-backend/tests/mock"
+	main_test "expense-backend/tests"
+	"expense-backend/tests/usecase/mock"
 	"fmt"
 	"math/big"
 	"testing"
@@ -17,9 +17,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var loc = time.FixedZone("Asia/Jakarta", int((7 * time.Hour).Seconds()))
-var mockDate = time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, loc)
-var mockTime = time.Now().In(loc)
+var mockDate = time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, main_test.Loc)
+var mockTime = time.Now().In(main_test.Loc)
 
 type mockIncomeData struct {
 	incomes []domain.Income
@@ -77,7 +76,7 @@ func (m *mockIncomeData) findIncomes(limit, offset int64) []domain.Income {
 }
 
 func TestCreateIncome(t *testing.T) {
-	var mockCreatePayloadIncome = domain.CreateIncomePayload{
+	var mockCreateIncome = domain.Income{
 		Title:      "Mock Title",
 		Amount:     decimal.NewFromBigInt(big.NewInt(12000), 2),
 		Category:   "Mock Category",
@@ -86,11 +85,11 @@ func TestCreateIncome(t *testing.T) {
 	}
 
 	tests := []struct {
-		name              string
-		mockCreateRepo    func(ctx context.Context, income *domain.Income) (*domain.Income, error)
-		mockCreatePayload domain.CreateIncomePayload
-		wantErr           bool
-		expectedErr       error
+		name             string
+		mockCreateRepo   func(ctx context.Context, income *domain.Income) (*domain.Income, error)
+		mockCreateIncome domain.Income
+		wantErr          bool
+		expectedErr      error
 	}{
 		{
 			name: "Succeded create data",
@@ -102,29 +101,29 @@ func TestCreateIncome(t *testing.T) {
 				data := model.ToIncomeDomain()
 				return &data, nil
 			},
-			mockCreatePayload: mockCreatePayloadIncome,
-			wantErr:           false,
-			expectedErr:       nil,
+			mockCreateIncome: mockCreateIncome,
+			wantErr:          false,
+			expectedErr:      nil,
 		},
 		{
 			name: "Failed create data",
 			mockCreateRepo: func(ctx context.Context, income *domain.Income) (*domain.Income, error) {
-				return nil, apperror.NewInternal()
+				return nil, apperror.NewInternal(nil)
 			},
-			mockCreatePayload: mockCreatePayloadIncome,
-			wantErr:           true,
-			expectedErr:       apperror.NewInternal(),
+			mockCreateIncome: mockCreateIncome,
+			wantErr:          true,
+			expectedErr:      apperror.NewInternal(nil),
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockRepo := &mocks.MockIncomeRepository{
+			mockRepo := &mock.MockIncomeRepository{
 				CreateFunc: tt.mockCreateRepo,
 			}
 
 			uc := usecase.NewIncomeUsecase(mockRepo)
-			res, err := uc.Create(context.Background(), tt.mockCreatePayload)
+			res, err := uc.Create(context.Background(), &tt.mockCreateIncome)
 
 			if tt.wantErr {
 				assert.Error(t, err)
@@ -134,11 +133,11 @@ func TestCreateIncome(t *testing.T) {
 				assert.NoError(t, err)
 				assert.NotNil(t, res)
 				assert.Equal(t, int64(1), res.ID)
-				assert.Equal(t, tt.mockCreatePayload.Title, res.Title)
-				assert.Equal(t, tt.mockCreatePayload.Amount, res.Amount)
-				assert.Equal(t, tt.mockCreatePayload.Category, res.Category)
-				assert.Equal(t, tt.mockCreatePayload.Note, res.Note)
-				assert.Equal(t, tt.mockCreatePayload.IncomeDate, res.IncomeDate)
+				assert.Equal(t, tt.mockCreateIncome.Title, res.Title)
+				assert.Equal(t, tt.mockCreateIncome.Amount, res.Amount)
+				assert.Equal(t, tt.mockCreateIncome.Category, res.Category)
+				assert.Equal(t, tt.mockCreateIncome.Note, res.Note)
+				assert.Equal(t, tt.mockCreateIncome.IncomeDate, res.IncomeDate)
 			}
 
 		})
@@ -167,11 +166,11 @@ func TestGetIncome(t *testing.T) {
 		{
 			name: "Failed get data",
 			mockFindByIDRepo: func(ctx context.Context, id int64) (*domain.Income, error) {
-				return nil, apperror.NewInternal()
+				return nil, apperror.NewInternal(nil)
 			},
 			getID:       int64(1),
 			wantErr:     true,
-			expectedErr: apperror.NewInternal(),
+			expectedErr: apperror.NewInternal(nil),
 		},
 		{
 			name: "Not found get data",
@@ -186,7 +185,7 @@ func TestGetIncome(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			repo := &mocks.MockIncomeRepository{
+			repo := &mock.MockIncomeRepository{
 				FindByIDFunc: tt.mockFindByIDRepo,
 			}
 
@@ -270,11 +269,11 @@ func TestGetAllIncome(t *testing.T) {
 			page:  0,
 			limit: 0,
 			mockFindAllRepo: func(ctx context.Context, limit, offset int64) ([]domain.Income, error) {
-				return nil, apperror.NewInternal()
+				return nil, apperror.NewInternal(nil)
 			},
 			expectedCount: 0,
 			wantErr:       true,
-			expectedErr:   apperror.NewInternal(),
+			expectedErr:   apperror.NewInternal(nil),
 		},
 	}
 
@@ -340,13 +339,13 @@ func TestDeleteIncome(t *testing.T) {
 			name:     "Failed delete data",
 			deleteID: int64(1),
 			mockDeleteRepo: func(ctx context.Context, id int64) error {
-				return apperror.NewInternal()
+				return apperror.NewInternal(nil)
 			},
 			mockFindByIDRepo: func(ctx context.Context, id int64) (*domain.Income, error) {
 				return &domain.Income{}, nil
 			},
 			wantErr:     true,
-			expectedErr: apperror.NewInternal(),
+			expectedErr: apperror.NewInternal(nil),
 		},
 		{
 			name:     "No affected delete data",
@@ -407,13 +406,13 @@ func TestUpdatencome(t *testing.T) {
 			name:     "Found data but failed to update data",
 			updateID: int64(1),
 			mockUpdateRepo: func(ctx context.Context, income *domain.Income) error {
-				return apperror.NewInternal()
+				return apperror.NewInternal(nil)
 			},
 			mockFindByIDRepo: func(ctx context.Context, id int64) (*domain.Income, error) {
 				return &domain.Income{}, nil
 			},
 			wantErr:     true,
-			expectedErr: apperror.NewInternal(),
+			expectedErr: apperror.NewInternal(nil),
 		},
 		{
 			name:     "Failed update data no affected",
@@ -446,14 +445,14 @@ func TestUpdatencome(t *testing.T) {
 				return nil
 			},
 			mockFindByIDRepo: func(ctx context.Context, id int64) (*domain.Income, error) {
-				return nil, apperror.NewInternal()
+				return nil, apperror.NewInternal(nil)
 			},
 			wantErr:     true,
-			expectedErr: apperror.NewInternal(),
+			expectedErr: apperror.NewInternal(nil),
 		},
 	}
 
-	var mockUpdateIncomePayload = domain.UpdateIncomePayload{}
+	var mockUpdateIncome = domain.Income{}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -463,7 +462,7 @@ func TestUpdatencome(t *testing.T) {
 			}
 
 			uc := usecase.NewIncomeUsecase(repo)
-			err := uc.Update(context.Background(), tt.updateID, mockUpdateIncomePayload)
+			err := uc.Update(context.Background(), tt.updateID, &mockUpdateIncome)
 
 			if tt.wantErr {
 				assert.Error(t, err)

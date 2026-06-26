@@ -22,7 +22,7 @@ func (r *categoryRepo) FindAll(ctx context.Context) ([]domain.Category, error) {
 	rows, err := r.db.Query(ctx,
 		"SELECT id, name, color FROM categories ORDER BY name")
 	if err != nil {
-		return nil, apperror.NewInternal()
+		return nil, apperror.NewInternal(nil)
 	}
 	defer rows.Close()
 
@@ -30,7 +30,7 @@ func (r *categoryRepo) FindAll(ctx context.Context) ([]domain.Category, error) {
 	for rows.Next() {
 		var c domain.Category
 		if err := rows.Scan(&c.ID, &c.Name, &c.Color); err != nil {
-			return nil, apperror.NewInternal()
+			return nil, apperror.NewInternal(nil)
 		}
 		categories = append(categories, c)
 	}
@@ -63,7 +63,7 @@ func (r *categoryRepo) Create(ctx context.Context, payload domain.CategoryPayloa
 		"INSERT INTO categories (name, color) VALUES ($1, $2) RETURNING id",
 		strings.TrimSpace(payload.Name), color).Scan(&id)
 	if err != nil {
-		return nil, apperror.NewInternal()
+		return nil, apperror.NewInternal(nil)
 	}
 
 	return r.FindByID(ctx, id)
@@ -77,7 +77,7 @@ func (r *categoryRepo) Delete(ctx context.Context, id int) error {
 	_, err := r.db.Exec(context.Background(),
 		"DELETE FROM categories WHERE id = $1", id)
 	if err != nil {
-		return apperror.NewInternal()
+		return apperror.NewInternal(nil)
 	}
 	return nil
 }

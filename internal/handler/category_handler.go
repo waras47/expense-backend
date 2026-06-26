@@ -6,6 +6,7 @@ import (
 
 	"expense-backend/internal/domain"
 	"expense-backend/pkg/apperror"
+	"expense-backend/pkg/appresponse"
 
 	"github.com/gin-gonic/gin"
 )
@@ -27,7 +28,7 @@ func (h *CategoryHandler) RegisterRoutes(rg *gin.RouterGroup) {
 func (h *CategoryHandler) ListCategories(c *gin.Context) {
 	categories, err := h.uc.GetAll(c.Request.Context())
 	if err != nil {
-		apperror.RespondError(c, err)
+		appresponse.RespondError(c, http.StatusInternalServerError, "failed get categoires", err)
 		return
 	}
 	if categories == nil {
@@ -39,13 +40,13 @@ func (h *CategoryHandler) ListCategories(c *gin.Context) {
 func (h *CategoryHandler) CreateCategory(c *gin.Context) {
 	var payload domain.CategoryPayload
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		apperror.RespondError(c, apperror.NewValidation(err.Error()))
+		appresponse.RespondError(c, http.StatusBadRequest, "invalid request payload", apperror.NewValidation(err.Error()))
 		return
 	}
 
 	category, err := h.uc.Create(c.Request.Context(), payload)
 	if err != nil {
-		apperror.RespondError(c, err)
+		appresponse.RespondError(c, http.StatusInternalServerError, "failed create category", err)
 		return
 	}
 	c.JSON(http.StatusCreated, category)
@@ -54,12 +55,12 @@ func (h *CategoryHandler) CreateCategory(c *gin.Context) {
 func (h *CategoryHandler) DeleteCategory(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		apperror.RespondError(c, apperror.NewValidation("ID tidak valid"))
+		appresponse.RespondError(c, http.StatusBadRequest, "invalid validation", apperror.NewValidation("ID tidak valid"))
 		return
 	}
 
 	if err := h.uc.Delete(c.Request.Context(), id); err != nil {
-		apperror.RespondError(c, err)
+		appresponse.RespondError(c, http.StatusInternalServerError, "failed delete category", err)
 		return
 	}
 	c.Status(http.StatusNoContent)
