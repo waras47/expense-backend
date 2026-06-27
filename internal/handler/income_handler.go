@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"encoding/json"
 	"errors"
 	"expense-backend/internal/domain"
 	reqDto "expense-backend/internal/dto/requests"
@@ -10,7 +9,6 @@ import (
 	"expense-backend/pkg/apperror"
 	"expense-backend/pkg/appresponse"
 	help "expense-backend/pkg/helpers"
-	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -94,7 +92,7 @@ func (h *IncomeHandler) ListIncomes(c *gin.Context) {
 		appresponse.RespondError(c, http.StatusBadRequest, "invalid url query", apperror.NewBadRequest(help.Ptr(err.Error())))
 		return
 	}
-	fmt.Println(json.Marshal(paginateQuery))
+
 	incomes, total, err := h.uc.GetAll(c.Request.Context(), paginateQuery.Page, paginateQuery.Limit)
 	if err != nil {
 		var appErr *apperror.AppError

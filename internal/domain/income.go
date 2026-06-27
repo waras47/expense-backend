@@ -37,7 +37,7 @@ func (i *Income) MergeWithNewData(income *Income) *Income {
 	if !income.IncomeDate.IsZero() {
 		i.IncomeDate = income.IncomeDate
 	}
-	return income
+	return i
 }
 
 // Repossitory Interface
