@@ -31,12 +31,10 @@ func (i *Income) MergeWithNewData(income *Income) *Income {
 	if income.Category != "" {
 		i.Category = income.Category
 	}
-	if income.Note != "" {
-		i.Note = income.Note
-	}
 	if !income.IncomeDate.IsZero() {
 		i.IncomeDate = income.IncomeDate
 	}
+	i.Note = income.Note
 	return i
 }
 
