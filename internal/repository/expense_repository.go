@@ -112,7 +112,7 @@ func (r *expenseRepo) FindByID(ctx context.Context, id int64) (*domain.Expense, 
 	rows, err := r.db.Query(ctx, query, id)
 	if err != nil {
 		slog.Error("Failed retrive expense", "error", err)
-		return nil, apperror.NewInternal(nil)
+		return nil, apperror.NewInternal(helpers.Ptr(err.Error()))
 	}
 
 	// rows.Close sudah di handle di dalam pgx.Collect
@@ -123,7 +123,7 @@ func (r *expenseRepo) FindByID(ctx context.Context, id int64) (*domain.Expense, 
 			return nil, apperror.NewNotFound()
 		}
 		slog.Error("Failed to collect expense", "error", err)
-		return nil, apperror.NewInternal(nil)
+		return nil, apperror.NewInternal(helpers.Ptr(err.Error()))
 	}
 
 	expenseDomain := expense.ToExpenseDomain()
@@ -147,7 +147,7 @@ func (r *expenseRepo) Create(ctx context.Context, expense *domain.Expense) (*dom
 
 	if err != nil {
 		slog.Error("Failed to create new expense", "error", err)
-		return nil, apperror.NewInternal(nil)
+		return nil, apperror.NewInternal(helpers.Ptr(err.Error()))
 	}
 
 	resultExpense := model.ToExpenseDomain()
@@ -162,7 +162,7 @@ func (r *expenseRepo) Update(ctx context.Context, expense *domain.Expense) error
 	commandTag, err := r.db.Exec(ctx, query, expense.Title, expense.Amount, expense.CategoryID, expense.Note, expense.ExpenseDate, expense.ID)
 	if err != nil {
 		slog.Error(fmt.Sprintf("Failed to update date with id: %d", expense.ID))
-		return apperror.NewInternal(nil)
+		return apperror.NewInternal(helpers.Ptr(err.Error()))
 	}
 
 	if commandTag.RowsAffected() == 0 {
@@ -177,7 +177,7 @@ func (r *expenseRepo) Delete(ctx context.Context, id int64) error {
 	commandTag, err := r.db.Exec(ctx, query, id)
 	if err != nil {
 		slog.Error(fmt.Sprintf("Failed to delete data with id: %d", id), "error", err)
-		return apperror.NewInternal(nil)
+		return apperror.NewInternal(helpers.Ptr(err.Error()))
 	}
 
 	if commandTag.RowsAffected() == 0 {

@@ -6,6 +6,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/moby/moby/client"
+	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
 	pgContainer "github.com/testcontainers/testcontainers-go/modules/postgres"
 	"github.com/testcontainers/testcontainers-go/wait"
@@ -44,7 +45,7 @@ func SetupDB(t *testing.T) *pgxpool.Pool {
 		container.Terminate(ctx)
 	})
 
-	connStr, err := container.ConnectionString(ctx, "sslmode=disable")
+	connStr, err := container.ConnectionString(ctx, "sslmode=disable&timezone=Asia/Jakarta")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -60,6 +61,7 @@ func SetupDB(t *testing.T) *pgxpool.Pool {
 	}
 
 	queries := []string{
+		"ALTER DATABASE testdb SET TIMEZONE TO 'Asia/Jakarta';",
 		`CREATE TABLE categories (
 			id SERIAL PRIMARY KEY,
 			name VARCHAR(100) NOT NULL,
@@ -75,8 +77,8 @@ func SetupDB(t *testing.T) *pgxpool.Pool {
 			category_id INTEGER REFERENCES categories(id) ON DELETE RESTRICT,
 			note TEXT,
 			expense_date DATE DEFAULT CURRENT_DATE,
-			is_deleted BOOLEAN DEFAULT false,
-			created_at TIMESTAMPTZ(0) DEFAULT CURRENT_TIMESTAMP,
+			is_deleted BOOLEAN DEFAULT false NOT NULL,
+			created_at TIMESTAMPTZ(0) DEFAULT CURRENT_TIMESTAMP NOT NULL,
 			updated_at TIMESTAMPTZ(0) DEFAULT CURRENT_TIMESTAMP
 		);`,
 		`CREATE TABLE incomes (
@@ -103,6 +105,10 @@ func SetupDB(t *testing.T) *pgxpool.Pool {
 			created_at TIMESTAMPTZ(0) DEFAULT CURRENT_TIMESTAMP,
 			updated_at TIMESTAMPTZ(0) DEFAULT CURRENT_TIMESTAMP
 		);`,
+		`INSERT INTO categories (id, name) VALUES (1, 'Test Category 1');
+		`,
+		`INSERT INTO categories (id, name) VALUES (2, 'Test Category 2');
+		`,
 	}
 
 	for _, q := range queries {
@@ -111,6 +117,12 @@ func SetupDB(t *testing.T) *pgxpool.Pool {
 			t.Fatal(err)
 		}
 	}
+
+	var timezone string
+	err = db.QueryRow(ctx, "SHOW TIMEZONE").Scan(&timezone)
+	require.NoError(t, err)
+
+	t.Log("timezone:", timezone)
 
 	return db
 }
