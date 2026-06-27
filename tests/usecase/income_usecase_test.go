@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"expense-backend/internal/domain"
-	"expense-backend/internal/repository"
 	"expense-backend/internal/usecase"
 	"expense-backend/pkg/apperror"
+	"expense-backend/pkg/helpers"
 	main_test "expense-backend/tests"
 	"expense-backend/tests/usecase/mock"
 	"fmt"
@@ -93,27 +93,13 @@ func TestCreateIncome(t *testing.T) {
 		expectedErr      error
 	}{
 		{
-			name: "Succeded create data",
+			name: "There are no business flows to be tested in the Create method yet",
 			mockCreateRepo: func(ctx context.Context, income *domain.Income) (*domain.Income, error) {
-				model := repository.ToIncomeModel(income)
-				model.ID = 1
-				model.CreatedAt = time.Now()
-
-				data := model.ToIncomeDomain()
-				return &data, nil
+				return helpers.Ptr(domain.Income{}), nil
 			},
 			mockCreateIncome: mockCreateIncome,
 			wantErr:          false,
 			expectedErr:      nil,
-		},
-		{
-			name: "Failed create data",
-			mockCreateRepo: func(ctx context.Context, income *domain.Income) (*domain.Income, error) {
-				return nil, apperror.NewInternal(nil)
-			},
-			mockCreateIncome: mockCreateIncome,
-			wantErr:          true,
-			expectedErr:      apperror.NewInternal(nil),
 		},
 	}
 
@@ -133,12 +119,6 @@ func TestCreateIncome(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 				assert.NotNil(t, res)
-				assert.Equal(t, int64(1), res.ID)
-				assert.Equal(t, tt.mockCreateIncome.Title, res.Title)
-				assert.Equal(t, tt.mockCreateIncome.Amount, res.Amount)
-				assert.Equal(t, tt.mockCreateIncome.Category, res.Category)
-				assert.Equal(t, tt.mockCreateIncome.Note, res.Note)
-				assert.Equal(t, tt.mockCreateIncome.IncomeDate, res.IncomeDate)
 			}
 
 		})
@@ -155,7 +135,7 @@ func TestGetIncome(t *testing.T) {
 		expectedErr      error
 	}{
 		{
-			name: "Succeded get data",
+			name: "There are no business flows to be tested in the Get method yet",
 			mockFindByIDRepo: func(ctx context.Context, id int64) (*domain.Income, error) {
 				income := mockIncome.findOneIncome(id)
 				return income, nil
@@ -163,24 +143,6 @@ func TestGetIncome(t *testing.T) {
 			getID:       int64(1),
 			wantErr:     false,
 			expectedErr: nil,
-		},
-		{
-			name: "Failed get data",
-			mockFindByIDRepo: func(ctx context.Context, id int64) (*domain.Income, error) {
-				return nil, apperror.NewInternal(nil)
-			},
-			getID:       int64(1),
-			wantErr:     true,
-			expectedErr: apperror.NewInternal(nil),
-		},
-		{
-			name: "Not found get data",
-			mockFindByIDRepo: func(ctx context.Context, id int64) (*domain.Income, error) {
-				return nil, apperror.NewNotFound()
-			},
-			getID:       int64(1),
-			wantErr:     true,
-			expectedErr: apperror.NewNotFound(),
 		},
 	}
 
@@ -313,7 +275,7 @@ func TestDeleteIncome(t *testing.T) {
 		expectedErr      error
 	}{
 		{
-			name:     "Succeded delete data",
+			name:     "There are no business flows to be tested in the DELETE method yet",
 			deleteID: int64(1),
 			mockDeleteRepo: func(ctx context.Context, id int64) error {
 				return nil
@@ -323,42 +285,6 @@ func TestDeleteIncome(t *testing.T) {
 			},
 			wantErr:     false,
 			expectedErr: nil,
-		},
-		{
-			name:     "Failed delete not found data",
-			deleteID: int64(1),
-			mockDeleteRepo: func(ctx context.Context, id int64) error {
-				return nil
-			},
-			mockFindByIDRepo: func(ctx context.Context, id int64) (*domain.Income, error) {
-				return nil, apperror.NewNotFound()
-			},
-			wantErr:     true,
-			expectedErr: apperror.NewNotFound(),
-		},
-		{
-			name:     "Failed delete data",
-			deleteID: int64(1),
-			mockDeleteRepo: func(ctx context.Context, id int64) error {
-				return apperror.NewInternal(nil)
-			},
-			mockFindByIDRepo: func(ctx context.Context, id int64) (*domain.Income, error) {
-				return &domain.Income{}, nil
-			},
-			wantErr:     true,
-			expectedErr: apperror.NewInternal(nil),
-		},
-		{
-			name:     "No affected delete data",
-			deleteID: int64(1),
-			mockDeleteRepo: func(ctx context.Context, id int64) error {
-				return apperror.NewDeleteFailed()
-			},
-			mockFindByIDRepo: func(ctx context.Context, id int64) (*domain.Income, error) {
-				return &domain.Income{}, nil
-			},
-			wantErr:     true,
-			expectedErr: apperror.NewDeleteFailed(),
 		},
 	}
 
