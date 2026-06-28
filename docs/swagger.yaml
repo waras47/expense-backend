@@ -101,7 +101,7 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/appresponse.Response-any'
-      summary: Record new expense
+      summary: Add new expense
       tags:
       - expenses
     put:
@@ -176,7 +176,7 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/appresponse.Response-any'
-      summary: Record new income
+      summary: Add new income
       tags:
       - incomes
     put:

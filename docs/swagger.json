@@ -80,7 +80,7 @@
                 "tags": [
                     "expenses"
                 ],
-                "summary": "Record new expense",
+                "summary": "Add new expense",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -193,7 +193,7 @@
                 "tags": [
                     "incomes"
                 ],
-                "summary": "Record new income",
+                "summary": "Add new income",
                 "responses": {
                     "200": {
                         "description": "OK",

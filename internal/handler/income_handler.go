@@ -35,7 +35,7 @@ func (h *IncomeHandler) RegisterRoutes(rg *gin.RouterGroup) {
 
 // CreateIncome write new record income
 //
-//	@Summary		Record new income
+//	@Summary		Add new income
 //	@Description	create income
 //	@Tags			incomes
 //	@Accept			json

@@ -87,7 +87,7 @@ const docTemplate = `{
                 "tags": [
                     "expenses"
                 ],
-                "summary": "Record new expense",
+                "summary": "Add new expense",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -200,7 +200,7 @@ const docTemplate = `{
                 "tags": [
                     "incomes"
                 ],
-                "summary": "Record new income",
+                "summary": "Add new income",
                 "responses": {
                     "200": {
                         "description": "OK",

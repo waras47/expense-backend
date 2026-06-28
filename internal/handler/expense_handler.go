@@ -35,7 +35,7 @@ func (h *ExpenseHandler) RegisterRoutes(rg *gin.RouterGroup) {
 
 // CreateExpense write new record expense
 //
-//	@Summary		Record new expense
+//	@Summary		Add new expense
 //	@Description	create expense
 //	@Tags			expenses
 //	@Accept			json
