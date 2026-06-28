@@ -40,8 +40,9 @@ func (h *ExpenseHandler) RegisterRoutes(rg *gin.RouterGroup) {
 //	@Tags			expenses
 //	@Accept			json
 //	@Produce		json
+//	@Param 			request body reqDto.CreateExpensePayload true "Create new expense payload"
 //	@Success		200	{object}	appresponse.Response[any]
-//	@Router			/api/expenses [post]
+//	@Router			/expenses [post]
 func (h *ExpenseHandler) CreateExpense(c *gin.Context) {
 	var payloadExpense reqDto.CreateExpensePayload
 	if err := c.ShouldBindJSON(&payloadExpense); err != nil {
@@ -95,7 +96,7 @@ func (h *ExpenseHandler) CreateExpense(c *gin.Context) {
 //	@Produce		json
 //	@Param			id	query		int	true	"Income ID (Optional)"
 //	@Success		200	{object}	appresponse.Response[any]
-//	@Router			/api/expenses [get]
+//	@Router			/expenses [get]
 func (h *ExpenseHandler) GetExpenses(c *gin.Context) {
 	idStr := c.Param("id")
 	if idStr != "" {
@@ -172,8 +173,9 @@ func (h *ExpenseHandler) GetExpenses(c *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			id	query		int	true	"Income ID"
+//	@Param 			request body reqDto.UpdateExpensePayload true "Edit expense payload"
 //	@Success		200	{object}	appresponse.Response[any]
-//	@Router			/api/expenses [put]
+//	@Router			/expenses [put]
 func (h *ExpenseHandler) UpdateExpense(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
@@ -242,7 +244,7 @@ func (h *ExpenseHandler) UpdateExpense(c *gin.Context) {
 //	@Produce		json
 //	@Param			id	query		int	true	"Income ID"
 //	@Success		200	{object}	appresponse.Response[any]
-//	@Router			/api/expenses [delete]
+//	@Router			/expenses [delete]
 func (h *ExpenseHandler) DeleteExpense(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)

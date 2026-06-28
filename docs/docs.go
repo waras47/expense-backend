@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/expenses": {
+        "/expenses": {
             "get": {
                 "description": "get all existing expense, or get one filters by expense id",
                 "consumes": [
@@ -65,6 +65,15 @@ const docTemplate = `{
                         "name": "id",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "description": "Edit expense payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateExpensePayload"
+                        }
                     }
                 ],
                 "responses": {
@@ -88,6 +97,17 @@ const docTemplate = `{
                     "expenses"
                 ],
                 "summary": "Add new expense",
+                "parameters": [
+                    {
+                        "description": "Create new expense payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateExpensePayload"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -128,7 +148,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/incomes": {
+        "/incomes": {
             "get": {
                 "description": "get all existing income, or get one filters by income id",
                 "consumes": [
@@ -178,6 +198,15 @@ const docTemplate = `{
                         "name": "id",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "description": "Edit income payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateIncomePayload"
+                        }
                     }
                 ],
                 "responses": {
@@ -201,6 +230,17 @@ const docTemplate = `{
                     "incomes"
                 ],
                 "summary": "Add new income",
+                "parameters": [
+                    {
+                        "description": "Create new income payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateIncomePayload"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -303,6 +343,119 @@ const docTemplate = `{
                 },
                 "success": {
                     "type": "boolean"
+                }
+            }
+        },
+        "dto.CreateExpensePayload": {
+            "type": "object",
+            "required": [
+                "amount",
+                "category_id",
+                "expense_date",
+                "title"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "category_id": {
+                    "type": "integer"
+                },
+                "expense_date": {
+                    "type": "string",
+                    "example": "2006-01-02"
+                },
+                "note": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "title": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
+                }
+            }
+        },
+        "dto.CreateIncomePayload": {
+            "type": "object",
+            "required": [
+                "amount",
+                "category",
+                "income_date",
+                "title"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "category": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
+                },
+                "income_date": {
+                    "type": "string",
+                    "example": "2006-01-02"
+                },
+                "note": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "title": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
+                }
+            }
+        },
+        "dto.UpdateExpensePayload": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "category_id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "expense_date": {
+                    "type": "string",
+                    "example": "2006-01-02"
+                },
+                "note": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "title": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
+                }
+            }
+        },
+        "dto.UpdateIncomePayload": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "category": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
+                },
+                "income_date": {
+                    "type": "string",
+                    "example": "2006-01-02"
+                },
+                "note": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "title": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
                 }
             }
         }

@@ -41,6 +41,89 @@ definitions:
       success:
         type: boolean
     type: object
+  dto.CreateExpensePayload:
+    properties:
+      amount:
+        type: number
+      category_id:
+        type: integer
+      expense_date:
+        example: "2006-01-02"
+        type: string
+      note:
+        maxLength: 255
+        type: string
+      title:
+        maxLength: 100
+        minLength: 1
+        type: string
+    required:
+    - amount
+    - category_id
+    - expense_date
+    - title
+    type: object
+  dto.CreateIncomePayload:
+    properties:
+      amount:
+        type: number
+      category:
+        maxLength: 100
+        minLength: 1
+        type: string
+      income_date:
+        example: "2006-01-02"
+        type: string
+      note:
+        maxLength: 255
+        type: string
+      title:
+        maxLength: 100
+        minLength: 1
+        type: string
+    required:
+    - amount
+    - category
+    - income_date
+    - title
+    type: object
+  dto.UpdateExpensePayload:
+    properties:
+      amount:
+        type: number
+      category_id:
+        minimum: 1
+        type: integer
+      expense_date:
+        example: "2006-01-02"
+        type: string
+      note:
+        maxLength: 255
+        type: string
+      title:
+        maxLength: 100
+        minLength: 1
+        type: string
+    type: object
+  dto.UpdateIncomePayload:
+    properties:
+      amount:
+        type: number
+      category:
+        maxLength: 100
+        minLength: 1
+        type: string
+      income_date:
+        example: "2006-01-02"
+        type: string
+      note:
+        maxLength: 255
+        type: string
+      title:
+        maxLength: 100
+        minLength: 1
+        type: string
+    type: object
 info:
   contact: {}
   description: A lightweight backend RESTful API designed for tracking and managing
@@ -49,7 +132,7 @@ info:
   title: API Backend Expense
   version: "1.0"
 paths:
-  /api/expenses:
+  /expenses:
     delete:
       consumes:
       - application/json
@@ -94,6 +177,13 @@ paths:
       consumes:
       - application/json
       description: create expense
+      parameters:
+      - description: Create new expense payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateExpensePayload'
       produces:
       - application/json
       responses:
@@ -114,6 +204,12 @@ paths:
         name: id
         required: true
         type: integer
+      - description: Edit expense payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateExpensePayload'
       produces:
       - application/json
       responses:
@@ -124,7 +220,7 @@ paths:
       summary: Edit expense
       tags:
       - expenses
-  /api/incomes:
+  /incomes:
     delete:
       consumes:
       - application/json
@@ -169,6 +265,13 @@ paths:
       consumes:
       - application/json
       description: create income
+      parameters:
+      - description: Create new income payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateIncomePayload'
       produces:
       - application/json
       responses:
@@ -189,6 +292,12 @@ paths:
         name: id
         required: true
         type: integer
+      - description: Edit income payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateIncomePayload'
       produces:
       - application/json
       responses:
