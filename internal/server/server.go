@@ -21,6 +21,8 @@ type Server struct {
 
 type handlers struct {
 	category *handler.CategoryHandler
+	income   *handler.IncomeHandler
+	expense  *handler.ExpenseHandler
 	// TODO: Add handler new module handler here
 }
 
@@ -52,10 +54,18 @@ func (s *Server) Run() error {
 }
 
 func wireHandlers(pool *pgxpool.Pool) *handlers {
+	// Ctegory
 	categoryRepo := repository.NewCategoryRepository(pool)
 	categoryUC := usecase.NewCategoryUsecase(categoryRepo)
-
+	// Income
+	incomeRepo := repository.NewIncomeRepository(pool)
+	incomeUC := usecase.NewIncomeUsecase(incomeRepo)
+	// Expense
+	expenseRepo := repository.NewExpenseRepository(pool)
+	expenseUC := usecase.NewExpenseUsecase(expenseRepo)
 	return &handlers{
 		category: handler.NewCategoryHandler(categoryUC),
+		income:   handler.NewIncomeHandler(incomeUC),
+		expense:  handler.NewExpenseHandler(expenseUC),
 	}
 }

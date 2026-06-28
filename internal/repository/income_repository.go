@@ -9,6 +9,7 @@ import (
 
 	"expense-backend/internal/domain"
 	"expense-backend/pkg/apperror"
+	"expense-backend/pkg/helpers"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -17,15 +18,15 @@ import (
 )
 
 type IncomeModel struct {
-	ID         int64              `db:"id"`          // NOT NULL
-	Title      string             `db:"title"`       // NOT NULL
-	Amount     decimal.Decimal    `db:"amount"`      // NOT NULL
-	Category   string             `db:"category"`    // NOT NULL
-	Note       pgtype.Text        `db:"note"`        // NULLABLE
-	IncomeDate pgtype.Date        `db:"income_date"` // NOT NULL
-	IsDeleted  bool               `db:"is_deleted"`  // NOT NULL
-	CreatedAt  time.Time          `db:"created_at"`  // NOT NULL
-	UpdatedAt  pgtype.Timestamptz `db:"updated_at"`  // NULLABLE
+	ID         int64              `db:"id"`
+	Title      string             `db:"title"`
+	Amount     decimal.Decimal    `db:"amount"`
+	Category   string             `db:"category"`
+	Note       pgtype.Text        `db:"note"`
+	IncomeDate pgtype.Date        `db:"income_date"`
+	IsDeleted  bool               `db:"is_deleted"`
+	CreatedAt  time.Time          `db:"created_at"`
+	UpdatedAt  pgtype.Timestamptz `db:"updated_at"`
 }
 
 // Note:
@@ -76,7 +77,7 @@ type incomeRepo struct {
 	db *pgxpool.Pool
 }
 
-func NewPostgresIncomeRepository(db *pgxpool.Pool) domain.IncomeRepository {
+func NewIncomeRepository(db *pgxpool.Pool) domain.IncomeRepository {
 	return &incomeRepo{db: db}
 }
 
@@ -97,7 +98,7 @@ func (r *incomeRepo) Create(ctx context.Context, income *domain.Income) (*domain
 
 	if err != nil {
 		slog.Error("Failed to create new income", "error", err)
-		return nil, apperror.NewInternal(nil)
+		return nil, apperror.NewInternal(helpers.Ptr(err.Error()))
 	}
 
 	resultIncome := model.ToIncomeDomain()
@@ -118,14 +119,14 @@ func (r *incomeRepo) FindAll(ctx context.Context, limit, offset int64) ([]domain
 	rows, err := r.db.Query(ctx, query, args...)
 	if err != nil {
 		slog.Error("Failed retrive incomes", "error", err)
-		return nil, apperror.NewInternal(nil)
+		return nil, apperror.NewInternal(helpers.Ptr(err.Error()))
 	}
 
 	// rows.Close sudah di handle di dalam pgx.Collect
 	rowsIncome, err := pgx.CollectRows(rows, pgx.RowToStructByName[IncomeModel])
 	if err != nil {
 		slog.Error("Failed to collect rows", "error", err)
-		return nil, apperror.NewInternal(nil)
+		return nil, apperror.NewInternal(helpers.Ptr(err.Error()))
 	}
 
 	incomes := make([]domain.Income, len(rowsIncome))
@@ -143,7 +144,7 @@ func (r *incomeRepo) FindByID(ctx context.Context, id int64) (*domain.Income, er
 	rows, err := r.db.Query(ctx, query, id)
 	if err != nil {
 		slog.Error("Failed retrive incomes", "error", err)
-		return nil, apperror.NewInternal(nil)
+		return nil, apperror.NewInternal(helpers.Ptr(err.Error()))
 	}
 
 	// rows.Close sudah di handle di dalam pgx.Collect
@@ -154,7 +155,7 @@ func (r *incomeRepo) FindByID(ctx context.Context, id int64) (*domain.Income, er
 			return nil, apperror.NewNotFound()
 		}
 		slog.Error("Failed to collect income", "error", err)
-		return nil, apperror.NewInternal(nil)
+		return nil, apperror.NewInternal(helpers.Ptr(err.Error()))
 	}
 
 	incomeDomain := income.ToIncomeDomain()
@@ -169,7 +170,7 @@ func (r *incomeRepo) Update(ctx context.Context, income *domain.Income) error {
 	commandTag, err := r.db.Exec(ctx, query, income.Title, income.Amount, income.Category, income.Note, income.IncomeDate, income.ID)
 	if err != nil {
 		slog.Error(fmt.Sprintf("Failed to update date with id: %d", income.ID))
-		return apperror.NewInternal(nil)
+		return apperror.NewInternal(helpers.Ptr(err.Error()))
 	}
 
 	if commandTag.RowsAffected() == 0 {
@@ -184,7 +185,7 @@ func (r *incomeRepo) Delete(ctx context.Context, id int64) error {
 	commandTag, err := r.db.Exec(ctx, query, id)
 	if err != nil {
 		slog.Error(fmt.Sprintf("Failed to delete data with id: %d", id), "error", err)
-		return apperror.NewInternal(nil)
+		return apperror.NewInternal(helpers.Ptr(err.Error()))
 	}
 
 	if commandTag.RowsAffected() == 0 {

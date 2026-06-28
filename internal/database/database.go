@@ -28,7 +28,7 @@ func RegisterMigrationTimezone(dbName, timezone string) {
 		func(ctx context.Context, db *sql.DB) error {
 			var err error
 			// 3. Set Timezone
-			query := fmt.Sprintf("ALTER DATABASE %s SET TIMEZONE TO %s;", dbName, timezone)
+			query := fmt.Sprintf("ALTER DATABASE %s SET TIMEZONE TO '%s';", dbName, timezone)
 			_, err = db.ExecContext(ctx, query)
 			if err != nil {
 				return fmt.Errorf("Failed set timezone to %s: %w", timezone, err)

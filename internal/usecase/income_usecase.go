@@ -41,7 +41,7 @@ func (uc *incomeUsecase) GetAll(ctx context.Context, page, limit int64) ([]domai
 	// Process
 	incomes, err := uc.repo.FindAll(ctx, limit, offset)
 	if err != nil {
-		return nil, 0, err
+		return []domain.Income{}, 0, err
 	}
 
 	countAll := uc.repo.CountAll(ctx)
@@ -67,7 +67,7 @@ func (uc *incomeUsecase) Update(ctx context.Context, id int64, input *domain.Inc
 	}
 
 	// Merge existing income data with new data from payload then do Update
-	if err := uc.repo.Update(ctx, income.MergeWithNewData(income)); err != nil {
+	if err := uc.repo.Update(ctx, income.MergeWithNewData(input)); err != nil {
 		return err
 	}
 

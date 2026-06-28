@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"encoding/json"
 	"errors"
 	"expense-backend/internal/domain"
 	reqDto "expense-backend/internal/dto/requests"
@@ -10,7 +9,6 @@ import (
 	"expense-backend/pkg/apperror"
 	"expense-backend/pkg/appresponse"
 	help "expense-backend/pkg/helpers"
-	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -28,13 +26,22 @@ func NewIncomeHandler(uc domain.IncomeUsecase) *IncomeHandler {
 }
 
 func (h *IncomeHandler) RegisterRoutes(rg *gin.RouterGroup) {
-	rg.GET("", h.ListIncomes)
+	rg.GET("", h.GetIncomes)
 	rg.POST("", h.CreateIncome)
-	rg.GET("/:id", h.FindOneIncome)
+	rg.GET("/:id", h.GetIncomes)
 	rg.PUT("/:id", h.UpdateIncome)
 	rg.DELETE("/:id", h.DeleteIncome)
 }
 
+// CreateIncome write new record income
+//
+//	@Summary		Record new income
+//	@Description	create income
+//	@Tags			incomes
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	appresponse.Response[any]
+//	@Router			/api/incomes [post]
 func (h *IncomeHandler) CreateIncome(c *gin.Context) {
 	var payloadIncome reqDto.CreateIncomePayload
 	if err := c.ShouldBindJSON(&payloadIncome); err != nil {
@@ -79,73 +86,93 @@ func (h *IncomeHandler) CreateIncome(c *gin.Context) {
 	appresponse.RespondSuccess(c, http.StatusCreated, "succeded create new income", &incomeResponse, nil)
 }
 
-func (h *IncomeHandler) ListIncomes(c *gin.Context) {
-	var paginateQuery reqDto.PaginateQuery
-	if err := c.ShouldBindQuery(&paginateQuery); err != nil {
-		if errors.Is(err, io.EOF) {
-			appresponse.RespondError(c, http.StatusBadRequest, "payload is empty", apperror.NewBadRequest(help.Ptr("request body is empty")))
+// GetIncomes get one income specified by id
+//
+//	@Summary		List income
+//	@Description	get all existing income, or get one filters by income id
+//	@Tags			incomes
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	query		int	true	"Income ID (Optional)"
+//	@Success		200	{object}	appresponse.Response[any]
+//	@Router			/api/incomes [get]
+func (h *IncomeHandler) GetIncomes(c *gin.Context) {
+	idStr := c.Param("id")
+	if idStr != "" {
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			appresponse.RespondError(c, http.StatusBadRequest, "invalid param id", apperror.NewBadRequest(help.Ptr(err.Error())))
 			return
 		}
-		var validationErr validator.ValidationErrors
-		if errors.As(err, &validationErr) {
-			appresponse.RespondError(c, http.StatusBadRequest, "validation failed", apperror.NewBadRequest(help.Ptr(validationErr.Error())))
-			return
-		}
-		appresponse.RespondError(c, http.StatusBadRequest, "invalid url query", apperror.NewBadRequest(help.Ptr(err.Error())))
-		return
-	}
-	fmt.Println(json.Marshal(paginateQuery))
-	incomes, total, err := h.uc.GetAll(c.Request.Context(), paginateQuery.Page, paginateQuery.Limit)
-	if err != nil {
-		var appErr *apperror.AppError
-		if errors.As(err, &appErr) {
-			appresponse.RespondError(c, appErr.Code, "failed get incomes", appErr)
-			return
-		}
-		appresponse.RespondError(c, http.StatusInternalServerError, "failed get incomes", apperror.NewInternal(help.Ptr(err.Error())))
-		return
-	}
 
-	var incomeResponses = make([]resDto.IncomeResponse, len(incomes))
-	for i, income := range incomes {
-		incomeResponses[i], err = resDto.NewIncomeResponse(&income)
+		income, err := h.uc.Get(c.Request.Context(), int64(id))
+		if err != nil {
+			var appErr *apperror.AppError
+			if errors.As(err, &appErr) {
+				appresponse.RespondError(c, appErr.Code, "failed to get income", appErr)
+				return
+			}
+			appresponse.RespondError(c, http.StatusInternalServerError, "failed to get income", apperror.NewInternal(help.Ptr(err.Error())))
+			return
+		}
+
+		incomeResponse, err := dto.NewIncomeResponse(income)
 		if err != nil {
 			appresponse.RespondError(c, http.StatusInternalServerError, "failed process income", err)
 			return
 		}
-	}
-
-	paginateRes := appresponse.CratePaginateResponse(c, paginateQuery.Page, paginateQuery.Limit, total)
-	appresponse.RespondSuccess(c, http.StatusOK, "incomes retrieved", &incomeResponses, paginateRes)
-}
-
-func (h *IncomeHandler) FindOneIncome(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		appresponse.RespondError(c, http.StatusBadRequest, "invalid param id", apperror.NewBadRequest(help.Ptr(err.Error())))
-		return
-	}
-
-	income, err := h.uc.Get(c.Request.Context(), int64(id))
-	if err != nil {
-		var appErr *apperror.AppError
-		if errors.As(err, &appErr) {
-			appresponse.RespondError(c, appErr.Code, "failed to get income", appErr)
+		appresponse.RespondSuccess(c, http.StatusOK, "income retrieved", &incomeResponse, nil)
+	} else {
+		var paginateQuery reqDto.PaginateQuery
+		if err := c.ShouldBindQuery(&paginateQuery); err != nil {
+			if errors.Is(err, io.EOF) {
+				appresponse.RespondError(c, http.StatusBadRequest, "payload is empty", apperror.NewBadRequest(help.Ptr("request body is empty")))
+				return
+			}
+			var validationErr validator.ValidationErrors
+			if errors.As(err, &validationErr) {
+				appresponse.RespondError(c, http.StatusBadRequest, "validation failed", apperror.NewBadRequest(help.Ptr(validationErr.Error())))
+				return
+			}
+			appresponse.RespondError(c, http.StatusBadRequest, "invalid url query", apperror.NewBadRequest(help.Ptr(err.Error())))
 			return
 		}
-		appresponse.RespondError(c, http.StatusInternalServerError, "failed to get income", apperror.NewInternal(help.Ptr(err.Error())))
-		return
-	}
 
-	incomeResponse, err := dto.NewIncomeResponse(income)
-	if err != nil {
-		appresponse.RespondError(c, http.StatusInternalServerError, "failed process income", err)
-		return
+		incomes, total, err := h.uc.GetAll(c.Request.Context(), paginateQuery.Page, paginateQuery.Limit)
+		if err != nil {
+			var appErr *apperror.AppError
+			if errors.As(err, &appErr) {
+				appresponse.RespondError(c, appErr.Code, "failed get incomes", appErr)
+				return
+			}
+			appresponse.RespondError(c, http.StatusInternalServerError, "failed get incomes", apperror.NewInternal(help.Ptr(err.Error())))
+			return
+		}
+
+		var incomeResponses = make([]resDto.IncomeResponse, len(incomes))
+		for i, income := range incomes {
+			incomeResponses[i], err = resDto.NewIncomeResponse(&income)
+			if err != nil {
+				appresponse.RespondError(c, http.StatusInternalServerError, "failed process income", err)
+				return
+			}
+		}
+
+		paginateRes := appresponse.CratePaginateResponse(c, paginateQuery.Page, paginateQuery.Limit, total)
+		appresponse.RespondSuccess(c, http.StatusOK, "incomes retrieved", &incomeResponses, paginateRes)
 	}
-	appresponse.RespondSuccess(c, http.StatusOK, "income retrieved", &incomeResponse, nil)
 }
 
+// UpdateIncome edit income by replcacing old value with new value, specified by id
+//
+//	@Summary		Edit income
+//	@Description	update income
+//	@Tags			incomes
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	query		int	true	"Income ID"
+//	@Success		200	{object}	appresponse.Response[any]
+//	@Router			/api/incomes [put]
 func (h *IncomeHandler) UpdateIncome(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
@@ -205,6 +232,16 @@ func (h *IncomeHandler) UpdateIncome(c *gin.Context) {
 	appresponse.RespondSuccess(c, http.StatusOK, "income retrieved", &domain.Income{}, nil)
 }
 
+// DelteIncome remove income, specified by id
+//
+//	@Summary		Remove income
+//	@Description	delete income
+//	@Tags			incomes
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	query		int	true	"Income ID"
+//	@Success		200	{object}	appresponse.Response[any]
+//	@Router			/api/incomes [delete]
 func (h *IncomeHandler) DeleteIncome(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)

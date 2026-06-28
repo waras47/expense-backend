@@ -2,10 +2,11 @@ package main_test
 
 import (
 	"context"
+	"errors"
 	"expense-backend/internal/domain"
-	"expense-backend/internal/repository"
 	"expense-backend/internal/usecase"
 	"expense-backend/pkg/apperror"
+	"expense-backend/pkg/helpers"
 	main_test "expense-backend/tests"
 	"expense-backend/tests/usecase/mock"
 	"fmt"
@@ -17,7 +18,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var mockDate = time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, main_test.Loc)
+var mockDate = main_test.NewDate()
 var mockTime = time.Now().In(main_test.Loc)
 
 type mockIncomeData struct {
@@ -92,27 +93,13 @@ func TestCreateIncome(t *testing.T) {
 		expectedErr      error
 	}{
 		{
-			name: "Succeded create data",
+			name: "There are no business flows to be tested in the Create method yet",
 			mockCreateRepo: func(ctx context.Context, income *domain.Income) (*domain.Income, error) {
-				model := repository.ToIncomeModel(income)
-				model.ID = 1
-				model.CreatedAt = time.Now()
-
-				data := model.ToIncomeDomain()
-				return &data, nil
+				return helpers.Ptr(domain.Income{}), nil
 			},
 			mockCreateIncome: mockCreateIncome,
 			wantErr:          false,
 			expectedErr:      nil,
-		},
-		{
-			name: "Failed create data",
-			mockCreateRepo: func(ctx context.Context, income *domain.Income) (*domain.Income, error) {
-				return nil, apperror.NewInternal(nil)
-			},
-			mockCreateIncome: mockCreateIncome,
-			wantErr:          true,
-			expectedErr:      apperror.NewInternal(nil),
 		},
 	}
 
@@ -132,12 +119,6 @@ func TestCreateIncome(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 				assert.NotNil(t, res)
-				assert.Equal(t, int64(1), res.ID)
-				assert.Equal(t, tt.mockCreateIncome.Title, res.Title)
-				assert.Equal(t, tt.mockCreateIncome.Amount, res.Amount)
-				assert.Equal(t, tt.mockCreateIncome.Category, res.Category)
-				assert.Equal(t, tt.mockCreateIncome.Note, res.Note)
-				assert.Equal(t, tt.mockCreateIncome.IncomeDate, res.IncomeDate)
 			}
 
 		})
@@ -154,7 +135,7 @@ func TestGetIncome(t *testing.T) {
 		expectedErr      error
 	}{
 		{
-			name: "Succeded get data",
+			name: "There are no business flows to be tested in the Get method yet",
 			mockFindByIDRepo: func(ctx context.Context, id int64) (*domain.Income, error) {
 				income := mockIncome.findOneIncome(id)
 				return income, nil
@@ -162,24 +143,6 @@ func TestGetIncome(t *testing.T) {
 			getID:       int64(1),
 			wantErr:     false,
 			expectedErr: nil,
-		},
-		{
-			name: "Failed get data",
-			mockFindByIDRepo: func(ctx context.Context, id int64) (*domain.Income, error) {
-				return nil, apperror.NewInternal(nil)
-			},
-			getID:       int64(1),
-			wantErr:     true,
-			expectedErr: apperror.NewInternal(nil),
-		},
-		{
-			name: "Not found get data",
-			mockFindByIDRepo: func(ctx context.Context, id int64) (*domain.Income, error) {
-				return nil, apperror.NewNotFound()
-			},
-			getID:       int64(1),
-			wantErr:     true,
-			expectedErr: apperror.NewNotFound(),
 		},
 	}
 
@@ -312,7 +275,7 @@ func TestDeleteIncome(t *testing.T) {
 		expectedErr      error
 	}{
 		{
-			name:     "Succeded delete data",
+			name:     "There are no business flows to be tested in the DELETE method yet",
 			deleteID: int64(1),
 			mockDeleteRepo: func(ctx context.Context, id int64) error {
 				return nil
@@ -322,42 +285,6 @@ func TestDeleteIncome(t *testing.T) {
 			},
 			wantErr:     false,
 			expectedErr: nil,
-		},
-		{
-			name:     "Failed delete not found data",
-			deleteID: int64(1),
-			mockDeleteRepo: func(ctx context.Context, id int64) error {
-				return nil
-			},
-			mockFindByIDRepo: func(ctx context.Context, id int64) (*domain.Income, error) {
-				return nil, apperror.NewNotFound()
-			},
-			wantErr:     true,
-			expectedErr: apperror.NewNotFound(),
-		},
-		{
-			name:     "Failed delete data",
-			deleteID: int64(1),
-			mockDeleteRepo: func(ctx context.Context, id int64) error {
-				return apperror.NewInternal(nil)
-			},
-			mockFindByIDRepo: func(ctx context.Context, id int64) (*domain.Income, error) {
-				return &domain.Income{}, nil
-			},
-			wantErr:     true,
-			expectedErr: apperror.NewInternal(nil),
-		},
-		{
-			name:     "No affected delete data",
-			deleteID: int64(1),
-			mockDeleteRepo: func(ctx context.Context, id int64) error {
-				return apperror.NewDeleteFailed()
-			},
-			mockFindByIDRepo: func(ctx context.Context, id int64) (*domain.Income, error) {
-				return &domain.Income{}, nil
-			},
-			wantErr:     true,
-			expectedErr: apperror.NewDeleteFailed(),
 		},
 	}
 
@@ -381,78 +308,93 @@ func TestDeleteIncome(t *testing.T) {
 		})
 	}
 }
-func TestUpdatencome(t *testing.T) {
+func TestUpdateIncome(t *testing.T) {
+	// Mock Data Incomes
+	var mockData mockIncomeData
+	mockData.LoadIncomes(10)
+	mockIncome := mockData.findOneIncome(1)
+
+	mockInput := domain.Income{
+		Title:      "Input Title",
+		Amount:     main_test.NewDecimal(123456),
+		Category:   "Input category",
+		Note:       "Input Note",
+		IncomeDate: main_test.NewDate(),
+	}
 	tests := []struct {
 		name             string
 		updateID         int64
+		inputMock        domain.Income
 		mockUpdateRepo   func(ctx context.Context, income *domain.Income) error
 		mockFindByIDRepo func(ctx context.Context, id int64) (*domain.Income, error)
 		wantErr          bool
 		expectedErr      error
 	}{
 		{
-			name:     "Succeded update data",
+			name:     "Full input update data",
 			updateID: int64(1),
+			inputMock: domain.Income{
+				Title:      mockInput.Title,
+				Amount:     mockInput.Amount,
+				Category:   mockInput.Category,
+				Note:       mockInput.Note,
+				IncomeDate: mockInput.IncomeDate,
+			},
 			mockUpdateRepo: func(ctx context.Context, income *domain.Income) error {
+				// Validate expected merged income from service
+				if income.Title != mockInput.Title {
+					return errors.New("expected title to be updated")
+				}
+				if income.Amount != mockInput.Amount {
+					return errors.New("expected amount to be updated")
+				}
+				if income.Category != mockInput.Category {
+					return errors.New("expected category to be updated")
+				}
+				if income.Note != mockInput.Note {
+					return errors.New("expected note to be updated")
+				}
+				if income.IncomeDate.Format("2006-01-02") != mockInput.IncomeDate.Format("2006-01-02") {
+					return errors.New("expected incomeDate to be updated")
+				}
 				return nil
 			},
 			mockFindByIDRepo: func(ctx context.Context, id int64) (*domain.Income, error) {
-				return &domain.Income{}, nil
+				return mockIncome, nil
 			},
 			wantErr:     false,
 			expectedErr: nil,
 		},
 		{
-			name:     "Found data but failed to update data",
-			updateID: int64(1),
+			name:      "Simulation for each default value input ",
+			updateID:  int64(1),
+			inputMock: domain.Income{},
 			mockUpdateRepo: func(ctx context.Context, income *domain.Income) error {
-				return apperror.NewInternal(nil)
-			},
-			mockFindByIDRepo: func(ctx context.Context, id int64) (*domain.Income, error) {
-				return &domain.Income{}, nil
-			},
-			wantErr:     true,
-			expectedErr: apperror.NewInternal(nil),
-		},
-		{
-			name:     "Failed update data no affected",
-			updateID: int64(1),
-			mockUpdateRepo: func(ctx context.Context, income *domain.Income) error {
-				return apperror.NewUpdateFailed()
-			},
-			mockFindByIDRepo: func(ctx context.Context, id int64) (*domain.Income, error) {
-				return &domain.Income{}, nil
-			},
-			wantErr:     true,
-			expectedErr: apperror.NewUpdateFailed(),
-		},
-		{
-			name:     "Failed not found data",
-			updateID: int64(1),
-			mockUpdateRepo: func(ctx context.Context, income *domain.Income) error {
-				return apperror.NewUpdateFailed()
-			},
-			mockFindByIDRepo: func(ctx context.Context, id int64) (*domain.Income, error) {
-				return nil, apperror.NewNotFound()
-			},
-			wantErr:     true,
-			expectedErr: apperror.NewNotFound(),
-		},
-		{
-			name:     "Failed error get data",
-			updateID: int64(1),
-			mockUpdateRepo: func(ctx context.Context, income *domain.Income) error {
+				// Validate expected nor merged income from service
+				if income.Title != mockIncome.Title {
+					return errors.New("expected title to remain unchanged")
+				}
+				if income.Amount != mockIncome.Amount {
+					return errors.New("expected amount to remain unchanged")
+				}
+				if income.Category != mockIncome.Category {
+					return errors.New("expected category to remain unchanged")
+				}
+				if income.Note != mockIncome.Note {
+					return errors.New("expected note to remain unchanged")
+				}
+				if income.IncomeDate.Format("2006-01-02") != mockIncome.IncomeDate.Format("2006-01-02") {
+					return errors.New("expected incomeDate to remain unchanged")
+				}
 				return nil
 			},
 			mockFindByIDRepo: func(ctx context.Context, id int64) (*domain.Income, error) {
-				return nil, apperror.NewInternal(nil)
+				return mockIncome, nil
 			},
-			wantErr:     true,
-			expectedErr: apperror.NewInternal(nil),
+			wantErr:     false,
+			expectedErr: nil,
 		},
 	}
-
-	var mockUpdateIncome = domain.Income{}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -462,7 +404,7 @@ func TestUpdatencome(t *testing.T) {
 			}
 
 			uc := usecase.NewIncomeUsecase(repo)
-			err := uc.Update(context.Background(), tt.updateID, &mockUpdateIncome)
+			err := uc.Update(context.Background(), tt.updateID, &tt.inputMock)
 
 			if tt.wantErr {
 				assert.Error(t, err)

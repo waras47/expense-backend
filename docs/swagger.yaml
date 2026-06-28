@@ -1,0 +1,202 @@
+basePath: /api
+definitions:
+  apperror.AppError:
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
+    type: object
+  appresponse.Meta:
+    properties:
+      paginate:
+        $ref: '#/definitions/appresponse.Paginate'
+      timestamp:
+        type: string
+    type: object
+  appresponse.Paginate:
+    properties:
+      limit:
+        type: integer
+      next:
+        type: string
+      page:
+        type: integer
+      prev:
+        type: string
+      total_pages:
+        type: integer
+      total_rows:
+        type: integer
+    type: object
+  appresponse.Response-any:
+    properties:
+      data: {}
+      error:
+        $ref: '#/definitions/apperror.AppError'
+      message:
+        type: string
+      meta:
+        $ref: '#/definitions/appresponse.Meta'
+      success:
+        type: boolean
+    type: object
+info:
+  contact: {}
+  description: A lightweight backend RESTful API designed for tracking and managing
+    personal or organizational expenses. This API provides secure endpoints to log
+    daily expenses, categorize spending, and generate basic financial summaries.
+  title: API Backend Expense
+  version: "1.0"
+paths:
+  /api/expenses:
+    delete:
+      consumes:
+      - application/json
+      description: delete expense
+      parameters:
+      - description: Income ID
+        in: query
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/appresponse.Response-any'
+      summary: Remove expense
+      tags:
+      - expenses
+    get:
+      consumes:
+      - application/json
+      description: get all existing expense, or get one filters by expense id
+      parameters:
+      - description: Income ID (Optional)
+        in: query
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/appresponse.Response-any'
+      summary: List expense
+      tags:
+      - expenses
+    post:
+      consumes:
+      - application/json
+      description: create expense
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/appresponse.Response-any'
+      summary: Record new expense
+      tags:
+      - expenses
+    put:
+      consumes:
+      - application/json
+      description: update expense
+      parameters:
+      - description: Income ID
+        in: query
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/appresponse.Response-any'
+      summary: Edit expense
+      tags:
+      - expenses
+  /api/incomes:
+    delete:
+      consumes:
+      - application/json
+      description: delete income
+      parameters:
+      - description: Income ID
+        in: query
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/appresponse.Response-any'
+      summary: Remove income
+      tags:
+      - incomes
+    get:
+      consumes:
+      - application/json
+      description: get all existing income, or get one filters by income id
+      parameters:
+      - description: Income ID (Optional)
+        in: query
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/appresponse.Response-any'
+      summary: List income
+      tags:
+      - incomes
+    post:
+      consumes:
+      - application/json
+      description: create income
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/appresponse.Response-any'
+      summary: Record new income
+      tags:
+      - incomes
+    put:
+      consumes:
+      - application/json
+      description: update income
+      parameters:
+      - description: Income ID
+        in: query
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/appresponse.Response-any'
+      summary: Edit income
+      tags:
+      - incomes
+swagger: "2.0"

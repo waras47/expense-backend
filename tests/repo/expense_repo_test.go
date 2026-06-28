@@ -8,7 +8,7 @@ import (
 	main_test "expense-backend/tests"
 	testDB "expense-backend/tests/db"
 	"fmt"
-	"math/big"
+	"strconv"
 	"testing"
 	"time"
 
@@ -17,20 +17,19 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func seedIncome(t *testing.T, db *pgxpool.Pool, total int64) int64 {
-
+func seedExpense(t *testing.T, db *pgxpool.Pool, total int64) int64 {
+	amount := main_test.NewDecimal(200000)
+	categoryID := 1
+	expenseDate := main_test.NewDate()
+	deleted := false
 	if total > 1 {
-		query := `INSERT INTO incomes (title, amount, category, note, income_date, is_deleted)
+		query := `INSERT INTO expenses (title, amount, category_id, note, expense_date, is_deleted)
 			  VALUES ($1, $2, $3, $4, $5, $6)`
 		for i := total; i >= 1; i-- {
 			title := fmt.Sprintf("Title %d", i)
-			amount := main_test.NewDecimal(200000)
-			category := fmt.Sprintf("Category %d", i)
 			note := fmt.Sprintf("Note %d", i)
-			incomeDate := main_test.NewDate()
-			deleted := false
 
-			_, err := db.Exec(context.Background(), query, title, amount, category, note, incomeDate, deleted)
+			_, err := db.Exec(context.Background(), query, title, amount, categoryID, note, expenseDate, deleted)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -38,16 +37,12 @@ func seedIncome(t *testing.T, db *pgxpool.Pool, total int64) int64 {
 
 		return total
 	} else {
-		query := `INSERT INTO incomes (title, amount, category, note, income_date, is_deleted)
+		query := `INSERT INTO expenses (title, amount, category_id, note, expense_date, is_deleted)
 			  VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`
-		title := fmt.Sprintf("Title %d", 1)
-		amount := main_test.NewDecimal(200000)
-		category := fmt.Sprintf("Category %d", 1)
-		note := fmt.Sprintf("Note %d", 1)
-		incomeDate := main_test.NewDate()
-		deleted := false
+		title := "Title 1"
+		note := "Note 1"
 		var id int64
-		err := db.QueryRow(context.Background(), query, title, amount, category, note, incomeDate, deleted).Scan(&id)
+		err := db.QueryRow(context.Background(), query, title, amount, categoryID, note, expenseDate, deleted).Scan(&id)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -55,50 +50,75 @@ func seedIncome(t *testing.T, db *pgxpool.Pool, total int64) int64 {
 	}
 }
 
-func TestDate(t *testing.T) {
-	t.Run("Date", func(t *testing.T) {
-		t.Log(main_test.NewDate())
-	})
+func generateMockExpenses(total int) []domain.Expense {
+	expenses := make([]domain.Expense, total)
+	for i := range total {
+		idxStr := strconv.Itoa(i)
+		expenses[i] = domain.Expense{
+			ID:          int64(i),
+			Title:       "Title " + idxStr,
+			Amount:      main_test.NewDecimal(int64(i * 1000)),
+			CategoryID:  1,
+			Note:        "Note " + idxStr,
+			IsDeleted:   false,
+			ExpenseDate: main_test.NewDate(),
+			CreatedAt:   time.Now().In(main_test.Loc),
+			UpdatedAt:   time.Now().In(main_test.Loc),
+		}
+	}
+	return expenses
 }
 
-func TestCreateIncome(t *testing.T) {
+func TestCreateExpense(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Nanosecond)
 	db := testDB.SetupDB(t)
 
-	dummyIncome := domain.Income{
-		Title:      "test",
-		Amount:     decimal.NewFromBigInt(big.NewInt(200000), 2),
-		Category:   "test_category",
-		Note:       "test_note",
-		IncomeDate: time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.UTC),
-	}
+	mockExpense := generateMockExpenses(1)[0]
 
 	defer cancel() // wajib dipanggil biar ga memory leak
 	tests := []struct {
 		name        string
+		mockExpense func() domain.Expense
 		context     context.Context
 		wantErr     bool
 		expectedErr error
 	}{
 		{
-			name:        "Succeded create new Income",
+			name: "Succeded create new Expense",
+			mockExpense: func() domain.Expense {
+				return mockExpense
+			},
 			context:     context.Background(),
 			wantErr:     false,
 			expectedErr: nil,
 		},
 		{
-			name:        "Timeout create Income",
+			name: "Timeout create Expense",
+			mockExpense: func() domain.Expense {
+				return mockExpense
+			},
 			context:     ctx,
+			wantErr:     true,
+			expectedErr: apperror.NewInternal(nil),
+		},
+		{
+			name: "Invalid category id Expense",
+			mockExpense: func() domain.Expense {
+				mockExpense.CategoryID = 999
+				return mockExpense
+			},
+			context:     context.Background(),
 			wantErr:     true,
 			expectedErr: apperror.NewInternal(nil),
 		},
 	}
 
-	repo := repository.NewIncomeRepository(db)
+	repo := repository.NewExpenseRepository(db)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			income, err := repo.Create(tt.context, &dummyIncome)
+			mockE := tt.mockExpense()
+			expense, err := repo.Create(tt.context, &mockE)
 			if tt.wantErr {
 				appErr, ok := err.(*apperror.AppError)
 				assert.True(t, ok)
@@ -106,31 +126,31 @@ func TestCreateIncome(t *testing.T) {
 				assert.True(t, ok)
 				assert.Error(t, err)
 				assert.Equal(t, expErr.Code, appErr.Code, appErr.Message)
-				assert.Nil(t, income)
+				assert.Nil(t, expense)
 			} else {
 				assert.NoError(t, err)
-				assert.NotNil(t, income)
+				assert.NotNil(t, expense)
 
 				// Cek tiap field
-				assert.Equal(t, dummyIncome.Title, income.Title)
-				assert.Equal(t, dummyIncome.Amount, income.Amount)
-				assert.Equal(t, dummyIncome.Category, income.Category)
-				assert.Equal(t, dummyIncome.Note, income.Note)
-				assert.Equal(t, dummyIncome.IncomeDate, income.IncomeDate)
+				assert.Equal(t, mockExpense.Title, expense.Title)
+				assert.Equal(t, mockExpense.Amount, expense.Amount)
+				assert.Equal(t, mockExpense.CategoryID, expense.CategoryID)
+				assert.Equal(t, mockExpense.Note, expense.Note)
+				assert.Equal(t, mockExpense.ExpenseDate, expense.ExpenseDate)
 
 				// Cek field yang di-generate DB
-				assert.NotZero(t, income.ID)
-				assert.NotZero(t, income.CreatedAt)
-				assert.False(t, income.IsDeleted)
+				assert.NotZero(t, expense.ID)
+				assert.NotZero(t, expense.CreatedAt)
+				assert.False(t, expense.IsDeleted)
 			}
 		})
 	}
 }
 
-func TestFindAllIncomes(t *testing.T) {
+func TestFindAllExpenses(t *testing.T) {
 	{
 		db := testDB.SetupDB(t)
-		totalData := seedIncome(t, db, 11)
+		totalData := seedExpense(t, db, 11)
 
 		tests := []struct {
 			name        string
@@ -158,11 +178,10 @@ func TestFindAllIncomes(t *testing.T) {
 			},
 		}
 
-		repo := repository.NewIncomeRepository(db)
+		repo := repository.NewExpenseRepository(db)
 		for _, tt := range tests {
 			t.Run(tt.name, func(t *testing.T) {
-				incomes, err := repo.FindAll(context.Background(), tt.limit, tt.offset)
-				// t.Logf("%v", incomes)
+				expenses, err := repo.FindAll(context.Background(), tt.limit, tt.offset)
 				if tt.wantErr {
 					appErr, ok := err.(*apperror.AppError)
 					assert.True(t, ok)
@@ -170,18 +189,18 @@ func TestFindAllIncomes(t *testing.T) {
 					assert.True(t, ok)
 					assert.Error(t, err)
 					assert.Equal(t, expErr.Code, appErr.Code, appErr.Message)
-					assert.Nil(t, incomes)
+					assert.Nil(t, expenses)
 				} else {
 					assert.NoError(t, err)
-					assert.NotNil(t, incomes)
-					assert.Equal(t, tt.foundData, int64(len(incomes)))
+					assert.NotNil(t, expenses)
+					assert.Equal(t, tt.foundData, int64(len(expenses)))
 				}
 			})
 		}
 	}
 }
 
-func TestFindByIDIncome(t *testing.T) {
+func TestFindByIDExpense(t *testing.T) {
 	db := testDB.SetupDB(t)
 
 	tests := []struct {
@@ -193,8 +212,8 @@ func TestFindByIDIncome(t *testing.T) {
 		{
 			name: "Succeded find data by ID",
 			seedData: func(t *testing.T, db *pgxpool.Pool) int64 {
-				seedIncome(t, db, 10)
-				return seedIncome(t, db, 1)
+				seedExpense(t, db, 10)
+				return seedExpense(t, db, 1)
 			},
 			wantErr:     false,
 			expectedErr: nil,
@@ -202,7 +221,7 @@ func TestFindByIDIncome(t *testing.T) {
 		{
 			name: "Not found find data by ID",
 			seedData: func(t *testing.T, db *pgxpool.Pool) int64 {
-				seedIncome(t, db, 10)
+				seedExpense(t, db, 10)
 				// return random id
 				return 1000
 			},
@@ -211,12 +230,12 @@ func TestFindByIDIncome(t *testing.T) {
 		},
 	}
 
-	repo := repository.NewIncomeRepository(db)
+	repo := repository.NewExpenseRepository(db)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			id := tt.seedData(t, db)
-			income, err := repo.FindByID(context.Background(), id)
+			expense, err := repo.FindByID(context.Background(), id)
 
 			if tt.wantErr {
 				appErr, ok := err.(*apperror.AppError)
@@ -225,17 +244,17 @@ func TestFindByIDIncome(t *testing.T) {
 				assert.True(t, ok)
 				assert.Error(t, err)
 				assert.Equal(t, expErr.Code, appErr.Code, appErr.Message)
-				assert.Nil(t, income)
+				assert.Nil(t, expense)
 			} else {
 				assert.NoError(t, err)
-				assert.NotEmpty(t, income)
-				assert.Equal(t, id, income.ID)
+				assert.NotEmpty(t, expense)
+				assert.Equal(t, id, expense.ID)
 			}
 		})
 	}
 }
 
-func TestUpdateIncome(t *testing.T) {
+func TestUpdateExpense(t *testing.T) {
 	db := testDB.SetupDB(t)
 
 	newAmount, err := decimal.NewFromString("120000.00")
@@ -244,21 +263,21 @@ func TestUpdateIncome(t *testing.T) {
 	}
 	tests := []struct {
 		name          string
-		preUpdateFunc func() (int64, domain.Income)
+		preUpdateFunc func() (int64, domain.Expense)
 		wantErr       bool
 		expectedErr   error
 	}{
 		{
-			name: "Succeded update income",
-			preUpdateFunc: func() (id int64, newData domain.Income) {
-				id = seedIncome(t, db, 1)
-				newData = domain.Income{
-					ID:         id,
-					Title:      "New Title",
-					Amount:     newAmount,
-					Category:   "New Cate",
-					Note:       "New Note",
-					IncomeDate: main_test.NewDate(),
+			name: "Succeded update expense",
+			preUpdateFunc: func() (id int64, newData domain.Expense) {
+				id = seedExpense(t, db, 1)
+				newData = domain.Expense{
+					ID:          id,
+					Title:       "New Title",
+					Amount:      newAmount,
+					CategoryID:  2,
+					Note:        "New Note",
+					ExpenseDate: main_test.NewDate(),
 				}
 				return
 			},
@@ -266,25 +285,42 @@ func TestUpdateIncome(t *testing.T) {
 			expectedErr: nil,
 		},
 		{
-			name: "No affected update income",
-			preUpdateFunc: func() (id int64, newData domain.Income) {
-				id = seedIncome(t, db, 1)
-				newData = domain.Income{
-					ID:         1000,
-					Title:      "New Title",
-					Amount:     newAmount,
-					Category:   "New Cate",
-					Note:       "New Note",
-					IncomeDate: main_test.NewDate(),
+			name: "No affected update expense",
+			preUpdateFunc: func() (id int64, newData domain.Expense) {
+				id = seedExpense(t, db, 1)
+				newData = domain.Expense{
+					ID:          1000,
+					Title:       "New Title",
+					Amount:      newAmount,
+					CategoryID:  1,
+					Note:        "New Note",
+					ExpenseDate: main_test.NewDate(),
 				}
 				return
 			},
 			wantErr:     true,
 			expectedErr: apperror.NewUpdateFailed(),
 		},
+		{
+			name: "Invalid update category id",
+			preUpdateFunc: func() (id int64, newData domain.Expense) {
+				id = seedExpense(t, db, 1)
+				newData = domain.Expense{
+					ID:          1,
+					Title:       "New Title",
+					Amount:      newAmount,
+					CategoryID:  1000,
+					Note:        "New Note",
+					ExpenseDate: main_test.NewDate(),
+				}
+				return
+			},
+			wantErr:     true,
+			expectedErr: apperror.NewInternal(nil),
+		},
 	}
 
-	repo := repository.NewIncomeRepository(db)
+	repo := repository.NewExpenseRepository(db)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			id, newData := tt.preUpdateFunc()
@@ -297,23 +333,23 @@ func TestUpdateIncome(t *testing.T) {
 				assert.Error(t, err)
 				assert.Equal(t, expErr.Code, appErr.Code, appErr.Message)
 			} else {
-				income, err2 := repo.FindByID(context.Background(), id)
+				expense, err2 := repo.FindByID(context.Background(), id)
 				assert.NoError(t, err)
 				assert.NoError(t, err2)
-				assert.False(t, income.IsDeleted)
-				assert.Equal(t, id, income.ID)
-				assert.Equal(t, newData.Amount.String(), income.Amount.String())
-				assert.Equal(t, newData.Category, income.Category)
-				assert.Equal(t, newData.Title, income.Title)
-				assert.Equal(t, newData.IncomeDate.Format("2026-01-02"), income.IncomeDate.Format("2026-01-02"))
+				assert.False(t, expense.IsDeleted)
+				assert.Equal(t, id, expense.ID)
+				assert.Equal(t, newData.Amount.String(), expense.Amount.String())
+				assert.Equal(t, newData.CategoryID, expense.CategoryID)
+				assert.Equal(t, newData.Title, expense.Title)
+				assert.Equal(t, newData.ExpenseDate.Format("2006-01-02"), expense.ExpenseDate.Format("2006-01-02"))
 			}
 		})
 	}
 }
 
-func TestCountAllIncome(t *testing.T) {
+func TestCountAllExpense(t *testing.T) {
 	db := testDB.SetupDB(t)
-	total := seedIncome(t, db, 10)
+	total := seedExpense(t, db, 10)
 
 	tests := []struct {
 		name        string
@@ -333,7 +369,7 @@ func TestCountAllIncome(t *testing.T) {
 		{
 			name: "Count total + add 10 data",
 			addDataFunc: func() (add int64) {
-				add = seedIncome(t, db, 10)
+				add = seedExpense(t, db, 10)
 				return
 			},
 			wantErr:     false,
@@ -342,7 +378,7 @@ func TestCountAllIncome(t *testing.T) {
 		{
 			name: "Count total + add more 10 data",
 			addDataFunc: func() (add int64) {
-				add = seedIncome(t, db, 10)
+				add = seedExpense(t, db, 10)
 				return
 			},
 			wantErr:     false,
@@ -350,7 +386,7 @@ func TestCountAllIncome(t *testing.T) {
 		},
 	}
 
-	repo := repository.NewIncomeRepository(db)
+	repo := repository.NewExpenseRepository(db)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -365,10 +401,10 @@ func TestCountAllIncome(t *testing.T) {
 	}
 }
 
-func TestDeleteIncome(t *testing.T) {
+func TestDeleteExpense(t *testing.T) {
 	db := testDB.SetupDB(t)
-	total := seedIncome(t, db, 20)
-	id := seedIncome(t, db, 1)
+	total := seedExpense(t, db, 20)
+	id := seedExpense(t, db, 1)
 	total += 1
 
 	tests := []struct {
@@ -388,7 +424,7 @@ func TestDeleteIncome(t *testing.T) {
 		},
 	}
 
-	repo := repository.NewIncomeRepository(db)
+	repo := repository.NewExpenseRepository(db)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
