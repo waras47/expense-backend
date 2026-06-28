@@ -69,7 +69,7 @@ type expenseRepo struct {
 	db *pgxpool.Pool
 }
 
-func NewPostgresExpenseRepository(db *pgxpool.Pool) domain.ExpenseRepository {
+func NewExpenseRepository(db *pgxpool.Pool) domain.ExpenseRepository {
 	return &expenseRepo{db: db}
 }
 

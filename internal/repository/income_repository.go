@@ -77,7 +77,7 @@ type incomeRepo struct {
 	db *pgxpool.Pool
 }
 
-func NewPostgresIncomeRepository(db *pgxpool.Pool) domain.IncomeRepository {
+func NewIncomeRepository(db *pgxpool.Pool) domain.IncomeRepository {
 	return &incomeRepo{db: db}
 }
 

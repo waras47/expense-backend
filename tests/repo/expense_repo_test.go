@@ -113,7 +113,7 @@ func TestCreateExpense(t *testing.T) {
 		},
 	}
 
-	repo := repository.NewPostgresExpenseRepository(db)
+	repo := repository.NewExpenseRepository(db)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -178,7 +178,7 @@ func TestFindAllExpenses(t *testing.T) {
 			},
 		}
 
-		repo := repository.NewPostgresExpenseRepository(db)
+		repo := repository.NewExpenseRepository(db)
 		for _, tt := range tests {
 			t.Run(tt.name, func(t *testing.T) {
 				expenses, err := repo.FindAll(context.Background(), tt.limit, tt.offset)
@@ -230,7 +230,7 @@ func TestFindByIDExpense(t *testing.T) {
 		},
 	}
 
-	repo := repository.NewPostgresExpenseRepository(db)
+	repo := repository.NewExpenseRepository(db)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -320,7 +320,7 @@ func TestUpdateExpense(t *testing.T) {
 		},
 	}
 
-	repo := repository.NewPostgresExpenseRepository(db)
+	repo := repository.NewExpenseRepository(db)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			id, newData := tt.preUpdateFunc()
@@ -386,7 +386,7 @@ func TestCountAllExpense(t *testing.T) {
 		},
 	}
 
-	repo := repository.NewPostgresExpenseRepository(db)
+	repo := repository.NewExpenseRepository(db)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -424,7 +424,7 @@ func TestDeleteExpense(t *testing.T) {
 		},
 	}
 
-	repo := repository.NewPostgresExpenseRepository(db)
+	repo := repository.NewExpenseRepository(db)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

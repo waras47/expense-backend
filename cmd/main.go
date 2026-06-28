@@ -9,10 +9,16 @@ import (
 	"expense-backend/internal/database"
 	"expense-backend/internal/server"
 
+	_ "expense-backend/docs"
+
 	"github.com/jackc/pgx/v5/stdlib" // tambah ini
 	"github.com/pressly/goose/v3"
 )
 
+// @title API Backend Expense
+// @version 1.0
+// @description A lightweight backend RESTful API designed for tracking and managing personal or organizational expenses. This API provides secure endpoints to log daily expenses, categorize spending, and generate basic financial summaries.
+// @BasePath /api
 func main() {
 	cfg := config.Load()
 
@@ -23,6 +29,7 @@ func main() {
 	defer pool.Close()
 	log.Println("Connect To Database")
 
+	/* MIGRATIONS */
 	// Convert pgxpool -> *sql.DB untuk goose
 	sqlDB := stdlib.OpenDBFromPool(pool)
 
@@ -49,6 +56,7 @@ func main() {
 	// Close sqlDb & provider afeter finish running migrations
 	sqlDB.Close()
 	provider.Close()
+	/* END MIGRATIONS */
 
 	// Start server setelah migrasi selesai
 	srv := server.New(cfg, pool)

@@ -26,13 +26,22 @@ func NewExpenseHandler(uc domain.ExpenseUsecase) *ExpenseHandler {
 }
 
 func (h *ExpenseHandler) RegisterRoutes(rg *gin.RouterGroup) {
-	rg.GET("", h.ListExpenses)
+	rg.GET("", h.GetExpenses)
 	rg.POST("", h.CreateExpense)
-	rg.GET("/:id", h.FindOneExpense)
+	rg.GET("/:id", h.GetExpenses)
 	rg.PUT("/:id", h.UpdateExpense)
 	rg.DELETE("/:id", h.DeleteExpense)
 }
 
+// CreateExpense write new record expense
+//
+//	@Summary		Record new expense
+//	@Description	create expense
+//	@Tags			expenses
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	appresponse.Response[any]
+//	@Router			/api/expenses [post]
 func (h *ExpenseHandler) CreateExpense(c *gin.Context) {
 	var payloadExpense reqDto.CreateExpensePayload
 	if err := c.ShouldBindJSON(&payloadExpense); err != nil {
@@ -77,73 +86,94 @@ func (h *ExpenseHandler) CreateExpense(c *gin.Context) {
 	appresponse.RespondSuccess(c, http.StatusCreated, "succeded create new expense", &expenseResponse, nil)
 }
 
-func (h *ExpenseHandler) ListExpenses(c *gin.Context) {
-	var paginateQuery reqDto.PaginateQuery
-	if err := c.ShouldBindQuery(&paginateQuery); err != nil {
-		if errors.Is(err, io.EOF) {
-			appresponse.RespondError(c, http.StatusBadRequest, "payload is empty", apperror.NewBadRequest(help.Ptr("request body is empty")))
-			return
-		}
-		var validationErr validator.ValidationErrors
-		if errors.As(err, &validationErr) {
-			appresponse.RespondError(c, http.StatusBadRequest, "validation failed", apperror.NewBadRequest(help.Ptr(validationErr.Error())))
-			return
-		}
-		appresponse.RespondError(c, http.StatusBadRequest, "invalid url query", apperror.NewBadRequest(help.Ptr(err.Error())))
-		return
-	}
+// GetExpenses get one expense specified by id
+//
+//	@Summary		List expense
+//	@Description	get all existing expense, or get one filters by expense id
+//	@Tags			expenses
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	query		int	true	"Income ID (Optional)"
+//	@Success		200	{object}	appresponse.Response[any]
+//	@Router			/api/expenses [get]
+func (h *ExpenseHandler) GetExpenses(c *gin.Context) {
+	idStr := c.Param("id")
+	if idStr != "" {
 
-	expenses, total, err := h.uc.GetAll(c.Request.Context(), paginateQuery.Page, paginateQuery.Limit)
-	if err != nil {
-		var appErr *apperror.AppError
-		if errors.As(err, &appErr) {
-			appresponse.RespondError(c, appErr.Code, "failed get expenses", appErr)
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			appresponse.RespondError(c, http.StatusBadRequest, "invalid param id", apperror.NewBadRequest(help.Ptr(err.Error())))
 			return
 		}
-		appresponse.RespondError(c, http.StatusInternalServerError, "failed get expenses", apperror.NewInternal(help.Ptr(err.Error())))
-		return
-	}
 
-	var expenseResponses = make([]resDto.ExpenseResponse, len(expenses))
-	for i, expense := range expenses {
-		expenseResponses[i], err = resDto.NewExpenseResponse(&expense)
+		expense, err := h.uc.Get(c.Request.Context(), int64(id))
+		if err != nil {
+			var appErr *apperror.AppError
+			if errors.As(err, &appErr) {
+				appresponse.RespondError(c, appErr.Code, "failed to get expense", appErr)
+				return
+			}
+			appresponse.RespondError(c, http.StatusInternalServerError, "failed to get expense", apperror.NewInternal(help.Ptr(err.Error())))
+			return
+		}
+
+		expenseResponse, err := dto.NewExpenseResponse(expense)
 		if err != nil {
 			appresponse.RespondError(c, http.StatusInternalServerError, "failed process expense", err)
 			return
 		}
-	}
-
-	paginateRes := appresponse.CratePaginateResponse(c, paginateQuery.Page, paginateQuery.Limit, total)
-	appresponse.RespondSuccess(c, http.StatusOK, "expenses retrieved", &expenseResponses, paginateRes)
-}
-
-func (h *ExpenseHandler) FindOneExpense(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		appresponse.RespondError(c, http.StatusBadRequest, "invalid param id", apperror.NewBadRequest(help.Ptr(err.Error())))
-		return
-	}
-
-	expense, err := h.uc.Get(c.Request.Context(), int64(id))
-	if err != nil {
-		var appErr *apperror.AppError
-		if errors.As(err, &appErr) {
-			appresponse.RespondError(c, appErr.Code, "failed to get expense", appErr)
+		appresponse.RespondSuccess(c, http.StatusOK, "expense retrieved", &expenseResponse, nil)
+	} else {
+		var paginateQuery reqDto.PaginateQuery
+		if err := c.ShouldBindQuery(&paginateQuery); err != nil {
+			if errors.Is(err, io.EOF) {
+				appresponse.RespondError(c, http.StatusBadRequest, "payload is empty", apperror.NewBadRequest(help.Ptr("request body is empty")))
+				return
+			}
+			var validationErr validator.ValidationErrors
+			if errors.As(err, &validationErr) {
+				appresponse.RespondError(c, http.StatusBadRequest, "validation failed", apperror.NewBadRequest(help.Ptr(validationErr.Error())))
+				return
+			}
+			appresponse.RespondError(c, http.StatusBadRequest, "invalid url query", apperror.NewBadRequest(help.Ptr(err.Error())))
 			return
 		}
-		appresponse.RespondError(c, http.StatusInternalServerError, "failed to get expense", apperror.NewInternal(help.Ptr(err.Error())))
-		return
-	}
 
-	expenseResponse, err := dto.NewExpenseResponse(expense)
-	if err != nil {
-		appresponse.RespondError(c, http.StatusInternalServerError, "failed process expense", err)
-		return
+		expenses, total, err := h.uc.GetAll(c.Request.Context(), paginateQuery.Page, paginateQuery.Limit)
+		if err != nil {
+			var appErr *apperror.AppError
+			if errors.As(err, &appErr) {
+				appresponse.RespondError(c, appErr.Code, "failed get expenses", appErr)
+				return
+			}
+			appresponse.RespondError(c, http.StatusInternalServerError, "failed get expenses", apperror.NewInternal(help.Ptr(err.Error())))
+			return
+		}
+
+		var expenseResponses = make([]resDto.ExpenseResponse, len(expenses))
+		for i, expense := range expenses {
+			expenseResponses[i], err = resDto.NewExpenseResponse(&expense)
+			if err != nil {
+				appresponse.RespondError(c, http.StatusInternalServerError, "failed process expense", err)
+				return
+			}
+		}
+
+		paginateRes := appresponse.CratePaginateResponse(c, paginateQuery.Page, paginateQuery.Limit, total)
+		appresponse.RespondSuccess(c, http.StatusOK, "expenses retrieved", &expenseResponses, paginateRes)
 	}
-	appresponse.RespondSuccess(c, http.StatusOK, "expense retrieved", &expenseResponse, nil)
 }
 
+// UpdateExpense edit expense by replcacing old value with new value, specified by id
+//
+//	@Summary		Edit expense
+//	@Description	update expense
+//	@Tags			expenses
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	query		int	true	"Income ID"
+//	@Success		200	{object}	appresponse.Response[any]
+//	@Router			/api/expenses [put]
 func (h *ExpenseHandler) UpdateExpense(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
@@ -203,6 +233,16 @@ func (h *ExpenseHandler) UpdateExpense(c *gin.Context) {
 	appresponse.RespondSuccess(c, http.StatusOK, "expense retrieved", &domain.Expense{}, nil)
 }
 
+// DelteExpense remove expense, specified by id
+//
+//	@Summary		Remove expense
+//	@Description	delete expense
+//	@Tags			expenses
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	query		int	true	"Income ID"
+//	@Success		200	{object}	appresponse.Response[any]
+//	@Router			/api/expenses [delete]
 func (h *ExpenseHandler) DeleteExpense(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)

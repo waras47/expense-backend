@@ -94,7 +94,7 @@ func TestCreateIncome(t *testing.T) {
 		},
 	}
 
-	repo := repository.NewPostgresIncomeRepository(db)
+	repo := repository.NewIncomeRepository(db)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -158,7 +158,7 @@ func TestFindAllIncomes(t *testing.T) {
 			},
 		}
 
-		repo := repository.NewPostgresIncomeRepository(db)
+		repo := repository.NewIncomeRepository(db)
 		for _, tt := range tests {
 			t.Run(tt.name, func(t *testing.T) {
 				incomes, err := repo.FindAll(context.Background(), tt.limit, tt.offset)
@@ -211,7 +211,7 @@ func TestFindByIDIncome(t *testing.T) {
 		},
 	}
 
-	repo := repository.NewPostgresIncomeRepository(db)
+	repo := repository.NewIncomeRepository(db)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -284,7 +284,7 @@ func TestUpdateIncome(t *testing.T) {
 		},
 	}
 
-	repo := repository.NewPostgresIncomeRepository(db)
+	repo := repository.NewIncomeRepository(db)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			id, newData := tt.preUpdateFunc()
@@ -350,7 +350,7 @@ func TestCountAllIncome(t *testing.T) {
 		},
 	}
 
-	repo := repository.NewPostgresIncomeRepository(db)
+	repo := repository.NewIncomeRepository(db)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -388,7 +388,7 @@ func TestDeleteIncome(t *testing.T) {
 		},
 	}
 
-	repo := repository.NewPostgresIncomeRepository(db)
+	repo := repository.NewIncomeRepository(db)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
