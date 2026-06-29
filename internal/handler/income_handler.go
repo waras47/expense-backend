@@ -35,13 +35,14 @@ func (h *IncomeHandler) RegisterRoutes(rg *gin.RouterGroup) {
 
 // CreateIncome write new record income
 //
-//	@Summary		Record new income
-//	@Description	create income
-//	@Tags			incomes
-//	@Accept			json
-//	@Produce		json
-//	@Success		200	{object}	appresponse.Response[any]
-//	@Router			/api/incomes [post]
+//		@Summary		Add new income
+//		@Description	create income
+//		@Tags			incomes
+//		@Accept			json
+//		@Produce		json
+//	 	@Param 			request body reqDto.CreateIncomePayload true "Create new income payload"
+//		@Success		200	{object}	appresponse.Response[any]
+//		@Router			/incomes [post]
 func (h *IncomeHandler) CreateIncome(c *gin.Context) {
 	var payloadIncome reqDto.CreateIncomePayload
 	if err := c.ShouldBindJSON(&payloadIncome); err != nil {
@@ -95,7 +96,7 @@ func (h *IncomeHandler) CreateIncome(c *gin.Context) {
 //	@Produce		json
 //	@Param			id	query		int	true	"Income ID (Optional)"
 //	@Success		200	{object}	appresponse.Response[any]
-//	@Router			/api/incomes [get]
+//	@Router			/incomes [get]
 func (h *IncomeHandler) GetIncomes(c *gin.Context) {
 	idStr := c.Param("id")
 	if idStr != "" {
@@ -171,8 +172,9 @@ func (h *IncomeHandler) GetIncomes(c *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			id	query		int	true	"Income ID"
+//	@Param 			request body reqDto.UpdateIncomePayload true "Edit income payload"
 //	@Success		200	{object}	appresponse.Response[any]
-//	@Router			/api/incomes [put]
+//	@Router			/incomes [put]
 func (h *IncomeHandler) UpdateIncome(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
@@ -241,7 +243,7 @@ func (h *IncomeHandler) UpdateIncome(c *gin.Context) {
 //	@Produce		json
 //	@Param			id	query		int	true	"Income ID"
 //	@Success		200	{object}	appresponse.Response[any]
-//	@Router			/api/incomes [delete]
+//	@Router			/incomes [delete]
 func (h *IncomeHandler) DeleteIncome(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
