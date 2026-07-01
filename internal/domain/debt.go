@@ -8,40 +8,52 @@ import (
 )
 
 type Debt struct {
-	ID         int             `json:"id"`
-	PersonName string          `json:"person_name"`
-	Amount     decimal.Decimal `json:"amount"`
-	Type       string          `json:"type"`
-	DueDate    time.Time       `json:"due_date"`
-	IsPaid     bool            `json:"is_paid"`
-	Note       *string         `json:"note"`
-	CreatedAt  *time.Time      `json:"created_at"`
-	PaidAt     *time.Time      `json:"paid_at"`
-	UpdatedAt  *time.Time      `json:"updated_at"`
+	ID int64
+	// Allowed update by user
+	PersonName string
+	Amount     decimal.Decimal
+	Type       string
+	DueDate    time.Time
+	Note       string
+	// Update handled by database
+	IsPaid    bool
+	PaidAt    time.Time
+	IsDeleted bool
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
-type DebtPayload struct {
-	PersonName string          `json:"person_name" binding:"required"`
-	Amount     decimal.Decimal `json:"amount" binding:"required,lte=0"`
-	Type       string          `json:"type" binding:"required"`
-	DueDate    time.Time       `json:"due_date" binding:"required"`
-	IsPaid     bool            `json:"is_paid" binding:"required"`
-	Note       string          `json:"note"`
-}
-
-type PayDebyPayload struct {
-	ID int `json:"id"  binding:"required"`
+// Merge non default value from new data
+func (d *Debt) MergeWithNewData(debt *Debt) *Debt {
+	if debt.PersonName != "" {
+		d.PersonName = debt.PersonName
+	}
+	if !debt.Amount.IsZero() {
+		d.Amount = debt.Amount
+	}
+	if debt.Type != "" {
+		d.Type = debt.Type
+	}
+	if !debt.DueDate.IsZero() {
+		d.DueDate = debt.DueDate
+	}
+	d.Note = debt.Note
+	return d
 }
 
 type DebtRepository interface {
-	FindAll(ctx context.Context) ([]Debt, error)
-	FindByID(ctx context.Context, id int) (*Debt, error)
-	Create(ctx context.Context, payload DebtPayload) (*Debt, error)
-	Delete(ctx context.Context, id int) error
+	FindAll(ctx context.Context, limit, offset int64) ([]Debt, error)
+	FindByID(ctx context.Context, id int64) (*Debt, error)
+	Create(ctx context.Context, debt *Debt) (*Debt, error)
+	Update(ctx context.Context, debt *Debt) error // The current update method is replacing the data because field is small
+	Delete(ctx context.Context, id int64) error
+	CountAll(ctx context.Context) int64
 }
 
 type DebtUsecase interface {
-	GetAll(ctx context.Context) ([]Debt, error)
-	Create(ctx context.Context, payload DebtPayload) (*Debt, error)
-	Delete(ctx context.Context, id int) error
+	Get(ctx context.Context, id int64) (*Debt, error)
+	GetAll(ctx context.Context, page, limit int64) ([]Debt, int64, error)
+	Create(ctx context.Context, input *Debt) (*Debt, error)
+	Update(ctx context.Context, id int64, input *Debt) error
+	Delete(ctx context.Context, id int64) error
 }
