@@ -103,3 +103,7 @@ func RespondSuccess[T any](c *gin.Context, status int, message string, data *T, 
 		},
 	})
 }
+
+func RespondSuccessNoData(c *gin.Context, status int, message string) {
+	RespondSuccess[any](c, status, message, nil, nil)
+}

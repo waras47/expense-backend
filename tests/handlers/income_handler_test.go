@@ -571,7 +571,7 @@ func TestUpdateIncome(t *testing.T) {
 			},
 			wantErr:         false,
 			expectedCode:    http.StatusOK,
-			expectedMessage: "income retrieved",
+			expectedMessage: "income updated",
 		},
 		{
 			name:    "Invalid update id",
@@ -727,7 +727,6 @@ func TestUpdateIncome(t *testing.T) {
 					t.Log("error: ", res.Error.Message)
 				}
 				assert.True(t, res.Success)
-				assert.NotNil(t, res.Data)
 			}
 		})
 	}
@@ -750,7 +749,7 @@ func TestDeleteIncome(t *testing.T) {
 			},
 			wantErr:         false,
 			expectedCode:    http.StatusOK,
-			expectedMessage: "income retrieved",
+			expectedMessage: "income deleted",
 		},
 		{
 			name:            "Invalid delete id",
@@ -815,7 +814,6 @@ func TestDeleteIncome(t *testing.T) {
 					t.Log("error: ", res.Error.Message)
 				}
 				assert.True(t, res.Success)
-				assert.NotNil(t, res.Data)
 			}
 		})
 	}

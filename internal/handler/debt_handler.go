@@ -245,7 +245,7 @@ func (h *DebtHandler) UpdateDebt(c *gin.Context) {
 		return
 	}
 
-	appresponse.RespondSuccess(c, http.StatusOK, "debt retrieved", &domain.Debt{}, nil)
+	appresponse.RespondSuccessNoData(c, http.StatusOK, "debt updated")
 }
 
 // DelteDebt remove debt, specified by id
@@ -277,5 +277,5 @@ func (h *DebtHandler) DeleteDebt(c *gin.Context) {
 		return
 	}
 
-	appresponse.RespondSuccess(c, http.StatusOK, "debt retrieved", &domain.Debt{}, nil)
+	appresponse.RespondSuccessNoData(c, http.StatusOK, "debt deleted")
 }

@@ -506,7 +506,7 @@ func TestUpdateExpense(t *testing.T) {
 			},
 			wantErr:         false,
 			expectedCode:    http.StatusOK,
-			expectedMessage: "expense retrieved",
+			expectedMessage: "expense updated",
 		},
 		{
 			name:    "Invalid update id",
@@ -662,7 +662,6 @@ func TestUpdateExpense(t *testing.T) {
 					t.Log("error: ", res.Error.Message)
 				}
 				assert.True(t, res.Success)
-				assert.NotNil(t, res.Data)
 			}
 		})
 	}
@@ -685,7 +684,7 @@ func TestDeleteExpense(t *testing.T) {
 			},
 			wantErr:         false,
 			expectedCode:    http.StatusOK,
-			expectedMessage: "expense retrieved",
+			expectedMessage: "expense deleted",
 		},
 		{
 			name:            "Invalid delete id",
@@ -750,7 +749,6 @@ func TestDeleteExpense(t *testing.T) {
 					t.Log("error: ", res.Error.Message)
 				}
 				assert.True(t, res.Success)
-				assert.NotNil(t, res.Data)
 			}
 		})
 	}

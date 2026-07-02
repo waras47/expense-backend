@@ -311,7 +311,7 @@ func (h *ExpenseHandler) UpdateExpense(c *gin.Context) {
 		return
 	}
 
-	appresponse.RespondSuccess(c, http.StatusOK, "expense retrieved", &domain.Expense{}, nil)
+	appresponse.RespondSuccessNoData(c, http.StatusOK, "expense updated")
 }
 
 // DelteExpense remove expense, specified by id
@@ -343,5 +343,5 @@ func (h *ExpenseHandler) DeleteExpense(c *gin.Context) {
 		return
 	}
 
-	appresponse.RespondSuccess(c, http.StatusOK, "expense retrieved", &domain.Expense{}, nil)
+	appresponse.RespondSuccessNoData(c, http.StatusOK, "expense deleted")
 }

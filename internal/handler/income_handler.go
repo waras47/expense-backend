@@ -28,7 +28,7 @@ func NewIncomeHandler(uc domain.IncomeUsecase) *IncomeHandler {
 func (h *IncomeHandler) RegisterRoutes(rg *gin.RouterGroup) {
 	rg.GET("", h.GetIncomes)
 	rg.POST("", h.CreateIncome)
-	rg.GET("/:id", h.GetIncomes)
+	rg.GET("/:id", h.GetIncomeByID)
 	rg.PUT("/:id", h.UpdateIncome)
 	rg.DELETE("/:id", h.DeleteIncome)
 }
@@ -242,7 +242,7 @@ func (h *IncomeHandler) UpdateIncome(c *gin.Context) {
 		return
 	}
 
-	appresponse.RespondSuccess(c, http.StatusOK, "income retrieved", &domain.Income{}, nil)
+	appresponse.RespondSuccessNoData(c, http.StatusOK, "income updated")
 }
 
 // DelteIncome remove income, specified by id
@@ -274,5 +274,5 @@ func (h *IncomeHandler) DeleteIncome(c *gin.Context) {
 		return
 	}
 
-	appresponse.RespondSuccess(c, http.StatusOK, "income retrieved", &domain.Income{}, nil)
+	appresponse.RespondSuccessNoData(c, http.StatusOK, "income deleted")
 }
