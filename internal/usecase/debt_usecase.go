@@ -74,6 +74,19 @@ func (uc *debtUsecase) Update(ctx context.Context, id int64, input *domain.Debt)
 	return nil
 }
 
+func (uc *debtUsecase) Paid(ctx context.Context, id int64) error {
+	// Validate data exists
+	if _, err := uc.repo.FindByID(ctx, id); err != nil {
+		return err
+	}
+
+	if err := uc.repo.Paid(ctx, id); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Soft Delete
 func (uc *debtUsecase) Delete(ctx context.Context, id int64) error {
 	// Validate data exists

@@ -46,6 +46,7 @@ type DebtRepository interface {
 	FindByID(ctx context.Context, id int64) (*Debt, error)
 	Create(ctx context.Context, debt *Debt) (*Debt, error)
 	Update(ctx context.Context, debt *Debt) error // The current update method is replacing the data because field is small
+	Paid(ctx context.Context, id int64) error
 	Delete(ctx context.Context, id int64) error
 	CountAll(ctx context.Context) int64
 }
@@ -55,5 +56,6 @@ type DebtUsecase interface {
 	GetAll(ctx context.Context, page, limit int64) ([]Debt, int64, error)
 	Create(ctx context.Context, input *Debt) (*Debt, error)
 	Update(ctx context.Context, id int64, input *Debt) error
+	Paid(ctx context.Context, id int64) error
 	Delete(ctx context.Context, id int64) error
 }

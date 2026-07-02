@@ -355,6 +355,50 @@ func TestCountAllDebt(t *testing.T) {
 	}
 }
 
+func TestPaidDebt(t *testing.T) {
+	db := testDB.SetupDB(t)
+	total := seedDebt(t, db, 20)
+	id := seedDebt(t, db, 1)
+	total += 1
+
+	tests := []struct {
+		name        string
+		wantErr     bool
+		expectedErr error
+	}{
+		{
+			name:        "Succeded paid",
+			wantErr:     false,
+			expectedErr: nil,
+		},
+		{
+			name:        "No paid affected",
+			wantErr:     true,
+			expectedErr: apperror.NewUpdateFailed(),
+		},
+	}
+
+	repo := repository.NewDebtRepository(db)
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := repo.Delete(context.Background(), id)
+			if tt.wantErr {
+				appErr, ok := err.(*apperror.AppError)
+				assert.True(t, ok)
+				expErr, ok := tt.expectedErr.(*apperror.AppError)
+				assert.True(t, ok)
+				assert.Error(t, err)
+				assert.Equal(t, expErr.Code, appErr.Code, appErr.Message)
+			} else {
+				assert.NoError(t, err)
+				count := repo.CountAll(context.Background())
+				assert.Equal(t, total-1, count)
+			}
+		})
+	}
+}
+
 func TestDeleteDebt(t *testing.T) {
 	db := testDB.SetupDB(t)
 	total := seedDebt(t, db, 20)

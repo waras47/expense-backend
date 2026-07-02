@@ -667,6 +667,93 @@ func TestUpdateDebt(t *testing.T) {
 	}
 }
 
+func TestPaidDebt(t *testing.T) {
+	tests := []struct {
+		name            string
+		path            string
+		paidFunc        func(c context.Context, id int64) error
+		wantErr         bool
+		expectedCode    int
+		expectedMessage string
+	}{
+		{
+			name: "Succeded paid debt",
+			path: "/api/debts/1/paid",
+			paidFunc: func(c context.Context, id int64) error {
+				return nil
+			},
+			wantErr:         false,
+			expectedCode:    http.StatusOK,
+			expectedMessage: "succeded paid debt",
+		},
+		{
+			name:            "Invalid paid id",
+			path:            "/api/debts/invalid_id/paid",
+			wantErr:         true,
+			expectedCode:    http.StatusBadRequest,
+			expectedMessage: "invalid param id",
+		},
+		{
+			name: "Debt not found",
+			path: "/api/debts/1/paid",
+			paidFunc: func(c context.Context, id int64) error {
+				return apperror.NewNotFound()
+			},
+			wantErr:         true,
+			expectedCode:    http.StatusNotFound,
+			expectedMessage: "failed to paid debt",
+		},
+		{
+			name: "Delete failed",
+			path: "/api/debts/1/paid",
+			paidFunc: func(c context.Context, id int64) error {
+				return apperror.NewInternal(nil)
+			},
+			wantErr:         true,
+			expectedCode:    http.StatusInternalServerError,
+			expectedMessage: "failed to paid debt",
+		},
+		{
+			name: "Nothing paid",
+			path: "/api/debts/1/paid",
+			paidFunc: func(c context.Context, id int64) error {
+				return apperror.NewUpdateFailed()
+			},
+			wantErr:         true,
+			expectedCode:    http.StatusBadRequest,
+			expectedMessage: "failed to paid debt",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			uc := &mock.MockDebtUsecase{
+				DeleteFunc: tt.paidFunc,
+			}
+			r := setupDebtHandler(uc)
+			w := mock.NewRequest(r, "PATCH", tt.path, nil)
+			var res appresponse.Response[domain.Debt]
+			err := json.Unmarshal(w.Body.Bytes(), &res)
+
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expectedCode, w.Code)
+			assert.Equal(t, tt.expectedMessage, res.Message)
+
+			if tt.wantErr {
+				fmt.Println(w.Body.String())
+				assert.False(t, res.Success)
+				assert.NotNil(t, res.Error)
+				assert.Equal(t, tt.expectedCode, res.Error.Code)
+			} else {
+				if res.Error != nil {
+					t.Log("error: ", res.Error.Message)
+				}
+				assert.True(t, res.Success)
+			}
+		})
+	}
+}
+
 func TestDeleteDebt(t *testing.T) {
 	tests := []struct {
 		name            string

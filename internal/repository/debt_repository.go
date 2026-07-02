@@ -176,6 +176,20 @@ func (r *debtRepo) Update(ctx context.Context, debt *domain.Debt) error {
 	return nil
 }
 
+func (r *debtRepo) Paid(ctx context.Context, id int64) error {
+	query := `UPDATE debts SET is_paid = true, paid_at = CURRENT_TIMESTAMP(0) WHERE id = $1 AND is_deleted = false`
+	commandTag, err := r.db.Exec(ctx, query, id)
+	if err != nil {
+		slog.Error(fmt.Sprintf("Failed to paid data with id: %d", id), "error", err)
+		return apperror.NewInternal(helpers.Ptr(err.Error()))
+	}
+
+	if commandTag.RowsAffected() == 0 {
+		return apperror.NewUpdateFailed()
+	}
+	return nil
+}
+
 func (r *debtRepo) Delete(ctx context.Context, id int64) error {
 	query := `UPDATE debts SET is_deleted = true WHERE id = $1 AND is_deleted = false`
 	commandTag, err := r.db.Exec(ctx, query, id)
@@ -185,7 +199,7 @@ func (r *debtRepo) Delete(ctx context.Context, id int64) error {
 	}
 
 	if commandTag.RowsAffected() == 0 {
-		return apperror.NewDeleteFailed()
+		return apperror.NewUpdateFailed()
 	}
 	return nil
 }

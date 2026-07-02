@@ -30,6 +30,7 @@ func (h *DebtHandler) RegisterRoutes(rg *gin.RouterGroup) {
 	rg.POST("", h.CreateDebt)
 	rg.GET("/:id", h.GetDebtByID)
 	rg.PUT("/:id", h.UpdateDebt)
+	rg.PATCH("/:id/paid", h.PaidDebt)
 	rg.DELETE("/:id", h.DeleteDebt)
 }
 
@@ -245,6 +246,38 @@ func (h *DebtHandler) UpdateDebt(c *gin.Context) {
 	}
 
 	appresponse.RespondSuccessNoData(c, http.StatusOK, "debt updated")
+}
+
+// PaidDebt update debt as paid
+//
+//	@Summary		Change status debt as paid
+//	@Description	paid debt
+//	@Tags			debts
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		int	true	"Debt ID"
+//	@Success		200	{object}	appresponse.Response[any]
+//	@Router			/debts/{id}/paid [patch]
+func (h *DebtHandler) PaidDebt(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		appresponse.RespondError(c, http.StatusBadRequest, "invalid param id", apperror.NewBadRequest(help.Ptr(err.Error())))
+		return
+	}
+
+	err = h.uc.Paid(c.Request.Context(), int64(id))
+	if err != nil {
+		var appErr *apperror.AppError
+		if errors.As(err, &appErr) {
+			appresponse.RespondError(c, appErr.Code, "failed to paid debt", appErr)
+			return
+		}
+		appresponse.RespondError(c, http.StatusInternalServerError, "failed to paid debt", apperror.NewInternal(help.Ptr(err.Error())))
+		return
+	}
+
+	appresponse.RespondSuccessNoData(c, http.StatusOK, "succeded paid debt")
 }
 
 // DelteDebt remove debt, specified by id

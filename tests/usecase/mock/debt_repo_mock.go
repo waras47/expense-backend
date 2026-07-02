@@ -10,6 +10,7 @@ type MockDebtRepository struct {
 	FindByIDFunc func(ctx context.Context, id int64) (*domain.Debt, error)
 	CreateFunc   func(ctx context.Context, income *domain.Debt) (*domain.Debt, error)
 	UpdateFunc   func(ctx context.Context, income *domain.Debt) error
+	PaidFunc     func(ctx context.Context, id int64) error
 	DeleteFunc   func(ctx context.Context, id int64) error
 	CountAllFunc func(ctx context.Context) int64
 
@@ -38,6 +39,9 @@ func (m *MockDebtRepository) Create(ctx context.Context, income *domain.Debt) (*
 }
 func (m *MockDebtRepository) Update(ctx context.Context, income *domain.Debt) error {
 	return m.UpdateFunc(ctx, income)
+}
+func (m *MockDebtRepository) Paid(ctx context.Context, id int64) error {
+	return m.DeleteFunc(ctx, id)
 }
 func (m *MockDebtRepository) Delete(ctx context.Context, id int64) error {
 	return m.DeleteFunc(ctx, id)

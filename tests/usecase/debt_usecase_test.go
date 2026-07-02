@@ -261,6 +261,49 @@ func TestGetAllDebt(t *testing.T) {
 		})
 	}
 }
+func TestPaidDebt(t *testing.T) {
+	tests := []struct {
+		name             string
+		paidID           int64
+		mockPaidRepo     func(ctx context.Context, id int64) error
+		mockFindByIDRepo func(ctx context.Context, id int64) (*domain.Debt, error)
+		wantErr          bool
+		expectedErr      error
+	}{
+		{
+			name:   "There are no business flows to be tested in the Paid method yet",
+			paidID: int64(1),
+			mockPaidRepo: func(ctx context.Context, id int64) error {
+				return nil
+			},
+			mockFindByIDRepo: func(ctx context.Context, id int64) (*domain.Debt, error) {
+				return &domain.Debt{}, nil
+			},
+			wantErr:     false,
+			expectedErr: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			repo := &mock.MockDebtRepository{
+				DeleteFunc:   tt.mockPaidRepo,
+				FindByIDFunc: tt.mockFindByIDRepo,
+			}
+
+			uc := usecase.NewDebtUsecase(repo)
+			err := uc.Delete(context.Background(), tt.paidID)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+				assert.ErrorIs(t, tt.expectedErr, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Nil(t, err)
+			}
+		})
+	}
+}
 func TestDeleteDebt(t *testing.T) {
 	tests := []struct {
 		name             string
