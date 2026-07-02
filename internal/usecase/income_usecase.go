@@ -41,7 +41,7 @@ func (uc *incomeUsecase) GetAll(ctx context.Context, page, limit int64) ([]domai
 	// Process
 	incomes, err := uc.repo.FindAll(ctx, limit, offset)
 	if err != nil {
-		return []domain.Income{}, 0, err
+		return incomes, 0, err
 	}
 
 	countAll := uc.repo.CountAll(ctx)

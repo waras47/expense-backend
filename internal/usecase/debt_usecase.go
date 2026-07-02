@@ -41,7 +41,7 @@ func (uc *debtUsecase) GetAll(ctx context.Context, page, limit int64) ([]domain.
 	// Process
 	debts, err := uc.repo.FindAll(ctx, limit, offset)
 	if err != nil {
-		return []domain.Debt{}, 0, err
+		return debts, 0, err
 	}
 
 	countAll := uc.repo.CountAll(ctx)
