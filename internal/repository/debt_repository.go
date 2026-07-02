@@ -160,7 +160,7 @@ func (r *debtRepo) Create(ctx context.Context, debt *domain.Debt) (*domain.Debt,
 
 func (r *debtRepo) Update(ctx context.Context, debt *domain.Debt) error {
 	query := `UPDATE debts 
-			  SET person_name = $1, amount = $2, type = $3, note = $4, due_date = $5, is_paid = $6 updated_at = CURRENT_TIMESTAMP(0)
+			  SET person_name = $1, amount = $2, type = $3, note = $4, due_date = $5, is_paid = $6, updated_at = CURRENT_TIMESTAMP(0)
 			  WHERE id = $7`
 
 	commandTag, err := r.db.Exec(ctx, query, debt.PersonName, debt.Amount, debt.Type, debt.Note, debt.DueDate, debt.IsPaid, debt.ID)

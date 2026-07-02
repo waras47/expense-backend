@@ -98,11 +98,12 @@ func SetupDB(t *testing.T) *pgxpool.Pool {
 			amount DECIMAL(15,2) NOT NULL,
 			type VARCHAR(10) NOT NULL,
 			due_date DATE NOT NULL,
-			is_paid BOOLEAN NOT NULL,
 			note TEXT,
-			paid_at TIMESTAMPTZ(0),
-			is_deleted BOOLEAN DEFAULT false,
-			created_at TIMESTAMPTZ(0) DEFAULT CURRENT_TIMESTAMP,
+			
+			is_paid BOOLEAN DEFAULT false NOT NULL,
+			paid_at TIMESTAMPTZ(0) DEFAULT NULL,
+			is_deleted BOOLEAN DEFAULT false NOT NULL,
+			created_at TIMESTAMPTZ(0) DEFAULT CURRENT_TIMESTAMP NOT NULL,
 			updated_at TIMESTAMPTZ(0) DEFAULT CURRENT_TIMESTAMP
 		);`,
 		`INSERT INTO categories (id, name) VALUES (1, 'Test Category 1');
