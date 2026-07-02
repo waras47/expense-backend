@@ -63,7 +63,6 @@ func (h *DebtHandler) CreateDebt(c *gin.Context) {
 	newDebt := &domain.Debt{
 		PersonName: payloadDebt.PersonName,
 		Amount:     payloadDebt.Amount,
-		IsPaid:     payloadDebt.IsPaid,
 		Type:       payloadDebt.Type,
 		Note:       payloadDebt.Note,
 		DueDate:    dueDate,
