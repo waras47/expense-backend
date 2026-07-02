@@ -15,9 +15,9 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/expenses": {
+        "/debts": {
             "get": {
-                "description": "get all existing expense, or get one filters by expense id",
+                "description": "get all existing debt",
                 "consumes": [
                     "application/json"
                 ],
@@ -25,15 +25,84 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "expenses"
+                    "debts"
                 ],
-                "summary": "List expense",
+                "summary": "List debt",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Income ID (Optional)",
+                        "description": "Page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/appresponse.Response-any"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "create debt",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "debts"
+                ],
+                "summary": "Add new debt",
+                "parameters": [
+                    {
+                        "description": "Create new debt payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateDebtPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/appresponse.Response-any"
+                        }
+                    }
+                }
+            }
+        },
+        "/debts/{id}": {
+            "get": {
+                "description": "get one debt by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "debts"
+                ],
+                "summary": "Get a debt",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Debt ID",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     }
                 ],
@@ -47,7 +116,78 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "update expense",
+                "description": "update debt",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "debts"
+                ],
+                "summary": "Edit debt",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Debt ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Edit debt payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateDebtPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/appresponse.Response-any"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "delete debt",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "debts"
+                ],
+                "summary": "Remove debt",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Debt ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/appresponse.Response-any"
+                        }
+                    }
+                }
+            }
+        },
+        "/expenses": {
+            "get": {
+                "description": "get all existing expense",
                 "consumes": [
                     "application/json"
                 ],
@@ -57,23 +197,19 @@ const docTemplate = `{
                 "tags": [
                     "expenses"
                 ],
-                "summary": "Edit expense",
+                "summary": "List expense",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Income ID",
-                        "name": "id",
-                        "in": "query",
-                        "required": true
+                        "description": "Page",
+                        "name": "page",
+                        "in": "query"
                     },
                     {
-                        "description": "Edit expense payload",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.UpdateExpensePayload"
-                        }
+                        "type": "integer",
+                        "description": "Limit",
+                        "name": "limit",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -116,6 +252,77 @@ const docTemplate = `{
                         }
                     }
                 }
+            }
+        },
+        "/expenses/{id}": {
+            "get": {
+                "description": "get one filters by expense id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "expenses"
+                ],
+                "summary": "Get an expense",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Income ID (Optional)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/appresponse.Response-any"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "update expense",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "expenses"
+                ],
+                "summary": "Edit expense",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Income ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Edit expense payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateExpensePayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/appresponse.Response-any"
+                        }
+                    }
+                }
             },
             "delete": {
                 "description": "delete expense",
@@ -134,7 +341,7 @@ const docTemplate = `{
                         "type": "integer",
                         "description": "Income ID",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     }
                 ],
@@ -150,7 +357,7 @@ const docTemplate = `{
         },
         "/incomes": {
             "get": {
-                "description": "get all existing income, or get one filters by income id",
+                "description": "get all income",
                 "consumes": [
                     "application/json"
                 ],
@@ -164,49 +371,15 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Income ID (Optional)",
-                        "name": "id",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/appresponse.Response-any"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "description": "update income",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "incomes"
-                ],
-                "summary": "Edit income",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Income ID",
-                        "name": "id",
-                        "in": "query",
-                        "required": true
+                        "description": "Page",
+                        "name": "page",
+                        "in": "query"
                     },
                     {
-                        "description": "Edit income payload",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.UpdateIncomePayload"
-                        }
+                        "type": "integer",
+                        "description": "Limit",
+                        "name": "limit",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -249,6 +422,77 @@ const docTemplate = `{
                         }
                     }
                 }
+            }
+        },
+        "/incomes/{id}": {
+            "get": {
+                "description": "get one filters by income id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "incomes"
+                ],
+                "summary": "Get an income",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Income ID (Optional)",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/appresponse.Response-any"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "update income",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "incomes"
+                ],
+                "summary": "Edit income",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Income ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Edit income payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateIncomePayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/appresponse.Response-any"
+                        }
+                    }
+                }
             },
             "delete": {
                 "description": "delete income",
@@ -267,7 +511,7 @@ const docTemplate = `{
                         "type": "integer",
                         "description": "Income ID",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     }
                 ],
@@ -346,6 +590,42 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.CreateDebtPayload": {
+            "type": "object",
+            "required": [
+                "amount",
+                "due_date",
+                "is_paid",
+                "person_name",
+                "type"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "due_date": {
+                    "type": "string",
+                    "example": "2006-01-02"
+                },
+                "is_paid": {
+                    "type": "boolean"
+                },
+                "note": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "person_name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
+                },
+                "type": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 1
+                }
+            }
+        },
         "dto.CreateExpensePayload": {
             "type": "object",
             "required": [
@@ -404,6 +684,35 @@ const docTemplate = `{
                 "title": {
                     "type": "string",
                     "maxLength": 100,
+                    "minLength": 1
+                }
+            }
+        },
+        "dto.UpdateDebtPayload": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "due_date": {
+                    "type": "string",
+                    "example": "2006-01-02"
+                },
+                "is_paid": {
+                    "type": "boolean"
+                },
+                "note": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "person_name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
+                },
+                "type": {
+                    "type": "string",
+                    "maxLength": 20,
                     "minLength": 1
                 }
             }

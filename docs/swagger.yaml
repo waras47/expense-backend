@@ -41,6 +41,33 @@ definitions:
       success:
         type: boolean
     type: object
+  dto.CreateDebtPayload:
+    properties:
+      amount:
+        type: number
+      due_date:
+        example: "2006-01-02"
+        type: string
+      is_paid:
+        type: boolean
+      note:
+        maxLength: 255
+        type: string
+      person_name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      type:
+        maxLength: 20
+        minLength: 1
+        type: string
+    required:
+    - amount
+    - due_date
+    - is_paid
+    - person_name
+    - type
+    type: object
   dto.CreateExpensePayload:
     properties:
       amount:
@@ -87,6 +114,27 @@ definitions:
     - income_date
     - title
     type: object
+  dto.UpdateDebtPayload:
+    properties:
+      amount:
+        type: number
+      due_date:
+        example: "2006-01-02"
+        type: string
+      is_paid:
+        type: boolean
+      note:
+        maxLength: 255
+        type: string
+      person_name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      type:
+        maxLength: 20
+        minLength: 1
+        type: string
+    type: object
   dto.UpdateExpensePayload:
     properties:
       amount:
@@ -132,14 +180,59 @@ info:
   title: API Backend Expense
   version: "1.0"
 paths:
-  /expenses:
+  /debts:
+    get:
+      consumes:
+      - application/json
+      description: get all existing debt
+      parameters:
+      - description: Page
+        in: query
+        name: page
+        type: integer
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/appresponse.Response-any'
+      summary: List debt
+      tags:
+      - debts
+    post:
+      consumes:
+      - application/json
+      description: create debt
+      parameters:
+      - description: Create new debt payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateDebtPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/appresponse.Response-any'
+      summary: Add new debt
+      tags:
+      - debts
+  /debts/{id}:
     delete:
       consumes:
       - application/json
-      description: delete expense
+      description: delete debt
       parameters:
-      - description: Income ID
-        in: query
+      - description: Debt ID
+        in: path
         name: id
         required: true
         type: integer
@@ -150,18 +243,68 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/appresponse.Response-any'
-      summary: Remove expense
+      summary: Remove debt
       tags:
-      - expenses
+      - debts
     get:
       consumes:
       - application/json
-      description: get all existing expense, or get one filters by expense id
+      description: get one debt by id
       parameters:
-      - description: Income ID (Optional)
-        in: query
+      - description: Debt ID
+        in: path
         name: id
         required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/appresponse.Response-any'
+      summary: Get a debt
+      tags:
+      - debts
+    put:
+      consumes:
+      - application/json
+      description: update debt
+      parameters:
+      - description: Debt ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Edit debt payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateDebtPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/appresponse.Response-any'
+      summary: Edit debt
+      tags:
+      - debts
+  /expenses:
+    get:
+      consumes:
+      - application/json
+      description: get all existing expense
+      parameters:
+      - description: Page
+        in: query
+        name: page
+        type: integer
+      - description: Limit
+        in: query
+        name: limit
         type: integer
       produces:
       - application/json
@@ -194,13 +337,54 @@ paths:
       summary: Add new expense
       tags:
       - expenses
+  /expenses/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete expense
+      parameters:
+      - description: Income ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/appresponse.Response-any'
+      summary: Remove expense
+      tags:
+      - expenses
+    get:
+      consumes:
+      - application/json
+      description: get one filters by expense id
+      parameters:
+      - description: Income ID (Optional)
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/appresponse.Response-any'
+      summary: Get an expense
+      tags:
+      - expenses
     put:
       consumes:
       - application/json
       description: update expense
       parameters:
       - description: Income ID
-        in: query
+        in: path
         name: id
         required: true
         type: integer
@@ -221,35 +405,18 @@ paths:
       tags:
       - expenses
   /incomes:
-    delete:
-      consumes:
-      - application/json
-      description: delete income
-      parameters:
-      - description: Income ID
-        in: query
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/appresponse.Response-any'
-      summary: Remove income
-      tags:
-      - incomes
     get:
       consumes:
       - application/json
-      description: get all existing income, or get one filters by income id
+      description: get all income
       parameters:
-      - description: Income ID (Optional)
+      - description: Page
         in: query
-        name: id
-        required: true
+        name: page
+        type: integer
+      - description: Limit
+        in: query
+        name: limit
         type: integer
       produces:
       - application/json
@@ -282,13 +449,54 @@ paths:
       summary: Add new income
       tags:
       - incomes
+  /incomes/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete income
+      parameters:
+      - description: Income ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/appresponse.Response-any'
+      summary: Remove income
+      tags:
+      - incomes
+    get:
+      consumes:
+      - application/json
+      description: get one filters by income id
+      parameters:
+      - description: Income ID (Optional)
+        in: query
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/appresponse.Response-any'
+      summary: Get an income
+      tags:
+      - incomes
     put:
       consumes:
       - application/json
       description: update income
       parameters:
       - description: Income ID
-        in: query
+        in: path
         name: id
         required: true
         type: integer
