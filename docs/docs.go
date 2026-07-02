@@ -185,6 +185,38 @@ const docTemplate = `{
                 }
             }
         },
+        "/debts/{id}/paid": {
+            "patch": {
+                "description": "paid debt",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "debts"
+                ],
+                "summary": "Change status debt as paid",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Debt ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/appresponse.Response-any"
+                        }
+                    }
+                }
+            }
+        },
         "/expenses": {
             "get": {
                 "description": "get all existing expense",
@@ -595,7 +627,6 @@ const docTemplate = `{
             "required": [
                 "amount",
                 "due_date",
-                "is_paid",
                 "person_name",
                 "type"
             ],
@@ -606,9 +637,6 @@ const docTemplate = `{
                 "due_date": {
                     "type": "string",
                     "example": "2006-01-02"
-                },
-                "is_paid": {
-                    "type": "boolean"
                 },
                 "note": {
                     "type": "string",
@@ -697,9 +725,6 @@ const docTemplate = `{
                 "due_date": {
                     "type": "string",
                     "example": "2006-01-02"
-                },
-                "is_paid": {
-                    "type": "boolean"
                 },
                 "note": {
                     "type": "string",

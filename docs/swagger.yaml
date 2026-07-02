@@ -48,8 +48,6 @@ definitions:
       due_date:
         example: "2006-01-02"
         type: string
-      is_paid:
-        type: boolean
       note:
         maxLength: 255
         type: string
@@ -64,7 +62,6 @@ definitions:
     required:
     - amount
     - due_date
-    - is_paid
     - person_name
     - type
     type: object
@@ -121,8 +118,6 @@ definitions:
       due_date:
         example: "2006-01-02"
         type: string
-      is_paid:
-        type: boolean
       note:
         maxLength: 255
         type: string
@@ -290,6 +285,27 @@ paths:
           schema:
             $ref: '#/definitions/appresponse.Response-any'
       summary: Edit debt
+      tags:
+      - debts
+  /debts/{id}/paid:
+    patch:
+      consumes:
+      - application/json
+      description: paid debt
+      parameters:
+      - description: Debt ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/appresponse.Response-any'
+      summary: Change status debt as paid
       tags:
       - debts
   /expenses:
