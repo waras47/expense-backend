@@ -40,6 +40,18 @@ const docTemplate = `{
                         "description": "Limit",
                         "name": "limit",
                         "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Type (optional)",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "IsPaid (optional)",
+                        "name": "is_paid",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -622,6 +634,17 @@ const docTemplate = `{
                 }
             }
         },
+        "domain.EnumDebtType": {
+            "type": "string",
+            "enum": [
+                "OWE",
+                "LENT"
+            ],
+            "x-enum-varnames": [
+                "DebtTypeOwe",
+                "DebtTypeLent"
+            ]
+        },
         "dto.CreateDebtPayload": {
             "type": "object",
             "required": [
@@ -648,9 +671,7 @@ const docTemplate = `{
                     "minLength": 1
                 },
                 "type": {
-                    "type": "string",
-                    "maxLength": 20,
-                    "minLength": 1
+                    "$ref": "#/definitions/domain.EnumDebtType"
                 }
             }
         },
@@ -736,9 +757,7 @@ const docTemplate = `{
                     "minLength": 1
                 },
                 "type": {
-                    "type": "string",
-                    "maxLength": 20,
-                    "minLength": 1
+                    "$ref": "#/definitions/domain.EnumDebtType"
                 }
             }
         },

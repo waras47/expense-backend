@@ -41,6 +41,14 @@ definitions:
       success:
         type: boolean
     type: object
+  domain.EnumDebtType:
+    enum:
+    - OWE
+    - LENT
+    type: string
+    x-enum-varnames:
+    - DebtTypeOwe
+    - DebtTypeLent
   dto.CreateDebtPayload:
     properties:
       amount:
@@ -56,9 +64,7 @@ definitions:
         minLength: 1
         type: string
       type:
-        maxLength: 20
-        minLength: 1
-        type: string
+        $ref: '#/definitions/domain.EnumDebtType'
     required:
     - amount
     - due_date
@@ -126,9 +132,7 @@ definitions:
         minLength: 1
         type: string
       type:
-        maxLength: 20
-        minLength: 1
-        type: string
+        $ref: '#/definitions/domain.EnumDebtType'
     type: object
   dto.UpdateExpensePayload:
     properties:
@@ -188,6 +192,14 @@ paths:
       - description: Limit
         in: query
         name: limit
+        type: integer
+      - description: Type (optional)
+        in: query
+        name: type
+        type: integer
+      - description: IsPaid (optional)
+        in: query
+        name: is_paid
         type: integer
       produces:
       - application/json

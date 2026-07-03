@@ -135,6 +135,8 @@ func (h *DebtHandler) GetDebtByID(c *gin.Context) {
 //	@Produce		json
 //	@Param			page	query		int	false	"Page"
 //	@Param			limit	query		int	false	"Limit"
+//	@Param			type	query		int	false	"Type (optional)"
+//	@Param			is_paid	query		int	false	"IsPaid (optional)"
 //	@Success		200	{object}	appresponse.Response[any]
 //	@Router			/debts [get]
 func (h *DebtHandler) GetDebts(c *gin.Context) {
