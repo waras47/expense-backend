@@ -192,13 +192,16 @@ paths:
         name: limit
         type: integer
       - description: Type (optional)
+        enum:
+        - OWE
+        - LENT
         in: query
         name: type
-        type: integer
+        type: string
       - description: IsPaid (optional)
         in: query
         name: is_paid
-        type: integer
+        type: boolean
       produces:
       - application/json
       responses:

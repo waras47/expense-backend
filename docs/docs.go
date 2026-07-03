@@ -42,13 +42,17 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
-                        "type": "integer",
+                        "enum": [
+                            "OWE",
+                            "LENT"
+                        ],
+                        "type": "string",
                         "description": "Type (optional)",
                         "name": "type",
                         "in": "query"
                     },
                     {
-                        "type": "integer",
+                        "type": "boolean",
                         "description": "IsPaid (optional)",
                         "name": "is_paid",
                         "in": "query"

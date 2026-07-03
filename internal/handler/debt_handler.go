@@ -135,8 +135,8 @@ func (h *DebtHandler) GetDebtByID(c *gin.Context) {
 //	@Produce		json
 //	@Param			page	query		int	false	"Page"
 //	@Param			limit	query		int	false	"Limit"
-//	@Param			type	query		int	false	"Type (optional)"
-//	@Param			is_paid	query		int	false	"IsPaid (optional)"
+//	@Param			type	query		domain.EnumDebtType	false	"Type (optional)"
+//	@Param			is_paid	query		bool	false	"IsPaid (optional)"
 //	@Success		200	{object}	appresponse.Response[any]
 //	@Router			/debts [get]
 func (h *DebtHandler) GetDebts(c *gin.Context) {
@@ -154,9 +154,13 @@ func (h *DebtHandler) GetDebts(c *gin.Context) {
 		appresponse.RespondError(c, http.StatusBadRequest, "invalid url query", apperror.NewBadRequest(help.Ptr(err.Error())))
 		return
 	}
+	var typeDebt *domain.EnumDebtType
 
-	typeDebt := domain.ParseToEnumDebtType(*paginateQuery.Type)
-	debts, total, err := h.uc.GetAll(c.Request.Context(), paginateQuery.Page, paginateQuery.Limit, &typeDebt, paginateQuery.IsPaid)
+	if paginateQuery.Type != nil {
+		t := domain.ParseToEnumDebtType(*paginateQuery.Type)
+		typeDebt = &t
+	}
+	debts, total, err := h.uc.GetAll(c.Request.Context(), paginateQuery.Page, paginateQuery.Limit, typeDebt, paginateQuery.IsPaid)
 	if err != nil {
 		var appErr *apperror.AppError
 		if errors.As(err, &appErr) {

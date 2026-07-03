@@ -26,5 +26,6 @@ func registerRoutes(r *gin.Engine, h *handlers) {
 	h.category.RegisterRoutes(api.Group("/categories"))
 	h.income.RegisterRoutes(api.Group("/incomes"))
 	h.expense.RegisterRoutes(api.Group("/expenses"))
+	h.debt.RegisterRoutes(api.Group("/debts"))
 	// TODO: Add the required routers
 }

@@ -24,6 +24,7 @@ type handlers struct {
 	category *handler.CategoryHandler
 	income   *handler.IncomeHandler
 	expense  *handler.ExpenseHandler
+	debt     *handler.DebtHandler
 	// TODO: Add handler new module handler here
 }
 
@@ -35,11 +36,13 @@ func ValidateDecimalMoreThanZero(fl validator.FieldLevel) bool {
 	return d.GreaterThan(decimal.Zero)
 }
 func ValidateEnumTypeDebt(fl validator.FieldLevel) bool {
-	val, ok := fl.Field().Interface().(domain.EnumDebtType)
+	val, ok := fl.Field().Interface().(string)
 	if !ok {
 		return false
 	}
-	return val == domain.DebtTypeLent || val == domain.DebtTypeOwe
+
+	return val == string(domain.DebtTypeLent) ||
+		val == string(domain.DebtTypeOwe)
 }
 
 func New(cfg *config.Config, pool *pgxpool.Pool) *Server {
@@ -72,9 +75,13 @@ func wireHandlers(pool *pgxpool.Pool) *handlers {
 	// Expense
 	expenseRepo := repository.NewExpenseRepository(pool)
 	expenseUC := usecase.NewExpenseUsecase(expenseRepo)
+	// Debte
+	debtRepo := repository.NewDebtRepository(pool)
+	debtUC := usecase.NewDebtUsecase(debtRepo)
 	return &handlers{
 		category: handler.NewCategoryHandler(categoryUC),
 		income:   handler.NewIncomeHandler(incomeUC),
 		expense:  handler.NewExpenseHandler(expenseUC),
+		debt:     handler.NewDebtHandler(debtUC),
 	}
 }

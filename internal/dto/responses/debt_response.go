@@ -16,6 +16,7 @@ type DebtResponse struct {
 	Type       domain.EnumDebtType `json:"type"`
 	Note       string              `json:"note,omitempty"`
 	DueDate    time.Time           `json:"due_date"`
+	IsPaid     bool                `json:"is_paid"`
 	IsDeleted  bool                `json:"is_deleted"`
 	CreatedAt  time.Time           `json:"created_at"`
 	UpdatedAt  *time.Time          `json:"updated_at,omitempty"`
@@ -34,6 +35,7 @@ func NewDebtResponse(debt *domain.Debt) (DebtResponse, error) {
 		Type:       debt.Type,
 		Note:       debt.Note,
 		DueDate:    debt.DueDate,
+		IsPaid:     debt.IsPaid,
 		IsDeleted:  debt.IsDeleted,
 		CreatedAt:  debt.CreatedAt,
 	}
