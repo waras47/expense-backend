@@ -7,40 +7,6 @@ definitions:
       message:
         type: string
     type: object
-  appresponse.Meta:
-    properties:
-      paginate:
-        $ref: '#/definitions/appresponse.Paginate'
-      timestamp:
-        type: string
-    type: object
-  appresponse.Paginate:
-    properties:
-      limit:
-        type: integer
-      next:
-        type: string
-      page:
-        type: integer
-      prev:
-        type: string
-      total_pages:
-        type: integer
-      total_rows:
-        type: integer
-    type: object
-  appresponse.Response-any:
-    properties:
-      data: {}
-      error:
-        $ref: '#/definitions/apperror.AppError'
-      message:
-        type: string
-      meta:
-        $ref: '#/definitions/appresponse.Meta'
-      success:
-        type: boolean
-    type: object
   dto.CreateDebtPayload:
     properties:
       amount:
@@ -111,6 +77,40 @@ definitions:
     - category
     - income_date
     - title
+    type: object
+  dto.Meta:
+    properties:
+      paginate:
+        $ref: '#/definitions/dto.Paginate'
+      timestamp:
+        type: string
+    type: object
+  dto.Paginate:
+    properties:
+      limit:
+        type: integer
+      next:
+        type: string
+      page:
+        type: integer
+      prev:
+        type: string
+      total_pages:
+        type: integer
+      total_rows:
+        type: integer
+    type: object
+  dto.Response-any:
+    properties:
+      data: {}
+      error:
+        $ref: '#/definitions/apperror.AppError'
+      message:
+        type: string
+      meta:
+        $ref: '#/definitions/dto.Meta'
+      success:
+        type: boolean
     type: object
   dto.UpdateDebtPayload:
     properties:
@@ -208,7 +208,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/appresponse.Response-any'
+            $ref: '#/definitions/dto.Response-any'
       summary: List debt
       tags:
       - debts
@@ -229,7 +229,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/appresponse.Response-any'
+            $ref: '#/definitions/dto.Response-any'
       summary: Add new debt
       tags:
       - debts
@@ -250,7 +250,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/appresponse.Response-any'
+            $ref: '#/definitions/dto.Response-any'
       summary: Remove debt
       tags:
       - debts
@@ -270,7 +270,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/appresponse.Response-any'
+            $ref: '#/definitions/dto.Response-any'
       summary: Get a debt
       tags:
       - debts
@@ -296,7 +296,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/appresponse.Response-any'
+            $ref: '#/definitions/dto.Response-any'
       summary: Edit debt
       tags:
       - debts
@@ -317,7 +317,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/appresponse.Response-any'
+            $ref: '#/definitions/dto.Response-any'
       summary: Change status debt as paid
       tags:
       - debts
@@ -341,7 +341,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/appresponse.Response-any'
+            $ref: '#/definitions/dto.Response-any'
       summary: List expense
       tags:
       - expenses
@@ -362,7 +362,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/appresponse.Response-any'
+            $ref: '#/definitions/dto.Response-any'
       summary: Add new expense
       tags:
       - expenses
@@ -383,7 +383,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/appresponse.Response-any'
+            $ref: '#/definitions/dto.Response-any'
       summary: Remove expense
       tags:
       - expenses
@@ -403,7 +403,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/appresponse.Response-any'
+            $ref: '#/definitions/dto.Response-any'
       summary: Get an expense
       tags:
       - expenses
@@ -429,7 +429,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/appresponse.Response-any'
+            $ref: '#/definitions/dto.Response-any'
       summary: Edit expense
       tags:
       - expenses
@@ -453,7 +453,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/appresponse.Response-any'
+            $ref: '#/definitions/dto.Response-any'
       summary: List income
       tags:
       - incomes
@@ -474,7 +474,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/appresponse.Response-any'
+            $ref: '#/definitions/dto.Response-any'
       summary: Add new income
       tags:
       - incomes
@@ -495,7 +495,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/appresponse.Response-any'
+            $ref: '#/definitions/dto.Response-any'
       summary: Remove income
       tags:
       - incomes
@@ -515,7 +515,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/appresponse.Response-any'
+            $ref: '#/definitions/dto.Response-any'
       summary: Get an income
       tags:
       - incomes
@@ -541,7 +541,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/appresponse.Response-any'
+            $ref: '#/definitions/dto.Response-any'
       summary: Edit income
       tags:
       - incomes

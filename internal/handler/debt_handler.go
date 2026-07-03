@@ -42,7 +42,7 @@ func (h *DebtHandler) RegisterRoutes(rg *gin.RouterGroup) {
 //		@Accept			json
 //		@Produce		json
 //	 	@Param 			request body reqDto.CreateDebtPayload true "Create new debt payload"
-//		@Success		200	{object}	appresponse.Response[any]
+//		@Success		200	{object}	dto.Response[any]
 //		@Router			/debts [post]
 func (h *DebtHandler) CreateDebt(c *gin.Context) {
 	var payloadDebt reqDto.CreateDebtPayload
@@ -96,7 +96,7 @@ func (h *DebtHandler) CreateDebt(c *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			id	path		int	true	"Debt ID"
-//	@Success		200	{object}	appresponse.Response[any]
+//	@Success		200	{object}	dto.Response[any]
 //	@Router			/debts/{id} [get]
 func (h *DebtHandler) GetDebtByID(c *gin.Context) {
 	idStr := c.Param("id")
@@ -137,7 +137,7 @@ func (h *DebtHandler) GetDebtByID(c *gin.Context) {
 //	@Param			limit	query		int	false	"Limit"
 //	@Param			type	query		domain.EnumDebtType	false	"Type (optional)"
 //	@Param			is_paid	query		bool	false	"IsPaid (optional)"
-//	@Success		200	{object}	appresponse.Response[any]
+//	@Success		200	{object}	dto.Response[any]
 //	@Router			/debts [get]
 func (h *DebtHandler) GetDebts(c *gin.Context) {
 	var paginateQuery reqDto.DebtFilter
@@ -160,7 +160,7 @@ func (h *DebtHandler) GetDebts(c *gin.Context) {
 		t := domain.ParseToEnumDebtType(*paginateQuery.Type)
 		typeDebt = &t
 	}
-	debts, total, err := h.uc.GetAll(c.Request.Context(), paginateQuery.Page, paginateQuery.Limit, typeDebt, paginateQuery.IsPaid)
+	debts, total, err := h.uc.GetAll(c.Request.Context(), paginateQuery.GetPage(), paginateQuery.GetLimit(), typeDebt, paginateQuery.IsPaid)
 	if err != nil {
 		var appErr *apperror.AppError
 		if errors.As(err, &appErr) {
@@ -180,7 +180,7 @@ func (h *DebtHandler) GetDebts(c *gin.Context) {
 		}
 	}
 
-	paginateRes := appresponse.CratePaginateResponse(c, paginateQuery.Page, paginateQuery.Limit, total)
+	paginateRes := appresponse.CratePaginateResponse(c, total, &paginateQuery)
 	appresponse.RespondSuccess(c, http.StatusOK, "debts retrieved", &debtResponses, paginateRes)
 
 }
@@ -194,7 +194,7 @@ func (h *DebtHandler) GetDebts(c *gin.Context) {
 //	@Produce		json
 //	@Param			id	path		int	true	"Debt ID"
 //	@Param 			request body reqDto.UpdateDebtPayload true "Edit debt payload"
-//	@Success		200	{object}	appresponse.Response[any]
+//	@Success		200	{object}	dto.Response[any]
 //	@Router			/debts/{id} [put]
 func (h *DebtHandler) UpdateDebt(c *gin.Context) {
 	idStr := c.Param("id")
@@ -263,7 +263,7 @@ func (h *DebtHandler) UpdateDebt(c *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			id	path		int	true	"Debt ID"
-//	@Success		200	{object}	appresponse.Response[any]
+//	@Success		200	{object}	dto.Response[any]
 //	@Router			/debts/{id}/paid [patch]
 func (h *DebtHandler) PaidDebt(c *gin.Context) {
 	idStr := c.Param("id")
@@ -295,7 +295,7 @@ func (h *DebtHandler) PaidDebt(c *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			id	path		int	true	"Debt ID"
-//	@Success		200	{object}	appresponse.Response[any]
+//	@Success		200	{object}	dto.Response[any]
 //	@Router			/debts/{id} [delete]
 func (h *DebtHandler) DeleteDebt(c *gin.Context) {
 	idStr := c.Param("id")

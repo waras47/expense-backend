@@ -62,7 +62,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/appresponse.Response-any"
+                            "$ref": "#/definitions/dto.Response-any"
                         }
                     }
                 }
@@ -94,7 +94,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/appresponse.Response-any"
+                            "$ref": "#/definitions/dto.Response-any"
                         }
                     }
                 }
@@ -126,7 +126,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/appresponse.Response-any"
+                            "$ref": "#/definitions/dto.Response-any"
                         }
                     }
                 }
@@ -165,7 +165,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/appresponse.Response-any"
+                            "$ref": "#/definitions/dto.Response-any"
                         }
                     }
                 }
@@ -195,7 +195,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/appresponse.Response-any"
+                            "$ref": "#/definitions/dto.Response-any"
                         }
                     }
                 }
@@ -227,7 +227,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/appresponse.Response-any"
+                            "$ref": "#/definitions/dto.Response-any"
                         }
                     }
                 }
@@ -264,7 +264,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/appresponse.Response-any"
+                            "$ref": "#/definitions/dto.Response-any"
                         }
                     }
                 }
@@ -296,7 +296,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/appresponse.Response-any"
+                            "$ref": "#/definitions/dto.Response-any"
                         }
                     }
                 }
@@ -328,7 +328,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/appresponse.Response-any"
+                            "$ref": "#/definitions/dto.Response-any"
                         }
                     }
                 }
@@ -367,7 +367,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/appresponse.Response-any"
+                            "$ref": "#/definitions/dto.Response-any"
                         }
                     }
                 }
@@ -397,7 +397,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/appresponse.Response-any"
+                            "$ref": "#/definitions/dto.Response-any"
                         }
                     }
                 }
@@ -434,7 +434,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/appresponse.Response-any"
+                            "$ref": "#/definitions/dto.Response-any"
                         }
                     }
                 }
@@ -466,7 +466,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/appresponse.Response-any"
+                            "$ref": "#/definitions/dto.Response-any"
                         }
                     }
                 }
@@ -498,7 +498,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/appresponse.Response-any"
+                            "$ref": "#/definitions/dto.Response-any"
                         }
                     }
                 }
@@ -537,7 +537,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/appresponse.Response-any"
+                            "$ref": "#/definitions/dto.Response-any"
                         }
                     }
                 }
@@ -567,7 +567,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/appresponse.Response-any"
+                            "$ref": "#/definitions/dto.Response-any"
                         }
                     }
                 }
@@ -583,58 +583,6 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string"
-                }
-            }
-        },
-        "appresponse.Meta": {
-            "type": "object",
-            "properties": {
-                "paginate": {
-                    "$ref": "#/definitions/appresponse.Paginate"
-                },
-                "timestamp": {
-                    "type": "string"
-                }
-            }
-        },
-        "appresponse.Paginate": {
-            "type": "object",
-            "properties": {
-                "limit": {
-                    "type": "integer"
-                },
-                "next": {
-                    "type": "string"
-                },
-                "page": {
-                    "type": "integer"
-                },
-                "prev": {
-                    "type": "string"
-                },
-                "total_pages": {
-                    "type": "integer"
-                },
-                "total_rows": {
-                    "type": "integer"
-                }
-            }
-        },
-        "appresponse.Response-any": {
-            "type": "object",
-            "properties": {
-                "data": {},
-                "error": {
-                    "$ref": "#/definitions/apperror.AppError"
-                },
-                "message": {
-                    "type": "string"
-                },
-                "meta": {
-                    "$ref": "#/definitions/appresponse.Meta"
-                },
-                "success": {
-                    "type": "boolean"
                 }
             }
         },
@@ -731,6 +679,58 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 100,
                     "minLength": 1
+                }
+            }
+        },
+        "dto.Meta": {
+            "type": "object",
+            "properties": {
+                "paginate": {
+                    "$ref": "#/definitions/dto.Paginate"
+                },
+                "timestamp": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.Paginate": {
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "type": "integer"
+                },
+                "next": {
+                    "type": "string"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "prev": {
+                    "type": "string"
+                },
+                "total_pages": {
+                    "type": "integer"
+                },
+                "total_rows": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.Response-any": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "error": {
+                    "$ref": "#/definitions/apperror.AppError"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {
+                    "$ref": "#/definitions/dto.Meta"
+                },
+                "success": {
+                    "type": "boolean"
                 }
             }
         },

@@ -19,10 +19,10 @@ type Meta struct {
 }
 
 type Paginate struct {
-	Page       *int64  `json:"page,omitempty"`
-	Limit      *int64  `json:"limit,omitempty"`
-	TotalRows  *int64  `json:"total_rows,omitempty"`
-	TotalPages *int64  `json:"total_pages,omitempty"`
-	Next       *string `json:"next,omitempty"`
-	Prev       *string `json:"prev,omitempty"`
+	Page       *int64  `json:"page"`
+	Limit      *int64  `json:"limit"`
+	TotalRows  *int64  `json:"total_rows"`
+	TotalPages *int64  `json:"total_pages"`
+	Next       *string `json:"next"`
+	Prev       *string `json:"prev"`
 }
