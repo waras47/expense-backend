@@ -41,14 +41,6 @@ definitions:
       success:
         type: boolean
     type: object
-  domain.EnumDebtType:
-    enum:
-    - OWE
-    - LENT
-    type: string
-    x-enum-varnames:
-    - DebtTypeOwe
-    - DebtTypeLent
   dto.CreateDebtPayload:
     properties:
       amount:
@@ -64,7 +56,10 @@ definitions:
         minLength: 1
         type: string
       type:
-        $ref: '#/definitions/domain.EnumDebtType'
+        enum:
+        - OWE
+        - LENT
+        type: string
     required:
     - amount
     - due_date
@@ -132,7 +127,10 @@ definitions:
         minLength: 1
         type: string
       type:
-        $ref: '#/definitions/domain.EnumDebtType'
+        enum:
+        - OWE
+        - LENT
+        type: string
     type: object
   dto.UpdateExpensePayload:
     properties:

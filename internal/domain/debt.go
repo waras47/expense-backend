@@ -14,6 +14,10 @@ const (
 	DebtTypeLent EnumDebtType = "LENT"
 )
 
+func ParseToEnumDebtType(s string) EnumDebtType {
+	return EnumDebtType(s)
+}
+
 type Debt struct {
 	ID int64
 	// Allowed update by user

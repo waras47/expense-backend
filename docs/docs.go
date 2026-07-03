@@ -634,17 +634,6 @@ const docTemplate = `{
                 }
             }
         },
-        "domain.EnumDebtType": {
-            "type": "string",
-            "enum": [
-                "OWE",
-                "LENT"
-            ],
-            "x-enum-varnames": [
-                "DebtTypeOwe",
-                "DebtTypeLent"
-            ]
-        },
         "dto.CreateDebtPayload": {
             "type": "object",
             "required": [
@@ -671,7 +660,11 @@ const docTemplate = `{
                     "minLength": 1
                 },
                 "type": {
-                    "$ref": "#/definitions/domain.EnumDebtType"
+                    "type": "string",
+                    "enum": [
+                        "OWE",
+                        "LENT"
+                    ]
                 }
             }
         },
@@ -757,7 +750,11 @@ const docTemplate = `{
                     "minLength": 1
                 },
                 "type": {
-                    "$ref": "#/definitions/domain.EnumDebtType"
+                    "type": "string",
+                    "enum": [
+                        "OWE",
+                        "LENT"
+                    ]
                 }
             }
         },
