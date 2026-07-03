@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"expense-backend/internal/domain"
+	dto "expense-backend/internal/dto/requests"
 )
 
 type categoryUsecase struct {
@@ -17,7 +18,7 @@ func (uc *categoryUsecase) GetAll(ctx context.Context) ([]domain.Category, error
 	return uc.repo.FindAll(ctx)
 }
 
-func (uc *categoryUsecase) Create(ctx context.Context, payload domain.CategoryPayload) (*domain.Category, error) {
+func (uc *categoryUsecase) Create(ctx context.Context, payload dto.CategoryPayload) (*domain.Category, error) {
 	return uc.repo.Create(ctx, payload)
 }
 

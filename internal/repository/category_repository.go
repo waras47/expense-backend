@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"expense-backend/internal/domain"
+	dto "expense-backend/internal/dto/requests"
 	"expense-backend/pkg/apperror"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -48,7 +49,7 @@ func (r *categoryRepo) FindByID(ctx context.Context, id int) (*domain.Category, 
 	return &c, nil
 }
 
-func (r *categoryRepo) Create(ctx context.Context, payload domain.CategoryPayload) (*domain.Category, error) {
+func (r *categoryRepo) Create(ctx context.Context, payload dto.CategoryPayload) (*domain.Category, error) {
 	if strings.TrimSpace(payload.Name) == "" {
 		return nil, apperror.NewValidation("Nama kategori tidak boleh kosong")
 	}

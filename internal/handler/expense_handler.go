@@ -40,8 +40,8 @@ func (h *ExpenseHandler) RegisterRoutes(rg *gin.RouterGroup) {
 //	@Tags			expenses
 //	@Accept			json
 //	@Produce		json
-//	@Param 			request body reqDto.CreateExpensePayload true "Create new expense payload"
-//	@Success		200	{object}	dto.Response[any]
+//	@Param			request	body		reqDto.CreateExpensePayload	true	"Create new expense payload"
+//	@Success		200		{object}	dto.Response[any]
 //	@Router			/expenses [post]
 func (h *ExpenseHandler) CreateExpense(c *gin.Context) {
 	var payloadExpense reqDto.CreateExpensePayload
@@ -174,7 +174,7 @@ func (h *ExpenseHandler) GetExpenseByID(c *gin.Context) {
 //	@Produce		json
 //	@Param			page	query		int	false	"Page"
 //	@Param			limit	query		int	false	"Limit"
-//	@Success		200	{object}	dto.Response[any]
+//	@Success		200		{object}	dto.Response[any]
 //	@Router			/expenses [get]
 func (h *ExpenseHandler) GetExpenses(c *gin.Context) {
 	idStr := c.Param("id")
@@ -251,9 +251,9 @@ func (h *ExpenseHandler) GetExpenses(c *gin.Context) {
 //	@Tags			expenses
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path		int	true	"Income ID"
-//	@Param 			request body reqDto.UpdateExpensePayload true "Edit expense payload"
-//	@Success		200	{object}	dto.Response[any]
+//	@Param			id		path		int							true	"Income ID"
+//	@Param			request	body		reqDto.UpdateExpensePayload	true	"Edit expense payload"
+//	@Success		200		{object}	dto.Response[any]
 //	@Router			/expenses/{id} [put]
 func (h *ExpenseHandler) UpdateExpense(c *gin.Context) {
 	idStr := c.Param("id")

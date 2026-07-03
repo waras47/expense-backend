@@ -36,14 +36,14 @@ func (h *DebtHandler) RegisterRoutes(rg *gin.RouterGroup) {
 
 // CreateDebt write new record debt
 //
-//		@Summary		Add new debt
-//		@Description	create debt
-//		@Tags			debts
-//		@Accept			json
-//		@Produce		json
-//	 	@Param 			request body reqDto.CreateDebtPayload true "Create new debt payload"
-//		@Success		200	{object}	dto.Response[any]
-//		@Router			/debts [post]
+//	@Summary		Add new debt
+//	@Description	create debt
+//	@Tags			debts
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		reqDto.CreateDebtPayload	true	"Create new debt payload"
+//	@Success		200		{object}	dto.Response[any]
+//	@Router			/debts [post]
 func (h *DebtHandler) CreateDebt(c *gin.Context) {
 	var payloadDebt reqDto.CreateDebtPayload
 	if err := c.ShouldBindJSON(&payloadDebt); err != nil {
@@ -133,11 +133,11 @@ func (h *DebtHandler) GetDebtByID(c *gin.Context) {
 //	@Tags			debts
 //	@Accept			json
 //	@Produce		json
-//	@Param			page	query		int	false	"Page"
-//	@Param			limit	query		int	false	"Limit"
+//	@Param			page	query		int					false	"Page"
+//	@Param			limit	query		int					false	"Limit"
 //	@Param			type	query		domain.EnumDebtType	false	"Type (optional)"
-//	@Param			is_paid	query		bool	false	"IsPaid (optional)"
-//	@Success		200	{object}	dto.Response[any]
+//	@Param			is_paid	query		bool				false	"IsPaid (optional)"
+//	@Success		200		{object}	dto.Response[any]
 //	@Router			/debts [get]
 func (h *DebtHandler) GetDebts(c *gin.Context) {
 	var paginateQuery reqDto.DebtFilter
@@ -192,9 +192,9 @@ func (h *DebtHandler) GetDebts(c *gin.Context) {
 //	@Tags			debts
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path		int	true	"Debt ID"
-//	@Param 			request body reqDto.UpdateDebtPayload true "Edit debt payload"
-//	@Success		200	{object}	dto.Response[any]
+//	@Param			id		path		int							true	"Debt ID"
+//	@Param			request	body		reqDto.UpdateDebtPayload	true	"Edit debt payload"
+//	@Success		200		{object}	dto.Response[any]
 //	@Router			/debts/{id} [put]
 func (h *DebtHandler) UpdateDebt(c *gin.Context) {
 	idStr := c.Param("id")

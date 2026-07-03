@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"expense-backend/internal/domain"
+	dto "expense-backend/internal/dto/requests"
 	"expense-backend/internal/handler"
 	"expense-backend/internal/usecase"
 	"expense-backend/pkg/apperror"
@@ -18,7 +19,7 @@ import (
 
 type mockCategoryRepo struct {
 	categories []domain.Category
-	createFn   func(domain.CategoryPayload) (*domain.Category, error)
+	createFn   func(dto.CategoryPayload) (*domain.Category, error)
 	deleteFn   func(int) error
 }
 
@@ -35,7 +36,7 @@ func (m *mockCategoryRepo) FindByID(ctx context.Context, id int) (*domain.Catego
 	return nil, apperror.NewNotFound()
 }
 
-func (m *mockCategoryRepo) Create(ctx context.Context, payload domain.CategoryPayload) (*domain.Category, error) {
+func (m *mockCategoryRepo) Create(ctx context.Context, payload dto.CategoryPayload) (*domain.Category, error) {
 	if m.createFn != nil {
 		return m.createFn(payload)
 	}
@@ -149,7 +150,7 @@ func TestCreateCategory_WithColor(t *testing.T) {
 
 func TestCreateCategory_EmptyName(t *testing.T) {
 	repo := &mockCategoryRepo{
-		createFn: func(payload domain.CategoryPayload) (*domain.Category, error) {
+		createFn: func(payload dto.CategoryPayload) (*domain.Category, error) {
 			return nil, apperror.NewValidation("Nama kategori tidak boleh kosong")
 		},
 	}

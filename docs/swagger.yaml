@@ -7,6 +7,15 @@ definitions:
       message:
         type: string
     type: object
+  dto.CategoryPayload:
+    properties:
+      color:
+        type: string
+      name:
+        type: string
+    required:
+    - name
+    type: object
   dto.CreateDebtPayload:
     properties:
       amount:
@@ -177,6 +186,63 @@ info:
   title: API Backend Expense
   version: "1.0"
 paths:
+  /categories:
+    get:
+      consumes:
+      - application/json
+      description: get all existing category
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: List category
+      tags:
+      - categories
+    post:
+      consumes:
+      - application/json
+      description: create categoriy
+      parameters:
+      - description: Create new categoriy payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CategoryPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Add new categoriy
+      tags:
+      - categories
+  /categories/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete category
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Remove category
+      tags:
+      - categories
   /debts:
     get:
       consumes:

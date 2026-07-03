@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"expense-backend/internal/domain"
+	dtoReq "expense-backend/internal/dto/requests"
 	"expense-backend/pkg/apperror"
 	"expense-backend/pkg/appresponse"
 
@@ -25,6 +26,15 @@ func (h *CategoryHandler) RegisterRoutes(rg *gin.RouterGroup) {
 	rg.DELETE("/:id", h.DeleteCategory)
 }
 
+// ListCategories list existing categories
+//
+//	@Summary		List category
+//	@Description	get all existing category
+//	@Tags			categories
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{string}	string	"OK"
+//	@Router			/categories [get]
 func (h *CategoryHandler) ListCategories(c *gin.Context) {
 	categories, err := h.uc.GetAll(c.Request.Context())
 	if err != nil {
@@ -37,8 +47,18 @@ func (h *CategoryHandler) ListCategories(c *gin.Context) {
 	c.JSON(http.StatusOK, categories)
 }
 
+// CreateCategory write new record category
+//
+//	@Summary		Add new categoriy
+//	@Description	create categoriy
+//	@Tags			categories
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		dto.CategoryPayload	true	"Create new categoriy payload"
+//	@Success		200		{string}	string				"OK"
+//	@Router			/categories [post]
 func (h *CategoryHandler) CreateCategory(c *gin.Context) {
-	var payload domain.CategoryPayload
+	var payload dtoReq.CategoryPayload
 	if err := c.ShouldBindJSON(&payload); err != nil {
 		appresponse.RespondError(c, http.StatusBadRequest, "invalid request payload", apperror.NewValidation(err.Error()))
 		return
@@ -52,6 +72,16 @@ func (h *CategoryHandler) CreateCategory(c *gin.Context) {
 	c.JSON(http.StatusCreated, category)
 }
 
+// DelteExpense remove category, specified by id
+//
+//	@Summary		Remove category
+//	@Description	delete category
+//	@Tags			categories
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		int		true	"Category ID"
+//	@Success		200	{string}	string	"OK"
+//	@Router			/categories/{id} [delete]
 func (h *CategoryHandler) DeleteCategory(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {

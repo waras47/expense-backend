@@ -35,14 +35,14 @@ func (h *IncomeHandler) RegisterRoutes(rg *gin.RouterGroup) {
 
 // CreateIncome write new record income
 //
-//		@Summary		Add new income
-//		@Description	create income
-//		@Tags			incomes
-//		@Accept			json
-//		@Produce		json
-//	 	@Param 			request body reqDto.CreateIncomePayload true "Create new income payload"
-//		@Success		200	{object}	dto.Response[any]
-//		@Router			/incomes [post]
+//	@Summary		Add new income
+//	@Description	create income
+//	@Tags			incomes
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		reqDto.CreateIncomePayload	true	"Create new income payload"
+//	@Success		200		{object}	dto.Response[any]
+//	@Router			/incomes [post]
 func (h *IncomeHandler) CreateIncome(c *gin.Context) {
 	var payloadIncome reqDto.CreateIncomePayload
 	if err := c.ShouldBindJSON(&payloadIncome); err != nil {
@@ -133,7 +133,7 @@ func (h *IncomeHandler) GetIncomeByID(c *gin.Context) {
 //	@Produce		json
 //	@Param			page	query		int	false	"Page"
 //	@Param			limit	query		int	false	"Limit"
-//	@Success		200	{object}	dto.Response[any]
+//	@Success		200		{object}	dto.Response[any]
 //	@Router			/incomes [get]
 func (h *IncomeHandler) GetIncomes(c *gin.Context) {
 	var paginateQuery reqDto.PaginateQuery
@@ -182,9 +182,9 @@ func (h *IncomeHandler) GetIncomes(c *gin.Context) {
 //	@Tags			incomes
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path		int	true	"Income ID"
-//	@Param 			request body reqDto.UpdateIncomePayload true "Edit income payload"
-//	@Success		200	{object}	dto.Response[any]
+//	@Param			id		path		int							true	"Income ID"
+//	@Param			request	body		reqDto.UpdateIncomePayload	true	"Edit income payload"
+//	@Success		200		{object}	dto.Response[any]
 //	@Router			/incomes/{id} [put]
 func (h *IncomeHandler) UpdateIncome(c *gin.Context) {
 	idStr := c.Param("id")
