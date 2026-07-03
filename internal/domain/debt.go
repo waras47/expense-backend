@@ -42,7 +42,7 @@ func (d *Debt) MergeWithNewData(debt *Debt) *Debt {
 }
 
 type DebtRepository interface {
-	FindAll(ctx context.Context, limit, offset int64) ([]Debt, error)
+	FindAll(ctx context.Context, limit, offset int64, typeDebt *string, isPaid *bool) ([]Debt, error)
 	FindByID(ctx context.Context, id int64) (*Debt, error)
 	Create(ctx context.Context, debt *Debt) (*Debt, error)
 	Update(ctx context.Context, debt *Debt) error // The current update method is replacing the data because field is small
@@ -53,7 +53,7 @@ type DebtRepository interface {
 
 type DebtUsecase interface {
 	Get(ctx context.Context, id int64) (*Debt, error)
-	GetAll(ctx context.Context, page, limit int64) ([]Debt, int64, error)
+	GetAll(ctx context.Context, page, limit int64, typeDebt *string, isPaid *bool) ([]Debt, int64, error)
 	Create(ctx context.Context, input *Debt) (*Debt, error)
 	Update(ctx context.Context, id int64, input *Debt) error
 	Paid(ctx context.Context, id int64) error

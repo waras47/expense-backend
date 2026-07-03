@@ -5,6 +5,7 @@ import (
 	"expense-backend/internal/domain"
 	"expense-backend/internal/repository"
 	"expense-backend/pkg/apperror"
+	"expense-backend/pkg/helpers"
 	main_test "expense-backend/tests"
 	testDB "expense-backend/tests/db"
 	"fmt"
@@ -20,16 +21,19 @@ import (
 func seedDebt(t *testing.T, db *pgxpool.Pool, total int64) int64 {
 
 	if total > 1 {
-		query := `INSERT INTO debts (person_name, amount, type, note, due_date)
-			  VALUES ($1, $2, $3, $4, $5)`
+		// ID ganjil is_paid = false dan type = Type 1
+		// ID genap is_paid = true dan type = Type 0
+		query := `INSERT INTO debts (person_name, amount, type, note, due_date, is_paid)
+			  VALUES ($1, $2, $3, $4, $5, $6)`
+		paid := true
 		for i := total; i >= 1; i-- {
 			title := fmt.Sprintf("Person %d", i)
 			amount := main_test.NewDecimal(200000)
-			typeDebt := fmt.Sprintf("Type %d", i)
+			typeDebt := fmt.Sprintf("Type %d", i%2)
 			note := fmt.Sprintf("Note %d", i)
 			dueDate := main_test.NewDate()
-
-			_, err := db.Exec(context.Background(), query, title, amount, typeDebt, note, dueDate)
+			paid = !paid
+			_, err := db.Exec(context.Background(), query, title, amount, typeDebt, note, dueDate, paid)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -122,12 +126,14 @@ func TestCreateDebt(t *testing.T) {
 
 func TestFindAllDebts(t *testing.T) {
 	db := testDB.SetupDB(t)
-	totalData := seedDebt(t, db, 11)
+	totalData := seedDebt(t, db, 10)
 
 	tests := []struct {
 		name        string
 		limit       int64
 		offset      int64
+		typeDebt    *string
+		isPaid      *bool
 		foundData   int64
 		wantErr     bool
 		expectedErr error
@@ -136,6 +142,8 @@ func TestFindAllDebts(t *testing.T) {
 			name:        "Succeded find All data",
 			limit:       0,
 			offset:      0,
+			typeDebt:    nil,
+			isPaid:      nil,
 			foundData:   totalData,
 			wantErr:     false,
 			expectedErr: nil,
@@ -144,6 +152,58 @@ func TestFindAllDebts(t *testing.T) {
 			name:        "Succeded find 5 data",
 			limit:       5,
 			offset:      0,
+			typeDebt:    nil,
+			isPaid:      nil,
+			foundData:   5,
+			wantErr:     false,
+			expectedErr: nil,
+		},
+		{
+			name:        "Succeded find 5 data paid",
+			limit:       0,
+			offset:      0,
+			typeDebt:    nil,
+			isPaid:      helpers.Ptr(true),
+			foundData:   5,
+			wantErr:     false,
+			expectedErr: nil,
+		},
+		{
+			name:        "Succeded find 5 data not paid",
+			limit:       0,
+			offset:      0,
+			typeDebt:    nil,
+			isPaid:      helpers.Ptr(false),
+			foundData:   5,
+			wantErr:     false,
+			expectedErr: nil,
+		},
+		{
+			name:        "Succeded find 5 data Type 0",
+			limit:       0,
+			offset:      0,
+			typeDebt:    helpers.Ptr("Type 0"),
+			isPaid:      nil,
+			foundData:   5,
+			wantErr:     false,
+			expectedErr: nil,
+		},
+		{
+			name:        "Succeded find 5 data Type 1",
+			limit:       0,
+			offset:      0,
+			typeDebt:    helpers.Ptr("Type 1"),
+			isPaid:      nil,
+			foundData:   5,
+			wantErr:     false,
+			expectedErr: nil,
+		},
+		{
+			name:        "Succeded find 3 data Type 1",
+			limit:       5,
+			offset:      0,
+			typeDebt:    helpers.Ptr("Type 1"),
+			isPaid:      nil,
 			foundData:   5,
 			wantErr:     false,
 			expectedErr: nil,
@@ -153,7 +213,7 @@ func TestFindAllDebts(t *testing.T) {
 	repo := repository.NewDebtRepository(db)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			debts, err := repo.FindAll(context.Background(), tt.limit, tt.offset)
+			debts, err := repo.FindAll(context.Background(), tt.limit, tt.offset, tt.typeDebt, tt.isPaid)
 			if tt.wantErr {
 				appErr, ok := err.(*apperror.AppError)
 				assert.True(t, ok)
@@ -163,6 +223,16 @@ func TestFindAllDebts(t *testing.T) {
 				assert.Equal(t, expErr.Code, appErr.Code, appErr.Message)
 				assert.Nil(t, debts)
 			} else {
+				for _, d := range debts {
+					if tt.isPaid != nil {
+						t.Log(*tt.isPaid, "=", d.IsPaid)
+						assert.Equal(t, *tt.isPaid, d.IsPaid, *tt.isPaid, "=", d.IsPaid)
+					}
+					if tt.typeDebt != nil {
+						t.Log(*tt.typeDebt, "=", d.Type)
+						assert.Equal(t, *tt.typeDebt, d.Type, *tt.typeDebt, "=", d.Type)
+					}
+				}
 				assert.NoError(t, err)
 				assert.NotNil(t, debts)
 				assert.Equal(t, tt.foundData, int64(len(debts)))

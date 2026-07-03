@@ -28,7 +28,7 @@ type MockDebtRepository struct {
 	LastDelete   int64
 }
 
-func (m *MockDebtRepository) FindAll(ctx context.Context, limit, offset int64) ([]domain.Debt, error) {
+func (m *MockDebtRepository) FindAll(ctx context.Context, limit, offset int64, typeDebt *string, isPaid *bool) ([]domain.Debt, error) {
 	return m.FindAllFunc(ctx, limit, offset)
 }
 func (m *MockDebtRepository) FindByID(ctx context.Context, id int64) (*domain.Debt, error) {

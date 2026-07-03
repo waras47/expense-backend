@@ -77,14 +77,25 @@ func NewDebtRepository(db *pgxpool.Pool) domain.DebtRepository {
 	return &debtRepo{db: db}
 }
 
-func (r *debtRepo) FindAll(ctx context.Context, limit, offset int64) ([]domain.Debt, error) {
+func (r *debtRepo) FindAll(ctx context.Context, limit, offset int64, typeDebt *string, isPaid *bool) ([]domain.Debt, error) {
 	query := `SELECT id, person_name, amount, type, due_date, is_paid, note, paid_at, is_deleted, created_at, updated_at
 			  FROM debts WHERE is_deleted = false`
 
 	var args []any
+	var argPos = 1
+	if typeDebt != nil {
+		query += fmt.Sprintf(" AND type = $%d", argPos)
+		args = append(args, *typeDebt)
+		argPos++
+	}
+	if isPaid != nil {
+		query += fmt.Sprintf(" AND is_paid = $%d", argPos)
+		args = append(args, *isPaid)
+		argPos++
+	}
 	if limit > 0 {
 		// Do not forget spacing before LIMIT
-		query += ` LIMIT $1 OFFSET $2`
+		query += fmt.Sprintf(" LIMIT $%d OFFSET $%d", argPos, argPos+1)
 		args = append(args, limit, offset)
 	}
 

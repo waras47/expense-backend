@@ -20,6 +20,8 @@ type UpdateDebtPayload struct {
 	Note       *string          `json:"note" binding:"omitnil,max=255"`
 }
 
-type PayDebyPayload struct {
-	ID int `json:"id" binding:"required"`
+type DebtFilter struct {
+	Type   *string `form:"type" binding:"omitempty"`
+	IsPaid *bool   `form:"is_paid" binding:"omitempty"`
+	PaginateQuery
 }

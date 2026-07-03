@@ -170,15 +170,19 @@ func TestGetAllDebt(t *testing.T) {
 		name            string
 		page            int64
 		limit           int64
+		typeDebt        *string
+		isPaid          *bool
 		mockFindAllRepo func(ctx context.Context, limit, offset int64) ([]domain.Debt, error)
 		expectedCount   int64
 		wantErr         bool
 		expectedErr     error
 	}{
 		{
-			name:  "Succeded retrieve data 1-2",
-			page:  1,
-			limit: 2,
+			name:     "Succeded retrieve data 1-2",
+			page:     1,
+			limit:    2,
+			typeDebt: nil,
+			isPaid:   nil,
 			mockFindAllRepo: func(ctx context.Context, limit, offset int64) ([]domain.Debt, error) {
 				debts := mockDebt.findDebts(limit, offset)
 				return debts, nil
@@ -188,9 +192,11 @@ func TestGetAllDebt(t *testing.T) {
 			expectedErr:   nil,
 		},
 		{
-			name:  "Succeded retrieve data 1-10",
-			page:  0,
-			limit: -1,
+			name:     "Succeded retrieve data 1-10",
+			page:     0,
+			limit:    -1,
+			typeDebt: nil,
+			isPaid:   nil,
 			mockFindAllRepo: func(ctx context.Context, limit, offset int64) ([]domain.Debt, error) {
 				debts := mockDebt.findDebts(limit, offset)
 				return debts, nil
@@ -200,9 +206,11 @@ func TestGetAllDebt(t *testing.T) {
 			expectedErr:   nil,
 		},
 		{
-			name:  "Succeded retrieve data 1-100",
-			page:  1,
-			limit: 111,
+			name:     "Succeded retrieve data 1-100",
+			page:     1,
+			limit:    111,
+			typeDebt: nil,
+			isPaid:   nil,
 			mockFindAllRepo: func(ctx context.Context, limit, offset int64) ([]domain.Debt, error) {
 				debts := mockDebt.findDebts(limit, offset)
 				return debts, nil
@@ -212,9 +220,11 @@ func TestGetAllDebt(t *testing.T) {
 			expectedErr:   nil,
 		},
 		{
-			name:  "Offset past total of data",
-			page:  100,
-			limit: 10,
+			name:     "Offset past total of data",
+			page:     100,
+			limit:    10,
+			typeDebt: nil,
+			isPaid:   nil,
 			mockFindAllRepo: func(ctx context.Context, limit, offset int64) ([]domain.Debt, error) {
 				debts := mockDebt.findDebts(limit, offset)
 				return debts, nil
@@ -224,9 +234,11 @@ func TestGetAllDebt(t *testing.T) {
 			expectedErr:   nil,
 		},
 		{
-			name:  "Failed retrieve data",
-			page:  0,
-			limit: 0,
+			name:     "Failed retrieve data",
+			page:     0,
+			limit:    0,
+			typeDebt: nil,
+			isPaid:   nil,
 			mockFindAllRepo: func(ctx context.Context, limit, offset int64) ([]domain.Debt, error) {
 				return nil, apperror.NewInternal(nil)
 			},
@@ -246,7 +258,7 @@ func TestGetAllDebt(t *testing.T) {
 			}
 
 			uc := usecase.NewDebtUsecase(repo)
-			res, _, err := uc.GetAll(context.Background(), tt.page, tt.limit)
+			res, _, err := uc.GetAll(context.Background(), tt.page, tt.limit, tt.typeDebt, tt.isPaid)
 			t.Log(res)
 			if tt.wantErr {
 				assert.Error(t, err)

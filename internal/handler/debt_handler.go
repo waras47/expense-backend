@@ -138,7 +138,7 @@ func (h *DebtHandler) GetDebtByID(c *gin.Context) {
 //	@Success		200	{object}	appresponse.Response[any]
 //	@Router			/debts [get]
 func (h *DebtHandler) GetDebts(c *gin.Context) {
-	var paginateQuery reqDto.PaginateQuery
+	var paginateQuery reqDto.DebtFilter
 	if err := c.ShouldBindQuery(&paginateQuery); err != nil {
 		if errors.Is(err, io.EOF) {
 			appresponse.RespondError(c, http.StatusBadRequest, "payload is empty", apperror.NewBadRequest(help.Ptr("request body is empty")))
@@ -153,7 +153,7 @@ func (h *DebtHandler) GetDebts(c *gin.Context) {
 		return
 	}
 
-	debts, total, err := h.uc.GetAll(c.Request.Context(), paginateQuery.Page, paginateQuery.Limit)
+	debts, total, err := h.uc.GetAll(c.Request.Context(), paginateQuery.Page, paginateQuery.Limit, paginateQuery.Type, paginateQuery.IsPaid)
 	if err != nil {
 		var appErr *apperror.AppError
 		if errors.As(err, &appErr) {

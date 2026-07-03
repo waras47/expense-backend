@@ -266,7 +266,7 @@ func TestCreateDebt(t *testing.T) {
 func TestListDebt(t *testing.T) {
 	tests := []struct {
 		name            string
-		getAllFunc      func(ctx context.Context, page, limit int64) ([]domain.Debt, int64, error)
+		getAllFunc      func(ctx context.Context, page, limit int64, typeDebt *string, isPaid *bool) ([]domain.Debt, int64, error)
 		path            string
 		wantErr         bool
 		expectedCode    int
@@ -274,7 +274,7 @@ func TestListDebt(t *testing.T) {
 	}{
 		{
 			name: "Succeded retrieve debts",
-			getAllFunc: func(ctx context.Context, page, limit int64) ([]domain.Debt, int64, error) {
+			getAllFunc: func(ctx context.Context, page, limit int64, typeDebt *string, isPaid *bool) ([]domain.Debt, int64, error) {
 				debts := generateMockDebts(10)
 				return debts, 10, nil
 			},
@@ -285,7 +285,7 @@ func TestListDebt(t *testing.T) {
 		},
 		{
 			name: "Succeded retrieve debts with paginate",
-			getAllFunc: func(ctx context.Context, page, limit int64) ([]domain.Debt, int64, error) {
+			getAllFunc: func(ctx context.Context, page, limit int64, typeDebt *string, isPaid *bool) ([]domain.Debt, int64, error) {
 				debts := generateMockDebts(10)
 				return debts, 10, nil
 			},
@@ -297,7 +297,7 @@ func TestListDebt(t *testing.T) {
 		// Invalid query param
 		{
 			name: "Invalid url query page",
-			getAllFunc: func(ctx context.Context, page, limit int64) ([]domain.Debt, int64, error) {
+			getAllFunc: func(ctx context.Context, page, limit int64, typeDebt *string, isPaid *bool) ([]domain.Debt, int64, error) {
 				debts := generateMockDebts(1)
 				return debts, 0, nil
 			},
@@ -308,7 +308,7 @@ func TestListDebt(t *testing.T) {
 		},
 		{
 			name: "Invalid url query limit",
-			getAllFunc: func(ctx context.Context, page, limit int64) ([]domain.Debt, int64, error) {
+			getAllFunc: func(ctx context.Context, page, limit int64, typeDebt *string, isPaid *bool) ([]domain.Debt, int64, error) {
 				debts := generateMockDebts(1)
 				return debts, 0, nil
 			},
@@ -320,7 +320,7 @@ func TestListDebt(t *testing.T) {
 		// Validation failed
 		{
 			name: "Validation failed page less than 0",
-			getAllFunc: func(ctx context.Context, page, limit int64) ([]domain.Debt, int64, error) {
+			getAllFunc: func(ctx context.Context, page, limit int64, typeDebt *string, isPaid *bool) ([]domain.Debt, int64, error) {
 				debts := generateMockDebts(1)
 				return debts, 0, nil
 			},
@@ -331,7 +331,7 @@ func TestListDebt(t *testing.T) {
 		},
 		{
 			name: "Validation failed page negative",
-			getAllFunc: func(ctx context.Context, page, limit int64) ([]domain.Debt, int64, error) {
+			getAllFunc: func(ctx context.Context, page, limit int64, typeDebt *string, isPaid *bool) ([]domain.Debt, int64, error) {
 				debts := generateMockDebts(1)
 				return debts, 0, nil
 			},
@@ -342,7 +342,7 @@ func TestListDebt(t *testing.T) {
 		},
 		{
 			name: "Validation failed limit less than 0",
-			getAllFunc: func(ctx context.Context, page, limit int64) ([]domain.Debt, int64, error) {
+			getAllFunc: func(ctx context.Context, page, limit int64, typeDebt *string, isPaid *bool) ([]domain.Debt, int64, error) {
 				debts := generateMockDebts(1)
 				return debts, 0, nil
 			},
@@ -353,7 +353,7 @@ func TestListDebt(t *testing.T) {
 		},
 		{
 			name: "Validation failed limit greater than max",
-			getAllFunc: func(ctx context.Context, page, limit int64) ([]domain.Debt, int64, error) {
+			getAllFunc: func(ctx context.Context, page, limit int64, typeDebt *string, isPaid *bool) ([]domain.Debt, int64, error) {
 				debts := generateMockDebts(1)
 				return debts, 0, nil
 			},
@@ -365,7 +365,7 @@ func TestListDebt(t *testing.T) {
 		// Failed retrieve
 		{
 			name: "Failed retrieve debts",
-			getAllFunc: func(ctx context.Context, page, limit int64) ([]domain.Debt, int64, error) {
+			getAllFunc: func(ctx context.Context, page, limit int64, typeDebt *string, isPaid *bool) ([]domain.Debt, int64, error) {
 				debts := generateMockDebts(0)
 				return debts, 0, apperror.NewInternal(nil)
 			},
