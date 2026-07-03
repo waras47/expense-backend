@@ -25,12 +25,16 @@ func (m *mockDebtData) LoadDebts(total int64) {
 
 	for i := 1; i <= 100; i++ {
 		idxStr := strconv.Itoa(i)
+		debtType := domain.DebtTypeOwe
+		if i%2 == 0 {
+			debtType = domain.DebtTypeLent
+		}
 		debts = append(debts,
 			domain.Debt{
 				ID:         1,
 				PersonName: "Mock Person Name " + idxStr,
 				Amount:     main_test.NewDecimal(120000),
-				Type:       "Type Mock" + idxStr,
+				Type:       debtType,
 				Note:       "Mock Note",
 				DueDate:    main_test.NewDate(),
 				CreatedAt:  time.Now().In(main_test.Loc),
@@ -170,9 +174,9 @@ func TestGetAllDebt(t *testing.T) {
 		name            string
 		page            int64
 		limit           int64
-		typeDebt        *string
+		typeDebt        *domain.EnumDebtType
 		isPaid          *bool
-		mockFindAllRepo func(ctx context.Context, limit, offset int64) ([]domain.Debt, error)
+		mockFindAllRepo func(ctx context.Context, limit, offset int64, typeDebt *domain.EnumDebtType, isPaid *bool) ([]domain.Debt, error)
 		expectedCount   int64
 		wantErr         bool
 		expectedErr     error
@@ -181,9 +185,9 @@ func TestGetAllDebt(t *testing.T) {
 			name:     "Succeded retrieve data 1-2",
 			page:     1,
 			limit:    2,
-			typeDebt: nil,
+			typeDebt: helpers.Ptr(domain.DebtTypeOwe),
 			isPaid:   nil,
-			mockFindAllRepo: func(ctx context.Context, limit, offset int64) ([]domain.Debt, error) {
+			mockFindAllRepo: func(ctx context.Context, limit, offset int64, typeDebt *domain.EnumDebtType, isPaid *bool) ([]domain.Debt, error) {
 				debts := mockDebt.findDebts(limit, offset)
 				return debts, nil
 			},
@@ -195,9 +199,9 @@ func TestGetAllDebt(t *testing.T) {
 			name:     "Succeded retrieve data 1-10",
 			page:     0,
 			limit:    -1,
-			typeDebt: nil,
+			typeDebt: helpers.Ptr(domain.DebtTypeOwe),
 			isPaid:   nil,
-			mockFindAllRepo: func(ctx context.Context, limit, offset int64) ([]domain.Debt, error) {
+			mockFindAllRepo: func(ctx context.Context, limit, offset int64, typeDebt *domain.EnumDebtType, isPaid *bool) ([]domain.Debt, error) {
 				debts := mockDebt.findDebts(limit, offset)
 				return debts, nil
 			},
@@ -209,9 +213,9 @@ func TestGetAllDebt(t *testing.T) {
 			name:     "Succeded retrieve data 1-100",
 			page:     1,
 			limit:    111,
-			typeDebt: nil,
+			typeDebt: helpers.Ptr(domain.DebtTypeOwe),
 			isPaid:   nil,
-			mockFindAllRepo: func(ctx context.Context, limit, offset int64) ([]domain.Debt, error) {
+			mockFindAllRepo: func(ctx context.Context, limit, offset int64, typeDebt *domain.EnumDebtType, isPaid *bool) ([]domain.Debt, error) {
 				debts := mockDebt.findDebts(limit, offset)
 				return debts, nil
 			},
@@ -223,9 +227,9 @@ func TestGetAllDebt(t *testing.T) {
 			name:     "Offset past total of data",
 			page:     100,
 			limit:    10,
-			typeDebt: nil,
+			typeDebt: helpers.Ptr(domain.DebtTypeOwe),
 			isPaid:   nil,
-			mockFindAllRepo: func(ctx context.Context, limit, offset int64) ([]domain.Debt, error) {
+			mockFindAllRepo: func(ctx context.Context, limit, offset int64, typeDebt *domain.EnumDebtType, isPaid *bool) ([]domain.Debt, error) {
 				debts := mockDebt.findDebts(limit, offset)
 				return debts, nil
 			},
@@ -237,9 +241,9 @@ func TestGetAllDebt(t *testing.T) {
 			name:     "Failed retrieve data",
 			page:     0,
 			limit:    0,
-			typeDebt: nil,
+			typeDebt: helpers.Ptr(domain.DebtTypeOwe),
 			isPaid:   nil,
-			mockFindAllRepo: func(ctx context.Context, limit, offset int64) ([]domain.Debt, error) {
+			mockFindAllRepo: func(ctx context.Context, limit, offset int64, typeDebt *domain.EnumDebtType, isPaid *bool) ([]domain.Debt, error) {
 				return nil, apperror.NewInternal(nil)
 			},
 			expectedCount: 0,

@@ -6,7 +6,7 @@ import (
 )
 
 type MockDebtRepository struct {
-	FindAllFunc  func(ctx context.Context, limit, offset int64) ([]domain.Debt, error)
+	FindAllFunc  func(ctx context.Context, limit, offset int64, typeDebt *domain.EnumDebtType, isPaid *bool) ([]domain.Debt, error)
 	FindByIDFunc func(ctx context.Context, id int64) (*domain.Debt, error)
 	CreateFunc   func(ctx context.Context, income *domain.Debt) (*domain.Debt, error)
 	UpdateFunc   func(ctx context.Context, income *domain.Debt) error
@@ -28,8 +28,8 @@ type MockDebtRepository struct {
 	LastDelete   int64
 }
 
-func (m *MockDebtRepository) FindAll(ctx context.Context, limit, offset int64, typeDebt *string, isPaid *bool) ([]domain.Debt, error) {
-	return m.FindAllFunc(ctx, limit, offset)
+func (m *MockDebtRepository) FindAll(ctx context.Context, limit, offset int64, typeDebt *domain.EnumDebtType, isPaid *bool) ([]domain.Debt, error) {
+	return m.FindAllFunc(ctx, limit, offset, typeDebt, isPaid)
 }
 func (m *MockDebtRepository) FindByID(ctx context.Context, id int64) (*domain.Debt, error) {
 	return m.FindByIDFunc(ctx, id)

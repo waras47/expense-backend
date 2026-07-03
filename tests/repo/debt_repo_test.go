@@ -18,18 +18,23 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var invalidTypeDebt domain.EnumDebtType = "Invalid"
+
 func seedDebt(t *testing.T, db *pgxpool.Pool, total int64) int64 {
 
 	if total > 1 {
-		// ID ganjil is_paid = false dan type = Type 1
-		// ID genap is_paid = true dan type = Type 0
+		// ID ganjil is_paid = false dan type = OWE
+		// ID genap is_paid = true dan type = LENT
 		query := `INSERT INTO debts (person_name, amount, type, note, due_date, is_paid)
 			  VALUES ($1, $2, $3, $4, $5, $6)`
 		paid := true
 		for i := total; i >= 1; i-- {
 			title := fmt.Sprintf("Person %d", i)
 			amount := main_test.NewDecimal(200000)
-			typeDebt := fmt.Sprintf("Type %d", i%2)
+			typeDebt := domain.DebtTypeOwe
+			if i%2 == 0 {
+				typeDebt = domain.DebtTypeLent
+			}
 			note := fmt.Sprintf("Note %d", i)
 			dueDate := main_test.NewDate()
 			paid = !paid
@@ -45,7 +50,7 @@ func seedDebt(t *testing.T, db *pgxpool.Pool, total int64) int64 {
 			  VALUES ($1, $2, $3, $4, $5) RETURNING id`
 		title := fmt.Sprintf("Person %d", 1)
 		amount := main_test.NewDecimal(200000)
-		typeDebt := fmt.Sprintf("Type %d", 1)
+		typeDebt := domain.DebtTypeOwe
 		note := fmt.Sprintf("Note %d", 1)
 		debtDate := main_test.NewDate()
 
@@ -65,7 +70,6 @@ func TestCreateDebt(t *testing.T) {
 	dummyDebt := domain.Debt{
 		PersonName: "test",
 		Amount:     decimal.NewFromBigInt(big.NewInt(200000), 2),
-		Type:       "test_type",
 		Note:       "test_note",
 		DueDate:    main_test.NewDate(),
 	}
@@ -74,20 +78,30 @@ func TestCreateDebt(t *testing.T) {
 	tests := []struct {
 		name        string
 		context     context.Context
+		typeDebt    domain.EnumDebtType
 		wantErr     bool
 		expectedErr error
 	}{
 		{
-			name:        "Succeded create new Debt",
-			context:     context.Background(),
-			wantErr:     false,
-			expectedErr: nil,
-		},
-		{
 			name:        "Timeout create Debt",
 			context:     ctx,
+			typeDebt:    domain.DebtTypeLent,
 			wantErr:     true,
 			expectedErr: apperror.NewInternal(nil),
+		},
+		{
+			name:        "Failed create new Debt with invalid type debt",
+			context:     context.Background(),
+			typeDebt:    invalidTypeDebt,
+			wantErr:     true,
+			expectedErr: apperror.NewInternal(nil),
+		},
+		{
+			name:        "Succeded create new Debt",
+			context:     context.Background(),
+			typeDebt:    domain.DebtTypeOwe,
+			wantErr:     false,
+			expectedErr: nil,
 		},
 	}
 
@@ -95,6 +109,7 @@ func TestCreateDebt(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			dummyDebt.Type = tt.typeDebt
 			debt, err := repo.Create(tt.context, &dummyDebt)
 			if tt.wantErr {
 				appErr, ok := err.(*apperror.AppError)
@@ -132,7 +147,7 @@ func TestFindAllDebts(t *testing.T) {
 		name        string
 		limit       int64
 		offset      int64
-		typeDebt    *string
+		typeDebt    *domain.EnumDebtType
 		isPaid      *bool
 		foundData   int64
 		wantErr     bool
@@ -179,30 +194,40 @@ func TestFindAllDebts(t *testing.T) {
 			expectedErr: nil,
 		},
 		{
-			name:        "Succeded find 5 data Type 0",
+			name:        "Succeded find 5 data Type Owe",
 			limit:       0,
 			offset:      0,
-			typeDebt:    helpers.Ptr("Type 0"),
+			typeDebt:    helpers.Ptr(domain.DebtTypeOwe),
 			isPaid:      nil,
 			foundData:   5,
 			wantErr:     false,
 			expectedErr: nil,
 		},
 		{
-			name:        "Succeded find 5 data Type 1",
+			name:        "Succeded find 5 data Type Lent",
 			limit:       0,
 			offset:      0,
-			typeDebt:    helpers.Ptr("Type 1"),
+			typeDebt:    helpers.Ptr(domain.DebtTypeLent),
 			isPaid:      nil,
 			foundData:   5,
 			wantErr:     false,
 			expectedErr: nil,
 		},
 		{
-			name:        "Succeded find 3 data Type 1",
+			name:        "Succeded find 3 data Owe",
 			limit:       5,
 			offset:      0,
-			typeDebt:    helpers.Ptr("Type 1"),
+			typeDebt:    helpers.Ptr(domain.DebtTypeOwe),
+			isPaid:      nil,
+			foundData:   5,
+			wantErr:     false,
+			expectedErr: nil,
+		},
+		{
+			name:        "Succeded find 2 data Lent",
+			limit:       5,
+			offset:      0,
+			typeDebt:    helpers.Ptr(domain.DebtTypeLent),
 			isPaid:      nil,
 			foundData:   5,
 			wantErr:     false,
@@ -298,10 +323,7 @@ func TestFindByIDDebt(t *testing.T) {
 func TestUpdateDebt(t *testing.T) {
 	db := testDB.SetupDB(t)
 
-	newAmount, err := decimal.NewFromString("120000.00")
-	if err != nil {
-		t.Error(err)
-	}
+	newAmount := main_test.NewDecimal(120000)
 	tests := []struct {
 		name          string
 		preUpdateFunc func() (int64, domain.Debt)
@@ -316,7 +338,7 @@ func TestUpdateDebt(t *testing.T) {
 					ID:         id,
 					PersonName: "New Person",
 					Amount:     newAmount,
-					Type:       "New Type",
+					Type:       domain.DebtTypeLent,
 					Note:       "New Note",
 					DueDate:    main_test.NewDate(),
 				}
@@ -326,6 +348,23 @@ func TestUpdateDebt(t *testing.T) {
 			expectedErr: nil,
 		},
 		{
+			name: "Failed update debt invalid type",
+			preUpdateFunc: func() (id int64, newData domain.Debt) {
+				id = seedDebt(t, db, 1)
+				newData = domain.Debt{
+					ID:         id,
+					PersonName: "New Person",
+					Amount:     newAmount,
+					Type:       invalidTypeDebt,
+					Note:       "New Note",
+					DueDate:    main_test.NewDate(),
+				}
+				return
+			},
+			wantErr:     true,
+			expectedErr: apperror.NewInternal(nil),
+		},
+		{
 			name: "No affected update debt",
 			preUpdateFunc: func() (id int64, newData domain.Debt) {
 				id = seedDebt(t, db, 1)
@@ -333,7 +372,7 @@ func TestUpdateDebt(t *testing.T) {
 					ID:         1000,
 					PersonName: "New Person",
 					Amount:     newAmount,
-					Type:       "New Type",
+					Type:       domain.DebtTypeLent,
 					Note:       "New Note",
 					DueDate:    main_test.NewDate(),
 				}

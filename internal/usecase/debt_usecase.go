@@ -23,7 +23,7 @@ func (uc *debtUsecase) Get(ctx context.Context, id int64) (*domain.Debt, error) 
 }
 
 // TODO: tambahkan parameter id akun jika ada akun
-func (uc *debtUsecase) GetAll(ctx context.Context, page, limit int64, typeDebt *string, isPaid *bool) ([]domain.Debt, int64, error) {
+func (uc *debtUsecase) GetAll(ctx context.Context, page, limit int64, typeDebt *domain.EnumDebtType, isPaid *bool) ([]domain.Debt, int64, error) {
 	// Validation minimal
 	if page < 1 {
 		page = 1

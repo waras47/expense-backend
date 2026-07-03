@@ -16,6 +16,7 @@ func SetupRouter() *gin.Engine {
 	r := gin.New()
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterValidation("positive_decimal", server.ValidateDecimalMoreThanZero)
+		v.RegisterValidation("debt_type", server.ValidateEnumTypeDebt)
 	}
 	return r
 }

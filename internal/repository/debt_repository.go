@@ -18,17 +18,17 @@ import (
 )
 
 type DebtModel struct {
-	ID         int64              `db:"id"`
-	PersonName string             `db:"person_name"`
-	Amount     decimal.Decimal    `db:"amount"`
-	Type       string             `db:"type"`
-	DueDate    pgtype.Date        `db:"due_date"`
-	IsPaid     bool               `db:"is_paid"`
-	Note       pgtype.Text        `db:"note"`
-	PaidAt     pgtype.Timestamptz `db:"paid_at"`
-	IsDeleted  bool               `db:"is_deleted"`
-	CreatedAt  time.Time          `db:"created_at"`
-	UpdatedAt  pgtype.Timestamptz `db:"updated_at"`
+	ID         int64               `db:"id"`
+	PersonName string              `db:"person_name"`
+	Amount     decimal.Decimal     `db:"amount"`
+	Type       domain.EnumDebtType `db:"type"`
+	DueDate    pgtype.Date         `db:"due_date"`
+	IsPaid     bool                `db:"is_paid"`
+	Note       pgtype.Text         `db:"note"`
+	PaidAt     pgtype.Timestamptz  `db:"paid_at"`
+	IsDeleted  bool                `db:"is_deleted"`
+	CreatedAt  time.Time           `db:"created_at"`
+	UpdatedAt  pgtype.Timestamptz  `db:"updated_at"`
 }
 
 func ToDebtModel(debt *domain.Debt) *DebtModel {
@@ -77,7 +77,7 @@ func NewDebtRepository(db *pgxpool.Pool) domain.DebtRepository {
 	return &debtRepo{db: db}
 }
 
-func (r *debtRepo) FindAll(ctx context.Context, limit, offset int64, typeDebt *string, isPaid *bool) ([]domain.Debt, error) {
+func (r *debtRepo) FindAll(ctx context.Context, limit, offset int64, typeDebt *domain.EnumDebtType, isPaid *bool) ([]domain.Debt, error) {
 	query := `SELECT id, person_name, amount, type, due_date, is_paid, note, paid_at, is_deleted, created_at, updated_at
 			  FROM debts WHERE is_deleted = false`
 

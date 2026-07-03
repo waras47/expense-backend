@@ -3,6 +3,7 @@ package server
 
 import (
 	"expense-backend/internal/config"
+	"expense-backend/internal/domain"
 	"expense-backend/internal/handler"
 	"expense-backend/internal/repository"
 	"expense-backend/internal/usecase"
@@ -33,6 +34,13 @@ func ValidateDecimalMoreThanZero(fl validator.FieldLevel) bool {
 	}
 	return d.GreaterThan(decimal.Zero)
 }
+func ValidateEnumTypeDebt(fl validator.FieldLevel) bool {
+	val, ok := fl.Field().Interface().(domain.EnumDebtType)
+	if !ok {
+		return false
+	}
+	return val == domain.DebtTypeLent || val == domain.DebtTypeOwe
+}
 
 func New(cfg *config.Config, pool *pgxpool.Pool) *Server {
 	h := wireHandlers(pool)
@@ -41,6 +49,7 @@ func New(cfg *config.Config, pool *pgxpool.Pool) *Server {
 	// Register custom validator
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterValidation("positive_decimal", ValidateDecimalMoreThanZero)
+		v.RegisterValidation("debt_type", ValidateEnumTypeDebt)
 	}
 
 	registerMiddleware(engine)

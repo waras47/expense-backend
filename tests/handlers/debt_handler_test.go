@@ -24,11 +24,15 @@ func generateMockDebts(total int) []domain.Debt {
 	debts := make([]domain.Debt, total)
 	for i := range total {
 		idxStr := strconv.Itoa(i)
+		debtType := domain.DebtTypeOwe
+		if i%2 == 0 {
+			debtType = domain.DebtTypeLent
+		}
 		debt := domain.Debt{
 			ID:         int64(i),
 			PersonName: "Person " + idxStr,
 			Amount:     main_test.NewDecimal(int64(1 * 1000)),
-			Type:       "Type " + idxStr,
+			Type:       debtType,
 			Note:       "Note " + idxStr,
 			DueDate:    main_test.NewDate(),
 			IsDeleted:  false,
@@ -213,6 +217,23 @@ func TestCreateDebt(t *testing.T) {
 			expectedMessage: "validation failed",
 			expectedCode:    http.StatusBadRequest,
 		},
+		{
+			name: "Incorrect payload debt type",
+			path: "/api/debts",
+			payload: map[string]any{
+				"person_name": mockDebt.PersonName,
+				"amount":      mockDebt.Amount,
+				"type":        "incorrect_value_type",
+				"note":        mockDebt.Note,
+				"due_date":    mockDebt.DueDate,
+			},
+			createFunc: func(ctx context.Context, input *domain.Debt) (*domain.Debt, error) {
+				return nil, apperror.NewInternal(nil)
+			},
+			wantErr:         true,
+			expectedMessage: "validation failed",
+			expectedCode:    http.StatusBadRequest,
+		},
 		// Invalid payload
 		{
 			name: "Invalid payload amount",
@@ -221,6 +242,23 @@ func TestCreateDebt(t *testing.T) {
 				"person_name": mockDebt.PersonName,
 				"amount":      "invalid",
 				"type":        mockDebt.Type,
+				"note":        mockDebt.Note,
+				"due_date":    mockDebt.DueDate,
+			},
+			createFunc: func(ctx context.Context, input *domain.Debt) (*domain.Debt, error) {
+				return nil, apperror.NewInternal(nil)
+			},
+			wantErr:         true,
+			expectedMessage: "invalid create payload",
+			expectedCode:    http.StatusBadRequest,
+		},
+		{
+			name: "Invalid payload debt type",
+			path: "/api/debts",
+			payload: map[string]any{
+				"person_name": mockDebt.PersonName,
+				"amount":      mockDebt.Amount,
+				"type":        123,
 				"note":        mockDebt.Note,
 				"due_date":    mockDebt.DueDate,
 			},
@@ -266,7 +304,7 @@ func TestCreateDebt(t *testing.T) {
 func TestListDebt(t *testing.T) {
 	tests := []struct {
 		name            string
-		getAllFunc      func(ctx context.Context, page, limit int64, typeDebt *string, isPaid *bool) ([]domain.Debt, int64, error)
+		getAllFunc      func(ctx context.Context, page, limit int64, typeDebt *domain.EnumDebtType, isPaid *bool) ([]domain.Debt, int64, error)
 		path            string
 		wantErr         bool
 		expectedCode    int
@@ -274,7 +312,7 @@ func TestListDebt(t *testing.T) {
 	}{
 		{
 			name: "Succeded retrieve debts",
-			getAllFunc: func(ctx context.Context, page, limit int64, typeDebt *string, isPaid *bool) ([]domain.Debt, int64, error) {
+			getAllFunc: func(ctx context.Context, page, limit int64, typeDebt *domain.EnumDebtType, isPaid *bool) ([]domain.Debt, int64, error) {
 				debts := generateMockDebts(10)
 				return debts, 10, nil
 			},
@@ -284,8 +322,30 @@ func TestListDebt(t *testing.T) {
 			expectedMessage: "debts retrieved",
 		},
 		{
+			name: "Succeded retrieve debts with filter type and is_paid",
+			getAllFunc: func(ctx context.Context, page, limit int64, typeDebt *domain.EnumDebtType, isPaid *bool) ([]domain.Debt, int64, error) {
+				debts := generateMockDebts(10)
+				return debts, 10, nil
+			},
+			path:            "/api/debts?type=OWE&is_paid=true",
+			wantErr:         false,
+			expectedCode:    http.StatusOK,
+			expectedMessage: "debts retrieved",
+		},
+		{
+			name: "Succeded retrieve debts with filter type and is_paid 2",
+			getAllFunc: func(ctx context.Context, page, limit int64, typeDebt *domain.EnumDebtType, isPaid *bool) ([]domain.Debt, int64, error) {
+				debts := generateMockDebts(10)
+				return debts, 10, nil
+			},
+			path:            "/api/debts?type=LENT&is_paid=false",
+			wantErr:         false,
+			expectedCode:    http.StatusOK,
+			expectedMessage: "debts retrieved",
+		},
+		{
 			name: "Succeded retrieve debts with paginate",
-			getAllFunc: func(ctx context.Context, page, limit int64, typeDebt *string, isPaid *bool) ([]domain.Debt, int64, error) {
+			getAllFunc: func(ctx context.Context, page, limit int64, typeDebt *domain.EnumDebtType, isPaid *bool) ([]domain.Debt, int64, error) {
 				debts := generateMockDebts(10)
 				return debts, 10, nil
 			},
@@ -297,7 +357,7 @@ func TestListDebt(t *testing.T) {
 		// Invalid query param
 		{
 			name: "Invalid url query page",
-			getAllFunc: func(ctx context.Context, page, limit int64, typeDebt *string, isPaid *bool) ([]domain.Debt, int64, error) {
+			getAllFunc: func(ctx context.Context, page, limit int64, typeDebt *domain.EnumDebtType, isPaid *bool) ([]domain.Debt, int64, error) {
 				debts := generateMockDebts(1)
 				return debts, 0, nil
 			},
@@ -308,7 +368,7 @@ func TestListDebt(t *testing.T) {
 		},
 		{
 			name: "Invalid url query limit",
-			getAllFunc: func(ctx context.Context, page, limit int64, typeDebt *string, isPaid *bool) ([]domain.Debt, int64, error) {
+			getAllFunc: func(ctx context.Context, page, limit int64, typeDebt *domain.EnumDebtType, isPaid *bool) ([]domain.Debt, int64, error) {
 				debts := generateMockDebts(1)
 				return debts, 0, nil
 			},
@@ -317,10 +377,43 @@ func TestListDebt(t *testing.T) {
 			expectedCode:    http.StatusBadRequest,
 			expectedMessage: "invalid url query",
 		},
+		{
+			name: "Invalid url query is_paid",
+			getAllFunc: func(ctx context.Context, page, limit int64, typeDebt *domain.EnumDebtType, isPaid *bool) ([]domain.Debt, int64, error) {
+				debts := generateMockDebts(1)
+				return debts, 0, nil
+			},
+			path:            "/api/debts?page=1&limit=5&is_paid=joko",
+			wantErr:         true,
+			expectedCode:    http.StatusBadRequest,
+			expectedMessage: "invalid url query",
+		},
+		{
+			name: "Invalid url query is_paid 2",
+			getAllFunc: func(ctx context.Context, page, limit int64, typeDebt *domain.EnumDebtType, isPaid *bool) ([]domain.Debt, int64, error) {
+				debts := generateMockDebts(1)
+				return debts, 0, nil
+			},
+			path:            "/api/debts?page=1&limit=5&is_paid='false'",
+			wantErr:         true,
+			expectedCode:    http.StatusBadRequest,
+			expectedMessage: "invalid url query",
+		},
 		// Validation failed
 		{
+			name: "Incorrect url query type",
+			getAllFunc: func(ctx context.Context, page, limit int64, typeDebt *domain.EnumDebtType, isPaid *bool) ([]domain.Debt, int64, error) {
+				debts := generateMockDebts(1)
+				return debts, 0, nil
+			},
+			path:            "/api/debts?type=invalid",
+			wantErr:         true,
+			expectedCode:    http.StatusBadRequest,
+			expectedMessage: "validation failed",
+		},
+		{
 			name: "Validation failed page less than 0",
-			getAllFunc: func(ctx context.Context, page, limit int64, typeDebt *string, isPaid *bool) ([]domain.Debt, int64, error) {
+			getAllFunc: func(ctx context.Context, page, limit int64, typeDebt *domain.EnumDebtType, isPaid *bool) ([]domain.Debt, int64, error) {
 				debts := generateMockDebts(1)
 				return debts, 0, nil
 			},
@@ -331,7 +424,7 @@ func TestListDebt(t *testing.T) {
 		},
 		{
 			name: "Validation failed page negative",
-			getAllFunc: func(ctx context.Context, page, limit int64, typeDebt *string, isPaid *bool) ([]domain.Debt, int64, error) {
+			getAllFunc: func(ctx context.Context, page, limit int64, typeDebt *domain.EnumDebtType, isPaid *bool) ([]domain.Debt, int64, error) {
 				debts := generateMockDebts(1)
 				return debts, 0, nil
 			},
@@ -342,7 +435,7 @@ func TestListDebt(t *testing.T) {
 		},
 		{
 			name: "Validation failed limit less than 0",
-			getAllFunc: func(ctx context.Context, page, limit int64, typeDebt *string, isPaid *bool) ([]domain.Debt, int64, error) {
+			getAllFunc: func(ctx context.Context, page, limit int64, typeDebt *domain.EnumDebtType, isPaid *bool) ([]domain.Debt, int64, error) {
 				debts := generateMockDebts(1)
 				return debts, 0, nil
 			},
@@ -353,7 +446,7 @@ func TestListDebt(t *testing.T) {
 		},
 		{
 			name: "Validation failed limit greater than max",
-			getAllFunc: func(ctx context.Context, page, limit int64, typeDebt *string, isPaid *bool) ([]domain.Debt, int64, error) {
+			getAllFunc: func(ctx context.Context, page, limit int64, typeDebt *domain.EnumDebtType, isPaid *bool) ([]domain.Debt, int64, error) {
 				debts := generateMockDebts(1)
 				return debts, 0, nil
 			},
@@ -365,7 +458,7 @@ func TestListDebt(t *testing.T) {
 		// Failed retrieve
 		{
 			name: "Failed retrieve debts",
-			getAllFunc: func(ctx context.Context, page, limit int64, typeDebt *string, isPaid *bool) ([]domain.Debt, int64, error) {
+			getAllFunc: func(ctx context.Context, page, limit int64, typeDebt *domain.EnumDebtType, isPaid *bool) ([]domain.Debt, int64, error) {
 				debts := generateMockDebts(0)
 				return debts, 0, apperror.NewInternal(nil)
 			},
@@ -546,7 +639,7 @@ func TestUpdateDebt(t *testing.T) {
 			expectedMessage: "invalid update payload",
 		},
 		{
-			name: "Update invalid validation title",
+			name: "Invalid validation title",
 			path: "/api/debts/1",
 			payload: map[string]any{
 				"person_name": "",
@@ -559,7 +652,7 @@ func TestUpdateDebt(t *testing.T) {
 			expectedMessage: "validation failed",
 		},
 		{
-			name: "Update invalid validation amount",
+			name: "Invalid validation amount",
 			path: "/api/debts/1",
 			payload: map[string]any{
 				"amount": -1,
@@ -572,10 +665,11 @@ func TestUpdateDebt(t *testing.T) {
 			expectedMessage: "validation failed",
 		},
 		{
-			name: "Update invalid validation category",
+			name: "Invalid validation type",
 			path: "/api/debts/1",
 			payload: map[string]any{
-				"type": "",
+				// Valid type LENT or OWE
+				"type": "invalid_type",
 			},
 			updateFunc: func(c context.Context, id int64, input *domain.Debt) error {
 				return nil
@@ -585,7 +679,7 @@ func TestUpdateDebt(t *testing.T) {
 			expectedMessage: "validation failed",
 		},
 		{
-			name: "Update invalid validation note",
+			name: "Invalid validation note",
 			path: "/api/debts/1",
 			payload: map[string]any{
 				"note": strings.Repeat("note ", 226),
@@ -598,7 +692,7 @@ func TestUpdateDebt(t *testing.T) {
 			expectedMessage: "validation failed",
 		},
 		{
-			name: "Update invalid validation debt date",
+			name: "Invalid validation debt date",
 			path: "/api/debts/1",
 			payload: map[string]any{
 				"due_date": "2026/01/01",
