@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"expense-backend/internal/domain"
+	dto "expense-backend/internal/dto/responses"
 	"expense-backend/internal/handler"
 	"expense-backend/pkg/apperror"
-	"expense-backend/pkg/appresponse"
 	main_test "expense-backend/tests"
 	"expense-backend/tests/handlers/mock"
 	"fmt"
@@ -279,7 +279,7 @@ func TestCreateDebt(t *testing.T) {
 			r := setupDebtHandler(uc)
 			w := mock.NewRequest(r, "POST", tt.path, tt.payload)
 
-			var res appresponse.Response[domain.Debt]
+			var res dto.Response[domain.Debt]
 			err := json.Unmarshal(w.Body.Bytes(), &res)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.expectedCode, w.Code)
@@ -477,7 +477,7 @@ func TestListDebt(t *testing.T) {
 			r := setupDebtHandler(uc)
 			w := mock.NewRequest(r, "GET", tt.path, nil)
 
-			var res appresponse.Response[[]domain.Debt]
+			var res dto.Response[[]domain.Debt]
 			err := json.Unmarshal(w.Body.Bytes(), &res)
 
 			assert.NoError(t, err)
@@ -555,7 +555,7 @@ func TestFindOneDebt(t *testing.T) {
 			}
 			r := setupDebtHandler(uc)
 			w := mock.NewRequest(r, "GET", tt.path, nil)
-			var res appresponse.Response[domain.Debt]
+			var res dto.Response[domain.Debt]
 			err := json.Unmarshal(w.Body.Bytes(), &res)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.expectedCode, w.Code)
@@ -739,7 +739,7 @@ func TestUpdateDebt(t *testing.T) {
 			}
 			r := setupDebtHandler(uc)
 			w := mock.NewRequest(r, "PUT", tt.path, tt.payload)
-			var res appresponse.Response[domain.Debt]
+			var res dto.Response[domain.Debt]
 			err := json.Unmarshal(w.Body.Bytes(), &res)
 
 			assert.NoError(t, err)
@@ -826,7 +826,7 @@ func TestPaidDebt(t *testing.T) {
 			}
 			r := setupDebtHandler(uc)
 			w := mock.NewRequest(r, "PATCH", tt.path, nil)
-			var res appresponse.Response[domain.Debt]
+			var res dto.Response[domain.Debt]
 			err := json.Unmarshal(w.Body.Bytes(), &res)
 
 			assert.NoError(t, err)
@@ -913,7 +913,7 @@ func TestDeleteDebt(t *testing.T) {
 			}
 			r := setupDebtHandler(uc)
 			w := mock.NewRequest(r, "DELETE", tt.path, nil)
-			var res appresponse.Response[domain.Debt]
+			var res dto.Response[domain.Debt]
 			err := json.Unmarshal(w.Body.Bytes(), &res)
 
 			assert.NoError(t, err)

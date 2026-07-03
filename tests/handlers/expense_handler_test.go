@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"expense-backend/internal/domain"
+	dto "expense-backend/internal/dto/responses"
 	"expense-backend/internal/handler"
 	"expense-backend/pkg/apperror"
-	"expense-backend/pkg/appresponse"
 	main_test "expense-backend/tests"
 	"expense-backend/tests/handlers/mock"
 	"fmt"
@@ -241,7 +241,7 @@ func TestCreateExpense(t *testing.T) {
 			r := setupExpenseHandler(uc)
 			w := mock.NewRequest(r, "POST", tt.path, tt.payload)
 
-			var res appresponse.Response[domain.Expense]
+			var res dto.Response[domain.Expense]
 			err := json.Unmarshal(w.Body.Bytes(), &res)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.expectedCode, w.Code)
@@ -384,7 +384,7 @@ func TestListExpense(t *testing.T) {
 			r := setupExpenseHandler(uc)
 			w := mock.NewRequest(r, "GET", tt.path, nil)
 
-			var res appresponse.Response[[]domain.Expense]
+			var res dto.Response[[]domain.Expense]
 			err := json.Unmarshal(w.Body.Bytes(), &res)
 
 			assert.NoError(t, err)
@@ -462,7 +462,7 @@ func TestFindOneExpense(t *testing.T) {
 			}
 			r := setupExpenseHandler(uc)
 			w := mock.NewRequest(r, "GET", tt.path, nil)
-			var res appresponse.Response[domain.Expense]
+			var res dto.Response[domain.Expense]
 			err := json.Unmarshal(w.Body.Bytes(), &res)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.expectedCode, w.Code)
@@ -645,7 +645,7 @@ func TestUpdateExpense(t *testing.T) {
 			}
 			r := setupExpenseHandler(uc)
 			w := mock.NewRequest(r, "PUT", tt.path, tt.payload)
-			var res appresponse.Response[domain.Expense]
+			var res dto.Response[domain.Expense]
 			err := json.Unmarshal(w.Body.Bytes(), &res)
 
 			assert.NoError(t, err)
@@ -732,7 +732,7 @@ func TestDeleteExpense(t *testing.T) {
 			}
 			r := setupExpenseHandler(uc)
 			w := mock.NewRequest(r, "DELETE", tt.path, nil)
-			var res appresponse.Response[domain.Expense]
+			var res dto.Response[domain.Expense]
 			err := json.Unmarshal(w.Body.Bytes(), &res)
 
 			assert.NoError(t, err)

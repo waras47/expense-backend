@@ -2,6 +2,7 @@ package appresponse
 
 import (
 	"errors"
+	dto "expense-backend/internal/dto/responses"
 	"expense-backend/pkg/apperror"
 	"fmt"
 	"time"
@@ -9,30 +10,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type Response[T any] struct {
-	Success bool               `json:"success"`
-	Message string             `json:"message"`
-	Data    *T                 `json:"data,omitempty"`
-	Error   *apperror.AppError `json:"error,omitempty"`
-	Meta    Meta               `json:"meta"`
-}
-
-type Meta struct {
-	Paginate  *Paginate `json:"paginate,omitempty"`
-	Timestamp time.Time `json:"timestamp"`
-}
-
-type Paginate struct {
-	Page       *int64  `json:"page,omitempty"`
-	Limit      *int64  `json:"limit,omitempty"`
-	TotalRows  *int64  `json:"total_rows,omitempty"`
-	TotalPages *int64  `json:"total_pages,omitempty"`
-	Next       *string `json:"next,omitempty"`
-	Prev       *string `json:"prev,omitempty"`
-}
-
 // Example url: [GET] http://<domain>/<path>?page=<number>
-func CratePaginateResponse(c *gin.Context, page, limit, total int64) *Paginate {
+func CratePaginateResponse(c *gin.Context, page, limit, total int64) *dto.Paginate {
 	toIntPointer := func(val int64) *int64 {
 		return &val
 	}
@@ -43,7 +22,7 @@ func CratePaginateResponse(c *gin.Context, page, limit, total int64) *Paginate {
 		totalPages = (total + limit - 1) / limit
 	}
 
-	paginate := &Paginate{
+	paginate := &dto.Paginate{
 		Page:       toIntPointer(page),
 		Limit:      toIntPointer(limit),
 		TotalRows:  toIntPointer(total),
@@ -72,32 +51,32 @@ func CratePaginateResponse(c *gin.Context, page, limit, total int64) *Paginate {
 func RespondError(c *gin.Context, status int, message string, err error) {
 	var appErr *apperror.AppError
 	if errors.As(err, &appErr) {
-		c.JSON(status, Response[any]{
+		c.JSON(status, dto.Response[any]{
 			Success: false,
 			Message: message,
 			Error:   appErr,
-			Meta: Meta{
+			Meta: dto.Meta{
 				Timestamp: time.Now().UTC(),
 			},
 		})
 		return
 	}
-	c.JSON(status, Response[any]{
+	c.JSON(status, dto.Response[any]{
 		Success: false,
 		Message: message,
 		Error:   apperror.NewInternal(nil),
-		Meta: Meta{
+		Meta: dto.Meta{
 			Timestamp: time.Now().UTC(),
 		},
 	})
 }
 
-func RespondSuccess[T any](c *gin.Context, status int, message string, data *T, paginate *Paginate) {
-	c.JSON(status, Response[T]{
+func RespondSuccess[T any](c *gin.Context, status int, message string, data *T, paginate *dto.Paginate) {
+	c.JSON(status, dto.Response[T]{
 		Success: true,
 		Message: message,
 		Data:    data,
-		Meta: Meta{
+		Meta: dto.Meta{
 			Paginate:  paginate,
 			Timestamp: time.Now().UTC(),
 		},

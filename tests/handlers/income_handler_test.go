@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"expense-backend/internal/domain"
+	dto "expense-backend/internal/dto/responses"
 	"expense-backend/internal/handler"
 	"expense-backend/pkg/apperror"
-	"expense-backend/pkg/appresponse"
 	main_test "expense-backend/tests"
 	"expense-backend/tests/handlers/mock"
 	"fmt"
@@ -306,7 +306,7 @@ func TestCreateIncome(t *testing.T) {
 			r := setupIncomeHandler(uc)
 			w := mock.NewRequest(r, "POST", tt.path, tt.payload)
 
-			var res appresponse.Response[domain.Income]
+			var res dto.Response[domain.Income]
 			err := json.Unmarshal(w.Body.Bytes(), &res)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.expectedCode, w.Code)
@@ -449,7 +449,7 @@ func TestListIncome(t *testing.T) {
 			r := setupIncomeHandler(uc)
 			w := mock.NewRequest(r, "GET", tt.path, nil)
 
-			var res appresponse.Response[[]domain.Income]
+			var res dto.Response[[]domain.Income]
 			err := json.Unmarshal(w.Body.Bytes(), &res)
 
 			assert.NoError(t, err)
@@ -527,7 +527,7 @@ func TestFindOneIncome(t *testing.T) {
 			}
 			r := setupIncomeHandler(uc)
 			w := mock.NewRequest(r, "GET", tt.path, nil)
-			var res appresponse.Response[domain.Income]
+			var res dto.Response[domain.Income]
 			err := json.Unmarshal(w.Body.Bytes(), &res)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.expectedCode, w.Code)
@@ -710,7 +710,7 @@ func TestUpdateIncome(t *testing.T) {
 			}
 			r := setupIncomeHandler(uc)
 			w := mock.NewRequest(r, "PUT", tt.path, tt.payload)
-			var res appresponse.Response[domain.Income]
+			var res dto.Response[domain.Income]
 			err := json.Unmarshal(w.Body.Bytes(), &res)
 
 			assert.NoError(t, err)
@@ -797,7 +797,7 @@ func TestDeleteIncome(t *testing.T) {
 			}
 			r := setupIncomeHandler(uc)
 			w := mock.NewRequest(r, "DELETE", tt.path, nil)
-			var res appresponse.Response[domain.Income]
+			var res dto.Response[domain.Income]
 			err := json.Unmarshal(w.Body.Bytes(), &res)
 
 			assert.NoError(t, err)
