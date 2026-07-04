@@ -7,11 +7,13 @@ definitions:
       message:
         type: string
     type: object
-  dto.CategoryPayload:
+  dto.CreateCategoryPayload:
     properties:
       color:
         type: string
       name:
+        maxLength: 100
+        minLength: 1
         type: string
     required:
     - name
@@ -121,6 +123,15 @@ definitions:
       success:
         type: boolean
     type: object
+  dto.UpdateCategoryPayload:
+    properties:
+      color:
+        type: string
+      name:
+        maxLength: 100
+        minLength: 1
+        type: string
+    type: object
   dto.UpdateDebtPayload:
     properties:
       amount:
@@ -191,35 +202,44 @@ paths:
       consumes:
       - application/json
       description: get all existing category
+      parameters:
+      - description: Page
+        in: query
+        name: page
+        type: integer
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            type: string
+            $ref: '#/definitions/dto.Response-any'
       summary: List category
       tags:
       - categories
     post:
       consumes:
       - application/json
-      description: create categoriy
+      description: create category
       parameters:
-      - description: Create new categoriy payload
+      - description: Create new category payload
         in: body
         name: request
         required: true
         schema:
-          $ref: '#/definitions/dto.CategoryPayload'
+          $ref: '#/definitions/dto.CreateCategoryPayload'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            type: string
-      summary: Add new categoriy
+            $ref: '#/definitions/dto.Response-any'
+      summary: Add new category
       tags:
       - categories
   /categories/{id}:
@@ -228,7 +248,7 @@ paths:
       - application/json
       description: delete category
       parameters:
-      - description: Category ID
+      - description: Income ID
         in: path
         name: id
         required: true
@@ -239,8 +259,54 @@ paths:
         "200":
           description: OK
           schema:
-            type: string
+            $ref: '#/definitions/dto.Response-any'
       summary: Remove category
+      tags:
+      - categories
+    get:
+      consumes:
+      - application/json
+      description: get one filters by category id
+      parameters:
+      - description: Income ID (Optional)
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response-any'
+      summary: Get an category
+      tags:
+      - categories
+    put:
+      consumes:
+      - application/json
+      description: update category
+      parameters:
+      - description: Income ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Edit category payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateCategoryPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response-any'
+      summary: Edit category
       tags:
       - categories
   /debts:

@@ -88,12 +88,12 @@ func (r *incomeRepo) Create(ctx context.Context, income *domain.Income) (*domain
 			  VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, created_at`
 
 	err := r.db.QueryRow(ctx, query,
-		income.Title,
-		income.Amount,
-		income.Category,
-		income.Note,
-		income.IncomeDate,
-		income.IsDeleted,
+		model.Title,
+		model.Amount,
+		model.Category,
+		model.Note,
+		model.IncomeDate,
+		model.IsDeleted,
 	).Scan(&model.ID, &model.CreatedAt)
 
 	if err != nil {

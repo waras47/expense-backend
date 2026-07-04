@@ -28,17 +28,31 @@ const docTemplate = `{
                     "categories"
                 ],
                 "summary": "List category",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/dto.Response-any"
                         }
                     }
                 }
             },
             "post": {
-                "description": "create categoriy",
+                "description": "create category",
                 "consumes": [
                     "application/json"
                 ],
@@ -48,15 +62,15 @@ const docTemplate = `{
                 "tags": [
                     "categories"
                 ],
-                "summary": "Add new categoriy",
+                "summary": "Add new category",
                 "parameters": [
                     {
-                        "description": "Create new categoriy payload",
+                        "description": "Create new category payload",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.CategoryPayload"
+                            "$ref": "#/definitions/dto.CreateCategoryPayload"
                         }
                     }
                 ],
@@ -64,13 +78,82 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/dto.Response-any"
                         }
                     }
                 }
             }
         },
         "/categories/{id}": {
+            "get": {
+                "description": "get one filters by category id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "categories"
+                ],
+                "summary": "Get an category",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Income ID (Optional)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response-any"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "update category",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "categories"
+                ],
+                "summary": "Edit category",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Income ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Edit category payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateCategoryPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response-any"
+                        }
+                    }
+                }
+            },
             "delete": {
                 "description": "delete category",
                 "consumes": [
@@ -86,7 +169,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Category ID",
+                        "description": "Income ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -96,7 +179,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/dto.Response-any"
                         }
                     }
                 }
@@ -673,7 +756,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.CategoryPayload": {
+        "dto.CreateCategoryPayload": {
             "type": "object",
             "required": [
                 "name"
@@ -683,7 +766,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
                 }
             }
         },
@@ -832,6 +917,19 @@ const docTemplate = `{
                 },
                 "success": {
                     "type": "boolean"
+                }
+            }
+        },
+        "dto.UpdateCategoryPayload": {
+            "type": "object",
+            "properties": {
+                "color": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
                 }
             }
         },

@@ -152,12 +152,12 @@ func (r *debtRepo) Create(ctx context.Context, debt *domain.Debt) (*domain.Debt,
 			  VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, created_at`
 
 	err := r.db.QueryRow(ctx, query,
-		debt.PersonName,
-		debt.Amount,
-		debt.Type,
-		debt.DueDate,
-		debt.IsPaid,
-		debt.Note,
+		model.PersonName,
+		model.Amount,
+		model.Type,
+		model.DueDate,
+		model.IsPaid,
+		model.Note,
 	).Scan(&model.ID, &model.CreatedAt)
 
 	if err != nil {
@@ -170,13 +170,14 @@ func (r *debtRepo) Create(ctx context.Context, debt *domain.Debt) (*domain.Debt,
 }
 
 func (r *debtRepo) Update(ctx context.Context, debt *domain.Debt) error {
+	model := ToDebtModel(debt)
 	query := `UPDATE debts 
 			  SET person_name = $1, amount = $2, type = $3, note = $4, due_date = $5, is_paid = $6, updated_at = CURRENT_TIMESTAMP(0)
 			  WHERE id = $7`
 
-	commandTag, err := r.db.Exec(ctx, query, debt.PersonName, debt.Amount, debt.Type, debt.Note, debt.DueDate, debt.IsPaid, debt.ID)
+	commandTag, err := r.db.Exec(ctx, query, model.PersonName, model.Amount, model.Type, model.Note, model.DueDate, model.IsPaid, model.ID)
 	if err != nil {
-		slog.Error(fmt.Sprintf("Failed to update date with id: %d", debt.ID))
+		slog.Error(fmt.Sprintf("Failed to update date with id: %d", model.ID))
 		return apperror.NewInternal(helpers.Ptr(err.Error()))
 	}
 
