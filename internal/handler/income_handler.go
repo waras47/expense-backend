@@ -94,7 +94,7 @@ func (h *IncomeHandler) CreateIncome(c *gin.Context) {
 //	@Tags			incomes
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	query		int	true	"Income ID (Optional)"
+//	@Param			id	path		int	true	"Income ID (Optional)"
 //	@Success		200	{object}	dto.Response[any]
 //	@Router			/incomes/{id} [get]
 func (h *IncomeHandler) GetIncomeByID(c *gin.Context) {

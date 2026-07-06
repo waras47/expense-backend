@@ -703,7 +703,7 @@ paths:
       description: get one filters by income id
       parameters:
       - description: Income ID (Optional)
-        in: query
+        in: path
         name: id
         required: true
         type: integer
@@ -815,7 +815,7 @@ paths:
       description: get one filters by transfer id
       parameters:
       - description: Transfer ID (Optional)
-        in: query
+        in: path
         name: id
         required: true
         type: integer

@@ -95,7 +95,7 @@ func (h *TransferHandler) CreateTransfer(c *gin.Context) {
 //	@Tags			transfers
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	query		int	true	"Transfer ID (Optional)"
+//	@Param			id	path		int	true	"Transfer ID (Optional)"
 //	@Success		200	{object}	dto.Response[any]
 //	@Router			/transfers/{id} [get]
 func (h *TransferHandler) GetTransferByID(c *gin.Context) {

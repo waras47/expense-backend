@@ -653,7 +653,7 @@
                         "type": "integer",
                         "description": "Income ID (Optional)",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     }
                 ],
@@ -823,7 +823,7 @@
                         "type": "integer",
                         "description": "Transfer ID (Optional)",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     }
                 ],

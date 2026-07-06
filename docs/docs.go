@@ -660,7 +660,7 @@ const docTemplate = `{
                         "type": "integer",
                         "description": "Income ID (Optional)",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     }
                 ],
@@ -830,7 +830,7 @@ const docTemplate = `{
                         "type": "integer",
                         "description": "Transfer ID (Optional)",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     }
                 ],

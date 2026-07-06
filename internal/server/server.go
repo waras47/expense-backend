@@ -25,6 +25,7 @@ type handlers struct {
 	income   *handler.IncomeHandler
 	expense  *handler.ExpenseHandler
 	debt     *handler.DebtHandler
+	transfer *handler.TransferHandler
 	// TODO: Add handler new module handler here
 }
 
@@ -86,10 +87,14 @@ func wireHandlers(pool *pgxpool.Pool) *handlers {
 	// Debt
 	debtRepo := repository.NewDebtRepository(pool)
 	debtUC := usecase.NewDebtUsecase(debtRepo)
+	// Transfer
+	transferRepo := repository.NewTransferRepository(pool)
+	transferUC := usecase.NewTransferUsecase(transferRepo)
 	return &handlers{
 		category: handler.NewCategoryHandler(categoryUC),
 		income:   handler.NewIncomeHandler(incomeUC),
 		expense:  handler.NewExpenseHandler(expenseUC),
 		debt:     handler.NewDebtHandler(debtUC),
+		transfer: handler.NewTransferHandler(transferUC),
 	}
 }
