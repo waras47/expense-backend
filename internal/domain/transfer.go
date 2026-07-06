@@ -19,6 +19,7 @@ type Transfer struct {
 	Note               string
 
 	// Update handled by database
+	IsDeleted bool
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }

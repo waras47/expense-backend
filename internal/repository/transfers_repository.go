@@ -24,6 +24,7 @@ type TransferModel struct {
 	DestinationAccount string             `db:"destination_account"`
 	TransferDate       pgtype.Date        `db:"transfer_date"`
 	Note               pgtype.Text        `db:"note"`
+	IsDeleted          bool               `db:"is_deleted"`
 	CreatedAt          pgtype.Timestamptz `db:"created_at"`
 	UpdatedAt          pgtype.Timestamptz `db:"updated_at"`
 }
@@ -35,6 +36,7 @@ func ToTransferModel(transfer *domain.Transfer) *TransferModel {
 		Amount:             transfer.Amount,
 		SourceAccount:      transfer.SourceAccount,
 		DestinationAccount: transfer.DestinationAccount,
+		IsDeleted:          transfer.IsDeleted,
 		TransferDate: pgtype.Date{
 			Time:  transfer.TransferDate,
 			Valid: !transfer.TransferDate.IsZero(),
@@ -61,6 +63,7 @@ func (m *TransferModel) ToTransferDomain() domain.Transfer {
 		DestinationAccount: m.DestinationAccount,
 		TransferDate:       m.TransferDate.Time,
 		Note:               m.Note.String,
+		IsDeleted:          m.IsDeleted,
 		CreatedAt:          m.CreatedAt.Time,
 		UpdatedAt:          m.UpdatedAt.Time,
 	}
