@@ -14,8 +14,12 @@ const (
 	DebtTypeLent EnumDebtType = "LENT"
 )
 
-func ParseToEnumDebtType(s string) EnumDebtType {
-	return EnumDebtType(s)
+func (t EnumDebtType) IsValid() bool {
+	switch t {
+	case DebtTypeLent, DebtTypeOwe:
+		return true
+	}
+	return false
 }
 
 type Debt struct {

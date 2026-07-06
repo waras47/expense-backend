@@ -41,8 +41,15 @@ func ValidateEnumTypeDebt(fl validator.FieldLevel) bool {
 		return false
 	}
 
-	return val == string(domain.DebtTypeLent) ||
-		val == string(domain.DebtTypeOwe)
+	return domain.EnumDebtType(val).IsValid()
+}
+func ValidateIncomeCategory(fl validator.FieldLevel) bool {
+	val, ok := fl.Field().Interface().(string)
+	if !ok {
+		return false
+	}
+
+	return domain.IncomeCategory(val).IsValid()
 }
 
 func New(cfg *config.Config, pool *pgxpool.Pool) *Server {
@@ -53,6 +60,7 @@ func New(cfg *config.Config, pool *pgxpool.Pool) *Server {
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterValidation("positive_decimal", ValidateDecimalMoreThanZero)
 		v.RegisterValidation("debt_type", ValidateEnumTypeDebt)
+		v.RegisterValidation("income_category", ValidateIncomeCategory)
 	}
 
 	registerMiddleware(engine)
@@ -75,7 +83,7 @@ func wireHandlers(pool *pgxpool.Pool) *handlers {
 	// Expense
 	expenseRepo := repository.NewExpenseRepository(pool)
 	expenseUC := usecase.NewExpenseUsecase(expenseRepo)
-	// Debte
+	// Debt
 	debtRepo := repository.NewDebtRepository(pool)
 	debtUC := usecase.NewDebtUsecase(debtRepo)
 	return &handlers{

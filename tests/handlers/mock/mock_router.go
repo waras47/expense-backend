@@ -17,6 +17,7 @@ func SetupRouter() *gin.Engine {
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterValidation("positive_decimal", server.ValidateDecimalMoreThanZero)
 		v.RegisterValidation("debt_type", server.ValidateEnumTypeDebt)
+		v.RegisterValidation("income_category", server.ValidateIncomeCategory)
 	}
 	return r
 }

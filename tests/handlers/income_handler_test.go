@@ -93,7 +93,7 @@ func generateMockIncomes(total int) []domain.Income {
 			ID:         int64(i),
 			Title:      "Income " + idxStr,
 			Amount:     main_test.NewDecimal(int64(1 * 1000)),
-			Category:   "Category " + idxStr,
+			Category:   domain.Salary,
 			Note:       "Note " + idxStr,
 			IncomeDate: main_test.NewDate(),
 			IsDeleted:  false,
@@ -268,6 +268,23 @@ func TestCreateIncome(t *testing.T) {
 			payload: map[string]any{
 				"title":       mockIncome.Title,
 				"amount":      mockIncome.Amount,
+				"note":        mockIncome.Note,
+				"income_date": mockIncome.IncomeDate,
+			},
+			createFunc: func(ctx context.Context, input *domain.Income) (*domain.Income, error) {
+				return nil, nil
+			},
+			wantErr:         true,
+			expectedMessage: "validation failed",
+			expectedCode:    http.StatusBadRequest,
+		},
+		{
+			name: "Invalid category payload create income",
+			path: "/api/incomes",
+			payload: map[string]any{
+				"title":       mockIncome.Title,
+				"amount":      mockIncome.Amount,
+				"category":    "Invalid category",
 				"note":        mockIncome.Note,
 				"income_date": mockIncome.IncomeDate,
 			},

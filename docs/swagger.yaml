@@ -70,6 +70,13 @@ definitions:
       amount:
         type: number
       category:
+        enum:
+        - OTHER
+        - SALARY
+        - FREELANCE
+        - BUSINESS
+        - INVESTMENT
+        - GIFT
         maxLength: 100
         minLength: 1
         type: string
@@ -175,6 +182,13 @@ definitions:
       amount:
         type: number
       category:
+        enum:
+        - OTHER
+        - SALARY
+        - FREELANCE
+        - BUSINESS
+        - INVESTMENT
+        - GIFT
         maxLength: 100
         minLength: 1
         type: string

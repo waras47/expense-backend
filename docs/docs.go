@@ -851,7 +851,15 @@ const docTemplate = `{
                 "category": {
                     "type": "string",
                     "maxLength": 100,
-                    "minLength": 1
+                    "minLength": 1,
+                    "enum": [
+                        "OTHER",
+                        "SALARY",
+                        "FREELANCE",
+                        "BUSINESS",
+                        "INVESTMENT",
+                        "GIFT"
+                    ]
                 },
                 "income_date": {
                     "type": "string",
@@ -995,7 +1003,15 @@ const docTemplate = `{
                 "category": {
                     "type": "string",
                     "maxLength": 100,
-                    "minLength": 1
+                    "minLength": 1,
+                    "enum": [
+                        "OTHER",
+                        "SALARY",
+                        "FREELANCE",
+                        "BUSINESS",
+                        "INVESTMENT",
+                        "GIFT"
+                    ]
                 },
                 "income_date": {
                     "type": "string",

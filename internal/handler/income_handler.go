@@ -63,7 +63,7 @@ func (h *IncomeHandler) CreateIncome(c *gin.Context) {
 	newIncome := &domain.Income{
 		Title:      payloadIncome.Title,
 		Amount:     payloadIncome.Amount,
-		Category:   payloadIncome.Category,
+		Category:   domain.IncomeCategory(payloadIncome.Category),
 		Note:       payloadIncome.Note,
 		IncomeDate: incomeDate,
 	}
@@ -217,7 +217,7 @@ func (h *IncomeHandler) UpdateIncome(c *gin.Context) {
 		updateIncome.Amount = *payloadIncome.Amount
 	}
 	if payloadIncome.Category != nil {
-		updateIncome.Category = *payloadIncome.Category
+		updateIncome.Category = domain.IncomeCategory(*payloadIncome.Category)
 	}
 	if payloadIncome.Note != nil {
 		updateIncome.Note = *payloadIncome.Note

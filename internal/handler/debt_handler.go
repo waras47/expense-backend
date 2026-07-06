@@ -64,7 +64,7 @@ func (h *DebtHandler) CreateDebt(c *gin.Context) {
 	newDebt := &domain.Debt{
 		PersonName: payloadDebt.PersonName,
 		Amount:     payloadDebt.Amount,
-		Type:       domain.ParseToEnumDebtType(payloadDebt.Type),
+		Type:       domain.EnumDebtType(payloadDebt.Type),
 		Note:       payloadDebt.Note,
 		DueDate:    dueDate,
 	}
@@ -157,7 +157,7 @@ func (h *DebtHandler) GetDebts(c *gin.Context) {
 	var typeDebt *domain.EnumDebtType
 
 	if paginateQuery.Type != nil {
-		t := domain.ParseToEnumDebtType(*paginateQuery.Type)
+		t := domain.EnumDebtType(*paginateQuery.Type)
 		typeDebt = &t
 	}
 	debts, total, err := h.uc.GetAll(c.Request.Context(), paginateQuery.GetPage(), paginateQuery.GetLimit(), typeDebt, paginateQuery.IsPaid)
@@ -227,7 +227,7 @@ func (h *DebtHandler) UpdateDebt(c *gin.Context) {
 		updateDebt.Amount = *payloadDebt.Amount
 	}
 	if payloadDebt.Type != nil {
-		updateDebt.Type = domain.ParseToEnumDebtType(*payloadDebt.Type)
+		updateDebt.Type = domain.EnumDebtType(*payloadDebt.Type)
 	}
 	if payloadDebt.Note != nil {
 		updateDebt.Note = *payloadDebt.Note
