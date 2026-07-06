@@ -3,6 +3,7 @@ package server
 
 import (
 	"expense-backend/internal/config"
+	"expense-backend/internal/domain"
 	"expense-backend/internal/handler"
 	"expense-backend/internal/repository"
 	"expense-backend/internal/usecase"
@@ -23,6 +24,8 @@ type handlers struct {
 	category *handler.CategoryHandler
 	income   *handler.IncomeHandler
 	expense  *handler.ExpenseHandler
+	debt     *handler.DebtHandler
+	transfer *handler.TransferHandler
 	// TODO: Add handler new module handler here
 }
 
@@ -33,6 +36,22 @@ func ValidateDecimalMoreThanZero(fl validator.FieldLevel) bool {
 	}
 	return d.GreaterThan(decimal.Zero)
 }
+func ValidateEnumTypeDebt(fl validator.FieldLevel) bool {
+	val, ok := fl.Field().Interface().(string)
+	if !ok {
+		return false
+	}
+
+	return domain.EnumDebtType(val).IsValid()
+}
+func ValidateIncomeCategory(fl validator.FieldLevel) bool {
+	val, ok := fl.Field().Interface().(string)
+	if !ok {
+		return false
+	}
+
+	return domain.IncomeCategory(val).IsValid()
+}
 
 func New(cfg *config.Config, pool *pgxpool.Pool) *Server {
 	h := wireHandlers(pool)
@@ -41,6 +60,8 @@ func New(cfg *config.Config, pool *pgxpool.Pool) *Server {
 	// Register custom validator
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterValidation("positive_decimal", ValidateDecimalMoreThanZero)
+		v.RegisterValidation("debt_type", ValidateEnumTypeDebt)
+		v.RegisterValidation("income_category", ValidateIncomeCategory)
 	}
 
 	registerMiddleware(engine)
@@ -63,9 +84,17 @@ func wireHandlers(pool *pgxpool.Pool) *handlers {
 	// Expense
 	expenseRepo := repository.NewExpenseRepository(pool)
 	expenseUC := usecase.NewExpenseUsecase(expenseRepo)
+	// Debt
+	debtRepo := repository.NewDebtRepository(pool)
+	debtUC := usecase.NewDebtUsecase(debtRepo)
+	// Transfer
+	transferRepo := repository.NewTransferRepository(pool)
+	transferUC := usecase.NewTransferUsecase(transferRepo)
 	return &handlers{
 		category: handler.NewCategoryHandler(categoryUC),
 		income:   handler.NewIncomeHandler(incomeUC),
 		expense:  handler.NewExpenseHandler(expenseUC),
+		debt:     handler.NewDebtHandler(debtUC),
+		transfer: handler.NewTransferHandler(transferUC),
 	}
 }

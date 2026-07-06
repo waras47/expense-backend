@@ -34,7 +34,7 @@ func (m *mockIncomeData) LoadIncomes(total int64) {
 				ID:         1,
 				Title:      fmt.Sprintf("Mock Title %d", i),
 				Amount:     decimal.NewFromBigInt(big.NewInt(12000), 2),
-				Category:   fmt.Sprintf("Mock Category %d", i),
+				Category:   domain.Business,
 				Note:       "Mock Note",
 				IncomeDate: mockDate,
 				CreatedAt:  mockTime,

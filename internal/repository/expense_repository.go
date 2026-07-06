@@ -29,7 +29,7 @@ type ExpenseModel struct {
 	UpdatedAt   pgtype.Timestamptz `db:"updated_at"`
 }
 
-func ToExpenseDomain(expense *domain.Expense) *ExpenseModel {
+func ToExpenseModel(expense *domain.Expense) *ExpenseModel {
 	return &ExpenseModel{
 		ID:         expense.ID,
 		Title:      expense.Title,
@@ -131,18 +131,18 @@ func (r *expenseRepo) FindByID(ctx context.Context, id int64) (*domain.Expense, 
 }
 
 func (r *expenseRepo) Create(ctx context.Context, expense *domain.Expense) (*domain.Expense, error) {
-	model := ToExpenseDomain(expense)
+	model := ToExpenseModel(expense)
 
 	query := `INSERT INTO expenses (title, amount, category_id, note, expense_date, is_deleted)
 			  VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, created_at`
 
 	err := r.db.QueryRow(ctx, query,
-		expense.Title,
-		expense.Amount,
-		expense.CategoryID,
-		expense.Note,
-		expense.ExpenseDate,
-		expense.IsDeleted,
+		model.Title,
+		model.Amount,
+		model.CategoryID,
+		model.Note,
+		model.ExpenseDate,
+		model.IsDeleted,
 	).Scan(&model.ID, &model.CreatedAt)
 
 	if err != nil {

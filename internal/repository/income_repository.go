@@ -18,15 +18,15 @@ import (
 )
 
 type IncomeModel struct {
-	ID         int64              `db:"id"`
-	Title      string             `db:"title"`
-	Amount     decimal.Decimal    `db:"amount"`
-	Category   string             `db:"category"`
-	Note       pgtype.Text        `db:"note"`
-	IncomeDate pgtype.Date        `db:"income_date"`
-	IsDeleted  bool               `db:"is_deleted"`
-	CreatedAt  time.Time          `db:"created_at"`
-	UpdatedAt  pgtype.Timestamptz `db:"updated_at"`
+	ID         int64                 `db:"id"`
+	Title      string                `db:"title"`
+	Amount     decimal.Decimal       `db:"amount"`
+	Category   domain.IncomeCategory `db:"category"`
+	Note       pgtype.Text           `db:"note"`
+	IncomeDate pgtype.Date           `db:"income_date"`
+	IsDeleted  bool                  `db:"is_deleted"`
+	CreatedAt  time.Time             `db:"created_at"`
+	UpdatedAt  pgtype.Timestamptz    `db:"updated_at"`
 }
 
 // Note:
@@ -88,12 +88,12 @@ func (r *incomeRepo) Create(ctx context.Context, income *domain.Income) (*domain
 			  VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, created_at`
 
 	err := r.db.QueryRow(ctx, query,
-		income.Title,
-		income.Amount,
-		income.Category,
-		income.Note,
-		income.IncomeDate,
-		income.IsDeleted,
+		model.Title,
+		model.Amount,
+		model.Category,
+		model.Note,
+		model.IncomeDate,
+		model.IsDeleted,
 	).Scan(&model.ID, &model.CreatedAt)
 
 	if err != nil {

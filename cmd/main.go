@@ -15,10 +15,10 @@ import (
 	"github.com/pressly/goose/v3"
 )
 
-// @title API Backend Expense
-// @version 1.0
-// @description A lightweight backend RESTful API designed for tracking and managing personal or organizational expenses. This API provides secure endpoints to log daily expenses, categorize spending, and generate basic financial summaries.
-// @BasePath /api
+// @title			API Backend Expense
+// @version		1.0
+// @description	A lightweight backend RESTful API designed for tracking and managing personal or organizational expenses. This API provides secure endpoints to log daily expenses, categorize spending, and generate basic financial summaries.
+// @BasePath		/api
 func main() {
 	cfg := config.Load()
 

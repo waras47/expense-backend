@@ -7,12 +7,36 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+type IncomeCategory string
+
+const (
+	Salary     IncomeCategory = "SALARY"
+	Freelance  IncomeCategory = "FREELANCE"
+	Business   IncomeCategory = "BUSINESS"
+	Investment IncomeCategory = "INVESTMENT"
+	Gift       IncomeCategory = "GIFT"
+	Other      IncomeCategory = "OTHER"
+)
+
+func (c IncomeCategory) IsValid() bool {
+	switch c {
+	case Salary,
+		Freelance,
+		Business,
+		Investment,
+		Gift,
+		Other:
+		return true
+	}
+	return false
+}
+
 // Domain tidak boleh ada nil
 type Income struct {
 	ID         int64
 	Title      string
 	Amount     decimal.Decimal
-	Category   string
+	Category   IncomeCategory
 	Note       string
 	IncomeDate time.Time
 	IsDeleted  bool

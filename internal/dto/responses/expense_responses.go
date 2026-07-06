@@ -24,7 +24,7 @@ type ExpenseResponse struct {
 // Converts the domain model to the response format. This process validates default values, replaces them with null, and ensures the 'omitempty' tag works correctly.
 func NewExpenseResponse(expense *domain.Expense) (ExpenseResponse, error) {
 	if expense == nil {
-		msg := "nil income"
+		msg := "nil expense"
 		return ExpenseResponse{}, apperror.NewInternal(&msg)
 	}
 	res := ExpenseResponse{

@@ -61,7 +61,3 @@ func NewBadRequest(message *string) *AppError {
 	}
 	return &AppError{Code: http.StatusBadRequest, Message: defaultMessage}
 }
-
-type ErrorResponse struct {
-	Error string `json:"error"`
-}

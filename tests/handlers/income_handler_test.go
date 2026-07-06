@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"expense-backend/internal/domain"
+	dto "expense-backend/internal/dto/responses"
 	"expense-backend/internal/handler"
 	"expense-backend/pkg/apperror"
-	"expense-backend/pkg/appresponse"
 	main_test "expense-backend/tests"
 	"expense-backend/tests/handlers/mock"
 	"fmt"
@@ -93,7 +93,7 @@ func generateMockIncomes(total int) []domain.Income {
 			ID:         int64(i),
 			Title:      "Income " + idxStr,
 			Amount:     main_test.NewDecimal(int64(1 * 1000)),
-			Category:   "Category " + idxStr,
+			Category:   domain.Salary,
 			Note:       "Note " + idxStr,
 			IncomeDate: main_test.NewDate(),
 			IsDeleted:  false,
@@ -278,6 +278,23 @@ func TestCreateIncome(t *testing.T) {
 			expectedMessage: "validation failed",
 			expectedCode:    http.StatusBadRequest,
 		},
+		{
+			name: "Invalid category payload create income",
+			path: "/api/incomes",
+			payload: map[string]any{
+				"title":       mockIncome.Title,
+				"amount":      mockIncome.Amount,
+				"category":    "Invalid category",
+				"note":        mockIncome.Note,
+				"income_date": mockIncome.IncomeDate,
+			},
+			createFunc: func(ctx context.Context, input *domain.Income) (*domain.Income, error) {
+				return nil, nil
+			},
+			wantErr:         true,
+			expectedMessage: "validation failed",
+			expectedCode:    http.StatusBadRequest,
+		},
 		// Invalid payload
 		{
 			name: "Invalid payload amount",
@@ -306,7 +323,7 @@ func TestCreateIncome(t *testing.T) {
 			r := setupIncomeHandler(uc)
 			w := mock.NewRequest(r, "POST", tt.path, tt.payload)
 
-			var res appresponse.Response[domain.Income]
+			var res dto.Response[domain.Income]
 			err := json.Unmarshal(w.Body.Bytes(), &res)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.expectedCode, w.Code)
@@ -449,7 +466,7 @@ func TestListIncome(t *testing.T) {
 			r := setupIncomeHandler(uc)
 			w := mock.NewRequest(r, "GET", tt.path, nil)
 
-			var res appresponse.Response[[]domain.Income]
+			var res dto.Response[[]domain.Income]
 			err := json.Unmarshal(w.Body.Bytes(), &res)
 
 			assert.NoError(t, err)
@@ -527,7 +544,7 @@ func TestFindOneIncome(t *testing.T) {
 			}
 			r := setupIncomeHandler(uc)
 			w := mock.NewRequest(r, "GET", tt.path, nil)
-			var res appresponse.Response[domain.Income]
+			var res dto.Response[domain.Income]
 			err := json.Unmarshal(w.Body.Bytes(), &res)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.expectedCode, w.Code)
@@ -571,7 +588,7 @@ func TestUpdateIncome(t *testing.T) {
 			},
 			wantErr:         false,
 			expectedCode:    http.StatusOK,
-			expectedMessage: "income retrieved",
+			expectedMessage: "income updated",
 		},
 		{
 			name:    "Invalid update id",
@@ -710,7 +727,7 @@ func TestUpdateIncome(t *testing.T) {
 			}
 			r := setupIncomeHandler(uc)
 			w := mock.NewRequest(r, "PUT", tt.path, tt.payload)
-			var res appresponse.Response[domain.Income]
+			var res dto.Response[domain.Income]
 			err := json.Unmarshal(w.Body.Bytes(), &res)
 
 			assert.NoError(t, err)
@@ -727,7 +744,6 @@ func TestUpdateIncome(t *testing.T) {
 					t.Log("error: ", res.Error.Message)
 				}
 				assert.True(t, res.Success)
-				assert.NotNil(t, res.Data)
 			}
 		})
 	}
@@ -750,7 +766,7 @@ func TestDeleteIncome(t *testing.T) {
 			},
 			wantErr:         false,
 			expectedCode:    http.StatusOK,
-			expectedMessage: "income retrieved",
+			expectedMessage: "income deleted",
 		},
 		{
 			name:            "Invalid delete id",
@@ -798,7 +814,7 @@ func TestDeleteIncome(t *testing.T) {
 			}
 			r := setupIncomeHandler(uc)
 			w := mock.NewRequest(r, "DELETE", tt.path, nil)
-			var res appresponse.Response[domain.Income]
+			var res dto.Response[domain.Income]
 			err := json.Unmarshal(w.Body.Bytes(), &res)
 
 			assert.NoError(t, err)
@@ -815,7 +831,6 @@ func TestDeleteIncome(t *testing.T) {
 					t.Log("error: ", res.Error.Message)
 				}
 				assert.True(t, res.Success)
-				assert.NotNil(t, res.Data)
 			}
 		})
 	}

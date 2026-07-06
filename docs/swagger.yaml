@@ -7,39 +7,41 @@ definitions:
       message:
         type: string
     type: object
-  appresponse.Meta:
+  dto.CreateCategoryPayload:
     properties:
-      paginate:
-        $ref: '#/definitions/appresponse.Paginate'
-      timestamp:
+      color:
         type: string
+      name:
+        maxLength: 100
+        minLength: 1
+        type: string
+    required:
+    - name
     type: object
-  appresponse.Paginate:
+  dto.CreateDebtPayload:
     properties:
-      limit:
-        type: integer
-      next:
+      amount:
+        type: number
+      due_date:
+        example: "2006-01-02"
         type: string
-      page:
-        type: integer
-      prev:
+      note:
+        maxLength: 255
         type: string
-      total_pages:
-        type: integer
-      total_rows:
-        type: integer
-    type: object
-  appresponse.Response-any:
-    properties:
-      data: {}
-      error:
-        $ref: '#/definitions/apperror.AppError'
-      message:
+      person_name:
+        maxLength: 100
+        minLength: 1
         type: string
-      meta:
-        $ref: '#/definitions/appresponse.Meta'
-      success:
-        type: boolean
+      type:
+        enum:
+        - OWE
+        - LENT
+        type: string
+    required:
+    - amount
+    - due_date
+    - person_name
+    - type
     type: object
   dto.CreateExpensePayload:
     properties:
@@ -68,6 +70,13 @@ definitions:
       amount:
         type: number
       category:
+        enum:
+        - OTHER
+        - SALARY
+        - FREELANCE
+        - BUSINESS
+        - INVESTMENT
+        - GIFT
         maxLength: 100
         minLength: 1
         type: string
@@ -86,6 +95,98 @@ definitions:
     - category
     - income_date
     - title
+    type: object
+  dto.CreateTransferPayload:
+    properties:
+      amount:
+        type: number
+      destination_account:
+        maxLength: 100
+        minLength: 1
+        type: string
+      from_account:
+        maxLength: 100
+        minLength: 1
+        type: string
+      note:
+        maxLength: 255
+        type: string
+      title:
+        maxLength: 100
+        minLength: 1
+        type: string
+      transfer_date:
+        example: "2006-01-02"
+        type: string
+    required:
+    - amount
+    - destination_account
+    - from_account
+    - title
+    - transfer_date
+    type: object
+  dto.Meta:
+    properties:
+      paginate:
+        $ref: '#/definitions/dto.Paginate'
+      timestamp:
+        type: string
+    type: object
+  dto.Paginate:
+    properties:
+      limit:
+        type: integer
+      next:
+        type: string
+      page:
+        type: integer
+      prev:
+        type: string
+      total_pages:
+        type: integer
+      total_rows:
+        type: integer
+    type: object
+  dto.Response-any:
+    properties:
+      data: {}
+      error:
+        $ref: '#/definitions/apperror.AppError'
+      message:
+        type: string
+      meta:
+        $ref: '#/definitions/dto.Meta'
+      success:
+        type: boolean
+    type: object
+  dto.UpdateCategoryPayload:
+    properties:
+      color:
+        type: string
+      name:
+        maxLength: 100
+        minLength: 1
+        type: string
+    type: object
+  dto.UpdateDebtPayload:
+    properties:
+      amount:
+        type: number
+      due_date:
+        example: "2006-01-02"
+        type: string
+      note:
+        maxLength: 255
+        type: string
+      person_name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      type:
+        enum:
+        - OWE
+        - LENT
+        type: string
     type: object
   dto.UpdateExpensePayload:
     properties:
@@ -110,6 +211,13 @@ definitions:
       amount:
         type: number
       category:
+        enum:
+        - OTHER
+        - SALARY
+        - FREELANCE
+        - BUSINESS
+        - INVESTMENT
+        - GIFT
         maxLength: 100
         minLength: 1
         type: string
@@ -124,6 +232,29 @@ definitions:
         minLength: 1
         type: string
     type: object
+  dto.UpdateTransferPayload:
+    properties:
+      amount:
+        type: number
+      destination_account:
+        maxLength: 100
+        minLength: 1
+        type: string
+      from_account:
+        maxLength: 100
+        minLength: 1
+        type: string
+      note:
+        maxLength: 255
+        type: string
+      title:
+        maxLength: 100
+        minLength: 1
+        type: string
+      transfer_date:
+        example: "2006-01-02"
+        type: string
+    type: object
 info:
   contact: {}
   description: A lightweight backend RESTful API designed for tracking and managing
@@ -132,34 +263,59 @@ info:
   title: API Backend Expense
   version: "1.0"
 paths:
-  /expenses:
-    delete:
-      consumes:
-      - application/json
-      description: delete expense
-      parameters:
-      - description: Income ID
-        in: query
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/appresponse.Response-any'
-      summary: Remove expense
-      tags:
-      - expenses
+  /categories:
     get:
       consumes:
       - application/json
-      description: get all existing expense, or get one filters by expense id
+      description: get all existing category
       parameters:
-      - description: Income ID (Optional)
+      - description: Page
         in: query
+        name: page
+        type: integer
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response-any'
+      summary: List category
+      tags:
+      - categories
+    post:
+      consumes:
+      - application/json
+      description: create category
+      parameters:
+      - description: Create new category payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateCategoryPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response-any'
+      summary: Add new category
+      tags:
+      - categories
+  /categories/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete category
+      parameters:
+      - description: Income ID
+        in: path
         name: id
         required: true
         type: integer
@@ -169,7 +325,221 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/appresponse.Response-any'
+            $ref: '#/definitions/dto.Response-any'
+      summary: Remove category
+      tags:
+      - categories
+    get:
+      consumes:
+      - application/json
+      description: get one filters by category id
+      parameters:
+      - description: Income ID (Optional)
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response-any'
+      summary: Get an category
+      tags:
+      - categories
+    put:
+      consumes:
+      - application/json
+      description: update category
+      parameters:
+      - description: Income ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Edit category payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateCategoryPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response-any'
+      summary: Edit category
+      tags:
+      - categories
+  /debts:
+    get:
+      consumes:
+      - application/json
+      description: get all existing debt
+      parameters:
+      - description: Page
+        in: query
+        name: page
+        type: integer
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Type (optional)
+        enum:
+        - OWE
+        - LENT
+        in: query
+        name: type
+        type: string
+      - description: IsPaid (optional)
+        in: query
+        name: is_paid
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response-any'
+      summary: List debt
+      tags:
+      - debts
+    post:
+      consumes:
+      - application/json
+      description: create debt
+      parameters:
+      - description: Create new debt payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateDebtPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response-any'
+      summary: Add new debt
+      tags:
+      - debts
+  /debts/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete debt
+      parameters:
+      - description: Debt ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response-any'
+      summary: Remove debt
+      tags:
+      - debts
+    get:
+      consumes:
+      - application/json
+      description: get one debt by id
+      parameters:
+      - description: Debt ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response-any'
+      summary: Get a debt
+      tags:
+      - debts
+    put:
+      consumes:
+      - application/json
+      description: update debt
+      parameters:
+      - description: Debt ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Edit debt payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateDebtPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response-any'
+      summary: Edit debt
+      tags:
+      - debts
+  /debts/{id}/paid:
+    patch:
+      consumes:
+      - application/json
+      description: paid debt
+      parameters:
+      - description: Debt ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response-any'
+      summary: Change status debt as paid
+      tags:
+      - debts
+  /expenses:
+    get:
+      consumes:
+      - application/json
+      description: get all existing expense
+      parameters:
+      - description: Page
+        in: query
+        name: page
+        type: integer
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response-any'
       summary: List expense
       tags:
       - expenses
@@ -190,8 +560,49 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/appresponse.Response-any'
+            $ref: '#/definitions/dto.Response-any'
       summary: Add new expense
+      tags:
+      - expenses
+  /expenses/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete expense
+      parameters:
+      - description: Income ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response-any'
+      summary: Remove expense
+      tags:
+      - expenses
+    get:
+      consumes:
+      - application/json
+      description: get one filters by expense id
+      parameters:
+      - description: Income ID (Optional)
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response-any'
+      summary: Get an expense
       tags:
       - expenses
     put:
@@ -200,7 +611,7 @@ paths:
       description: update expense
       parameters:
       - description: Income ID
-        in: query
+        in: path
         name: id
         required: true
         type: integer
@@ -216,40 +627,23 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/appresponse.Response-any'
+            $ref: '#/definitions/dto.Response-any'
       summary: Edit expense
       tags:
       - expenses
   /incomes:
-    delete:
-      consumes:
-      - application/json
-      description: delete income
-      parameters:
-      - description: Income ID
-        in: query
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/appresponse.Response-any'
-      summary: Remove income
-      tags:
-      - incomes
     get:
       consumes:
       - application/json
-      description: get all existing income, or get one filters by income id
+      description: get all income
       parameters:
-      - description: Income ID (Optional)
+      - description: Page
         in: query
-        name: id
-        required: true
+        name: page
+        type: integer
+      - description: Limit
+        in: query
+        name: limit
         type: integer
       produces:
       - application/json
@@ -257,7 +651,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/appresponse.Response-any'
+            $ref: '#/definitions/dto.Response-any'
       summary: List income
       tags:
       - incomes
@@ -278,8 +672,49 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/appresponse.Response-any'
+            $ref: '#/definitions/dto.Response-any'
       summary: Add new income
+      tags:
+      - incomes
+  /incomes/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete income
+      parameters:
+      - description: Income ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response-any'
+      summary: Remove income
+      tags:
+      - incomes
+    get:
+      consumes:
+      - application/json
+      description: get one filters by income id
+      parameters:
+      - description: Income ID (Optional)
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response-any'
+      summary: Get an income
       tags:
       - incomes
     put:
@@ -288,7 +723,7 @@ paths:
       description: update income
       parameters:
       - description: Income ID
-        in: query
+        in: path
         name: id
         required: true
         type: integer
@@ -304,8 +739,120 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/appresponse.Response-any'
+            $ref: '#/definitions/dto.Response-any'
       summary: Edit income
       tags:
       - incomes
+  /transfers:
+    get:
+      consumes:
+      - application/json
+      description: get all transfer
+      parameters:
+      - description: Page
+        in: query
+        name: page
+        type: integer
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response-any'
+      summary: List transfer
+      tags:
+      - transfers
+    post:
+      consumes:
+      - application/json
+      description: create transfer
+      parameters:
+      - description: Create new transfer payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateTransferPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response-any'
+      summary: Add new transfer
+      tags:
+      - transfers
+  /transfers/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete transfer
+      parameters:
+      - description: Transfer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response-any'
+      summary: Remove transfer
+      tags:
+      - transfers
+    get:
+      consumes:
+      - application/json
+      description: get one filters by transfer id
+      parameters:
+      - description: Transfer ID (Optional)
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response-any'
+      summary: Get an transfer
+      tags:
+      - transfers
+    put:
+      consumes:
+      - application/json
+      description: update transfer
+      parameters:
+      - description: Transfer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Edit transfer payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateTransferPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response-any'
+      summary: Edit transfer
+      tags:
+      - transfers
 swagger: "2.0"

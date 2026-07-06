@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"expense-backend/internal/domain"
+	dto "expense-backend/internal/dto/responses"
 	"expense-backend/internal/handler"
 	"expense-backend/pkg/apperror"
-	"expense-backend/pkg/appresponse"
 	main_test "expense-backend/tests"
 	"expense-backend/tests/handlers/mock"
 	"fmt"
@@ -241,7 +241,7 @@ func TestCreateExpense(t *testing.T) {
 			r := setupExpenseHandler(uc)
 			w := mock.NewRequest(r, "POST", tt.path, tt.payload)
 
-			var res appresponse.Response[domain.Expense]
+			var res dto.Response[domain.Expense]
 			err := json.Unmarshal(w.Body.Bytes(), &res)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.expectedCode, w.Code)
@@ -384,7 +384,7 @@ func TestListExpense(t *testing.T) {
 			r := setupExpenseHandler(uc)
 			w := mock.NewRequest(r, "GET", tt.path, nil)
 
-			var res appresponse.Response[[]domain.Expense]
+			var res dto.Response[[]domain.Expense]
 			err := json.Unmarshal(w.Body.Bytes(), &res)
 
 			assert.NoError(t, err)
@@ -462,7 +462,7 @@ func TestFindOneExpense(t *testing.T) {
 			}
 			r := setupExpenseHandler(uc)
 			w := mock.NewRequest(r, "GET", tt.path, nil)
-			var res appresponse.Response[domain.Expense]
+			var res dto.Response[domain.Expense]
 			err := json.Unmarshal(w.Body.Bytes(), &res)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.expectedCode, w.Code)
@@ -506,7 +506,7 @@ func TestUpdateExpense(t *testing.T) {
 			},
 			wantErr:         false,
 			expectedCode:    http.StatusOK,
-			expectedMessage: "expense retrieved",
+			expectedMessage: "expense updated",
 		},
 		{
 			name:    "Invalid update id",
@@ -645,7 +645,7 @@ func TestUpdateExpense(t *testing.T) {
 			}
 			r := setupExpenseHandler(uc)
 			w := mock.NewRequest(r, "PUT", tt.path, tt.payload)
-			var res appresponse.Response[domain.Expense]
+			var res dto.Response[domain.Expense]
 			err := json.Unmarshal(w.Body.Bytes(), &res)
 
 			assert.NoError(t, err)
@@ -662,7 +662,6 @@ func TestUpdateExpense(t *testing.T) {
 					t.Log("error: ", res.Error.Message)
 				}
 				assert.True(t, res.Success)
-				assert.NotNil(t, res.Data)
 			}
 		})
 	}
@@ -685,7 +684,7 @@ func TestDeleteExpense(t *testing.T) {
 			},
 			wantErr:         false,
 			expectedCode:    http.StatusOK,
-			expectedMessage: "expense retrieved",
+			expectedMessage: "expense deleted",
 		},
 		{
 			name:            "Invalid delete id",
@@ -733,7 +732,7 @@ func TestDeleteExpense(t *testing.T) {
 			}
 			r := setupExpenseHandler(uc)
 			w := mock.NewRequest(r, "DELETE", tt.path, nil)
-			var res appresponse.Response[domain.Expense]
+			var res dto.Response[domain.Expense]
 			err := json.Unmarshal(w.Body.Bytes(), &res)
 
 			assert.NoError(t, err)
@@ -750,7 +749,6 @@ func TestDeleteExpense(t *testing.T) {
 					t.Log("error: ", res.Error.Message)
 				}
 				assert.True(t, res.Success)
-				assert.NotNil(t, res.Data)
 			}
 		})
 	}

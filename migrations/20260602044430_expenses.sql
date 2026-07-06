@@ -2,10 +2,11 @@
 CREATE TABLE expenses (
     id SERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
-    amount DECIMAL(15,2) NOT NULL,
+    amount DECIMAL(15,2) CHECK (amount > 0) NOT NULL,
     category_id INTEGER REFERENCES categories(id) ON DELETE RESTRICT,
     note TEXT,
-    expense_date DATE DEFAULT CURRENT_DATE,
+    expense_date DATE DEFAULT CURRENT_DATE NOT NULL,
+
     is_deleted BOOLEAN DEFAULT false NOT NULL,
     created_at TIMESTAMPTZ(0) DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMPTZ(0) DEFAULT CURRENT_TIMESTAMP

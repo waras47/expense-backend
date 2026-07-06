@@ -28,7 +28,7 @@ func NewExpenseHandler(uc domain.ExpenseUsecase) *ExpenseHandler {
 func (h *ExpenseHandler) RegisterRoutes(rg *gin.RouterGroup) {
 	rg.GET("", h.GetExpenses)
 	rg.POST("", h.CreateExpense)
-	rg.GET("/:id", h.GetExpenses)
+	rg.GET("/:id", h.GetExpenseByID)
 	rg.PUT("/:id", h.UpdateExpense)
 	rg.DELETE("/:id", h.DeleteExpense)
 }
@@ -40,8 +40,8 @@ func (h *ExpenseHandler) RegisterRoutes(rg *gin.RouterGroup) {
 //	@Tags			expenses
 //	@Accept			json
 //	@Produce		json
-//	@Param 			request body reqDto.CreateExpensePayload true "Create new expense payload"
-//	@Success		200	{object}	appresponse.Response[any]
+//	@Param			request	body		reqDto.CreateExpensePayload	true	"Create new expense payload"
+//	@Success		200		{object}	dto.Response[any]
 //	@Router			/expenses [post]
 func (h *ExpenseHandler) CreateExpense(c *gin.Context) {
 	var payloadExpense reqDto.CreateExpensePayload
@@ -87,15 +87,94 @@ func (h *ExpenseHandler) CreateExpense(c *gin.Context) {
 	appresponse.RespondSuccess(c, http.StatusCreated, "succeded create new expense", &expenseResponse, nil)
 }
 
-// GetExpenses get one expense specified by id
+// GetExpenseByID get one expense specified by id
 //
-//	@Summary		List expense
-//	@Description	get all existing expense, or get one filters by expense id
+//	@Summary		Get an expense
+//	@Description	get one filters by expense id
 //	@Tags			expenses
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	query		int	true	"Income ID (Optional)"
-//	@Success		200	{object}	appresponse.Response[any]
+//	@Param			id	path		int	true	"Income ID (Optional)"
+//	@Success		200	{object}	dto.Response[any]
+//	@Router			/expenses/{id} [get]
+func (h *ExpenseHandler) GetExpenseByID(c *gin.Context) {
+	idStr := c.Param("id")
+	if idStr != "" {
+
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			appresponse.RespondError(c, http.StatusBadRequest, "invalid param id", apperror.NewBadRequest(help.Ptr(err.Error())))
+			return
+		}
+
+		expense, err := h.uc.Get(c.Request.Context(), int64(id))
+		if err != nil {
+			var appErr *apperror.AppError
+			if errors.As(err, &appErr) {
+				appresponse.RespondError(c, appErr.Code, "failed to get expense", appErr)
+				return
+			}
+			appresponse.RespondError(c, http.StatusInternalServerError, "failed to get expense", apperror.NewInternal(help.Ptr(err.Error())))
+			return
+		}
+
+		expenseResponse, err := dto.NewExpenseResponse(expense)
+		if err != nil {
+			appresponse.RespondError(c, http.StatusInternalServerError, "failed process expense", err)
+			return
+		}
+		appresponse.RespondSuccess(c, http.StatusOK, "expense retrieved", &expenseResponse, nil)
+	} else {
+		var paginateQuery reqDto.PaginateQuery
+		if err := c.ShouldBindQuery(&paginateQuery); err != nil {
+			if errors.Is(err, io.EOF) {
+				appresponse.RespondError(c, http.StatusBadRequest, "payload is empty", apperror.NewBadRequest(help.Ptr("request body is empty")))
+				return
+			}
+			var validationErr validator.ValidationErrors
+			if errors.As(err, &validationErr) {
+				appresponse.RespondError(c, http.StatusBadRequest, "validation failed", apperror.NewBadRequest(help.Ptr(validationErr.Error())))
+				return
+			}
+			appresponse.RespondError(c, http.StatusBadRequest, "invalid url query", apperror.NewBadRequest(help.Ptr(err.Error())))
+			return
+		}
+
+		expenses, total, err := h.uc.GetAll(c.Request.Context(), paginateQuery.GetPage(), paginateQuery.GetLimit())
+		if err != nil {
+			var appErr *apperror.AppError
+			if errors.As(err, &appErr) {
+				appresponse.RespondError(c, appErr.Code, "failed get expenses", appErr)
+				return
+			}
+			appresponse.RespondError(c, http.StatusInternalServerError, "failed get expenses", apperror.NewInternal(help.Ptr(err.Error())))
+			return
+		}
+
+		var expenseResponses = make([]resDto.ExpenseResponse, len(expenses))
+		for i, expense := range expenses {
+			expenseResponses[i], err = resDto.NewExpenseResponse(&expense)
+			if err != nil {
+				appresponse.RespondError(c, http.StatusInternalServerError, "failed process expense", err)
+				return
+			}
+		}
+
+		paginateRes := appresponse.CratePaginateResponse(c, total, &paginateQuery)
+		appresponse.RespondSuccess(c, http.StatusOK, "expenses retrieved", &expenseResponses, paginateRes)
+	}
+}
+
+// GetExpenses list existing expenses
+//
+//	@Summary		List expense
+//	@Description	get all existing expense
+//	@Tags			expenses
+//	@Accept			json
+//	@Produce		json
+//	@Param			page	query		int	false	"Page"
+//	@Param			limit	query		int	false	"Limit"
+//	@Success		200		{object}	dto.Response[any]
 //	@Router			/expenses [get]
 func (h *ExpenseHandler) GetExpenses(c *gin.Context) {
 	idStr := c.Param("id")
@@ -140,7 +219,7 @@ func (h *ExpenseHandler) GetExpenses(c *gin.Context) {
 			return
 		}
 
-		expenses, total, err := h.uc.GetAll(c.Request.Context(), paginateQuery.Page, paginateQuery.Limit)
+		expenses, total, err := h.uc.GetAll(c.Request.Context(), paginateQuery.GetPage(), paginateQuery.GetLimit())
 		if err != nil {
 			var appErr *apperror.AppError
 			if errors.As(err, &appErr) {
@@ -160,7 +239,7 @@ func (h *ExpenseHandler) GetExpenses(c *gin.Context) {
 			}
 		}
 
-		paginateRes := appresponse.CratePaginateResponse(c, paginateQuery.Page, paginateQuery.Limit, total)
+		paginateRes := appresponse.CratePaginateResponse(c, total, &paginateQuery)
 		appresponse.RespondSuccess(c, http.StatusOK, "expenses retrieved", &expenseResponses, paginateRes)
 	}
 }
@@ -172,10 +251,10 @@ func (h *ExpenseHandler) GetExpenses(c *gin.Context) {
 //	@Tags			expenses
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	query		int	true	"Income ID"
-//	@Param 			request body reqDto.UpdateExpensePayload true "Edit expense payload"
-//	@Success		200	{object}	appresponse.Response[any]
-//	@Router			/expenses [put]
+//	@Param			id		path		int							true	"Income ID"
+//	@Param			request	body		reqDto.UpdateExpensePayload	true	"Edit expense payload"
+//	@Success		200		{object}	dto.Response[any]
+//	@Router			/expenses/{id} [put]
 func (h *ExpenseHandler) UpdateExpense(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
@@ -232,7 +311,7 @@ func (h *ExpenseHandler) UpdateExpense(c *gin.Context) {
 		return
 	}
 
-	appresponse.RespondSuccess(c, http.StatusOK, "expense retrieved", &domain.Expense{}, nil)
+	appresponse.RespondSuccessNoData(c, http.StatusOK, "expense updated")
 }
 
 // DelteExpense remove expense, specified by id
@@ -242,9 +321,9 @@ func (h *ExpenseHandler) UpdateExpense(c *gin.Context) {
 //	@Tags			expenses
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	query		int	true	"Income ID"
-//	@Success		200	{object}	appresponse.Response[any]
-//	@Router			/expenses [delete]
+//	@Param			id	path		int	true	"Income ID"
+//	@Success		200	{object}	dto.Response[any]
+//	@Router			/expenses/{id} [delete]
 func (h *ExpenseHandler) DeleteExpense(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
@@ -264,5 +343,5 @@ func (h *ExpenseHandler) DeleteExpense(c *gin.Context) {
 		return
 	}
 
-	appresponse.RespondSuccess(c, http.StatusOK, "expense retrieved", &domain.Expense{}, nil)
+	appresponse.RespondSuccessNoData(c, http.StatusOK, "expense deleted")
 }
