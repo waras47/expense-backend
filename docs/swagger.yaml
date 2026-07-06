@@ -96,6 +96,35 @@ definitions:
     - income_date
     - title
     type: object
+  dto.CreateTransferPayload:
+    properties:
+      amount:
+        type: number
+      destination_account:
+        maxLength: 100
+        minLength: 1
+        type: string
+      note:
+        maxLength: 255
+        type: string
+      source_account:
+        maxLength: 100
+        minLength: 1
+        type: string
+      title:
+        maxLength: 100
+        minLength: 1
+        type: string
+      transfer_date:
+        example: "2006-01-02"
+        type: string
+    required:
+    - amount
+    - destination_account
+    - source_account
+    - title
+    - transfer_date
+    type: object
   dto.Meta:
     properties:
       paginate:
@@ -201,6 +230,29 @@ definitions:
       title:
         maxLength: 100
         minLength: 1
+        type: string
+    type: object
+  dto.UpdateTransferPayload:
+    properties:
+      amount:
+        type: number
+      destination_account:
+        maxLength: 100
+        minLength: 1
+        type: string
+      note:
+        maxLength: 255
+        type: string
+      source_account:
+        maxLength: 100
+        minLength: 1
+        type: string
+      title:
+        maxLength: 100
+        minLength: 1
+        type: string
+      transfer_date:
+        example: "2006-01-02"
         type: string
     type: object
 info:
@@ -691,4 +743,116 @@ paths:
       summary: Edit income
       tags:
       - incomes
+  /transfers:
+    get:
+      consumes:
+      - application/json
+      description: get all transfer
+      parameters:
+      - description: Page
+        in: query
+        name: page
+        type: integer
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response-any'
+      summary: List transfer
+      tags:
+      - transfers
+    post:
+      consumes:
+      - application/json
+      description: create transfer
+      parameters:
+      - description: Create new transfer payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateTransferPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response-any'
+      summary: Add new transfer
+      tags:
+      - transfers
+  /transfers/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete transfer
+      parameters:
+      - description: Transfer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response-any'
+      summary: Remove transfer
+      tags:
+      - transfers
+    get:
+      consumes:
+      - application/json
+      description: get one filters by transfer id
+      parameters:
+      - description: Transfer ID (Optional)
+        in: query
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response-any'
+      summary: Get an transfer
+      tags:
+      - transfers
+    put:
+      consumes:
+      - application/json
+      description: update transfer
+      parameters:
+      - description: Transfer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Edit transfer payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateTransferPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response-any'
+      summary: Edit transfer
+      tags:
+      - transfers
 swagger: "2.0"

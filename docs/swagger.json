@@ -735,6 +735,176 @@
                     }
                 }
             }
+        },
+        "/transfers": {
+            "get": {
+                "description": "get all transfer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "transfers"
+                ],
+                "summary": "List transfer",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response-any"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "create transfer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "transfers"
+                ],
+                "summary": "Add new transfer",
+                "parameters": [
+                    {
+                        "description": "Create new transfer payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateTransferPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response-any"
+                        }
+                    }
+                }
+            }
+        },
+        "/transfers/{id}": {
+            "get": {
+                "description": "get one filters by transfer id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "transfers"
+                ],
+                "summary": "Get an transfer",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Transfer ID (Optional)",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response-any"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "update transfer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "transfers"
+                ],
+                "summary": "Edit transfer",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Transfer ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Edit transfer payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateTransferPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response-any"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "delete transfer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "transfers"
+                ],
+                "summary": "Remove transfer",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Transfer ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response-any"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -866,6 +1036,44 @@
                     "type": "string",
                     "maxLength": 100,
                     "minLength": 1
+                }
+            }
+        },
+        "dto.CreateTransferPayload": {
+            "type": "object",
+            "required": [
+                "amount",
+                "destination_account",
+                "source_account",
+                "title",
+                "transfer_date"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "destination_account": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
+                },
+                "note": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "source_account": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
+                },
+                "title": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
+                },
+                "transfer_date": {
+                    "type": "string",
+                    "example": "2006-01-02"
                 }
             }
         },
@@ -1018,6 +1226,37 @@
                     "type": "string",
                     "maxLength": 100,
                     "minLength": 1
+                }
+            }
+        },
+        "dto.UpdateTransferPayload": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "destination_account": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
+                },
+                "note": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "source_account": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
+                },
+                "title": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
+                },
+                "transfer_date": {
+                    "type": "string",
+                    "example": "2006-01-02"
                 }
             }
         }
