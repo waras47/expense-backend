@@ -104,12 +104,12 @@ definitions:
         maxLength: 100
         minLength: 1
         type: string
-      note:
-        maxLength: 255
-        type: string
-      source_account:
+      from_account:
         maxLength: 100
         minLength: 1
+        type: string
+      note:
+        maxLength: 255
         type: string
       title:
         maxLength: 100
@@ -121,7 +121,7 @@ definitions:
     required:
     - amount
     - destination_account
-    - source_account
+    - from_account
     - title
     - transfer_date
     type: object
@@ -240,12 +240,12 @@ definitions:
         maxLength: 100
         minLength: 1
         type: string
-      note:
-        maxLength: 255
-        type: string
-      source_account:
+      from_account:
         maxLength: 100
         minLength: 1
+        type: string
+      note:
+        maxLength: 255
         type: string
       title:
         maxLength: 100

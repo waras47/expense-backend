@@ -65,12 +65,12 @@ func TestCreateTransfer(t *testing.T) {
 			name: "Succeded create transfer",
 			path: "/api/transfers",
 			payload: map[string]any{
-				"title":               mockTransfer.Title,
-				"amount":              mockTransfer.Amount,
-				"source_account":      mockTransfer.SourceAccount,
-				"destination_account": mockTransfer.DestinationAccount,
-				"note":                mockTransfer.Note,
-				"transfer_date":       "2026-01-01",
+				"title":         mockTransfer.Title,
+				"amount":        mockTransfer.Amount,
+				"from_account":  mockTransfer.SourceAccount,
+				"to_account":    mockTransfer.DestinationAccount,
+				"note":          mockTransfer.Note,
+				"transfer_date": "2026-01-01",
 			},
 			createFunc: func(ctx context.Context, input *domain.Transfer) (*domain.Transfer, error) {
 				newTransfer := &domain.Transfer{
@@ -94,11 +94,11 @@ func TestCreateTransfer(t *testing.T) {
 			name: "Succeded create transfer without note",
 			path: "/api/transfers",
 			payload: map[string]any{
-				"title":               mockTransfer.Title,
-				"amount":              mockTransfer.Amount,
-				"source_account":      mockTransfer.SourceAccount,
-				"destination_account": mockTransfer.DestinationAccount,
-				"transfer_date":       "2026-01-02",
+				"title":         mockTransfer.Title,
+				"amount":        mockTransfer.Amount,
+				"from_account":  mockTransfer.SourceAccount,
+				"to_account":    mockTransfer.DestinationAccount,
+				"transfer_date": "2026-01-02",
 			},
 			createFunc: func(ctx context.Context, input *domain.Transfer) (*domain.Transfer, error) {
 				newTransfer := &domain.Transfer{
@@ -123,12 +123,12 @@ func TestCreateTransfer(t *testing.T) {
 			name: "Failed to create transfer",
 			path: "/api/transfers",
 			payload: map[string]any{
-				"title":               mockTransfer.Title,
-				"amount":              mockTransfer.Amount,
-				"source_account":      mockTransfer.SourceAccount,
-				"destination_account": mockTransfer.DestinationAccount,
-				"note":                mockTransfer.Note,
-				"transfer_date":       "2026-01-02",
+				"title":         mockTransfer.Title,
+				"amount":        mockTransfer.Amount,
+				"from_account":  mockTransfer.SourceAccount,
+				"to_account":    mockTransfer.DestinationAccount,
+				"note":          mockTransfer.Note,
+				"transfer_date": "2026-01-02",
 			},
 			createFunc: func(ctx context.Context, input *domain.Transfer) (*domain.Transfer, error) {
 				return nil, apperror.NewInternal(nil)
@@ -142,12 +142,12 @@ func TestCreateTransfer(t *testing.T) {
 			name: "Invalid payload create transfer invalid transfer date",
 			path: "/api/transfers",
 			payload: map[string]any{
-				"title":               mockTransfer.Title,
-				"amount":              mockTransfer.Amount,
-				"source_account":      mockTransfer.SourceAccount,
-				"destination_account": mockTransfer.DestinationAccount,
-				"note":                mockTransfer.Note,
-				"transfer_date":       "2026/01/01",
+				"title":         mockTransfer.Title,
+				"amount":        mockTransfer.Amount,
+				"from_account":  mockTransfer.SourceAccount,
+				"to_account":    mockTransfer.DestinationAccount,
+				"note":          mockTransfer.Note,
+				"transfer_date": "2026/01/01",
 			},
 			createFunc: func(ctx context.Context, input *domain.Transfer) (*domain.Transfer, error) {
 				return nil, nil
@@ -160,11 +160,11 @@ func TestCreateTransfer(t *testing.T) {
 			name: "Invalid payload create transfer no transfer date",
 			path: "/api/transfers",
 			payload: map[string]any{
-				"title":               mockTransfer.Title,
-				"amount":              mockTransfer.Amount,
-				"source_account":      mockTransfer.SourceAccount,
-				"destination_account": mockTransfer.DestinationAccount,
-				"note":                mockTransfer.Note,
+				"title":        mockTransfer.Title,
+				"amount":       mockTransfer.Amount,
+				"from_account": mockTransfer.SourceAccount,
+				"to_account":   mockTransfer.DestinationAccount,
+				"note":         mockTransfer.Note,
 			},
 			createFunc: func(ctx context.Context, input *domain.Transfer) (*domain.Transfer, error) {
 				return nil, nil
@@ -177,11 +177,11 @@ func TestCreateTransfer(t *testing.T) {
 			name: "Invalid payload create transfer no title",
 			path: "/api/transfers",
 			payload: map[string]any{
-				"amount":              mockTransfer.Amount,
-				"source_account":      mockTransfer.SourceAccount,
-				"destination_account": mockTransfer.DestinationAccount,
-				"note":                mockTransfer.Note,
-				"transfer_date":       mockTransfer.TransferDate,
+				"amount":        mockTransfer.Amount,
+				"from_account":  mockTransfer.SourceAccount,
+				"to_account":    mockTransfer.DestinationAccount,
+				"note":          mockTransfer.Note,
+				"transfer_date": mockTransfer.TransferDate,
 			},
 			createFunc: func(ctx context.Context, input *domain.Transfer) (*domain.Transfer, error) {
 				return nil, nil
@@ -194,11 +194,11 @@ func TestCreateTransfer(t *testing.T) {
 			name: "Invalid payload create transfer no amount",
 			path: "/api/transfers",
 			payload: map[string]any{
-				"title":               mockTransfer.Title,
-				"source_account":      mockTransfer.SourceAccount,
-				"destination_account": mockTransfer.DestinationAccount,
-				"note":                mockTransfer.Note,
-				"transfer_date":       mockTransfer.TransferDate,
+				"title":         mockTransfer.Title,
+				"from_account":  mockTransfer.SourceAccount,
+				"to_account":    mockTransfer.DestinationAccount,
+				"note":          mockTransfer.Note,
+				"transfer_date": mockTransfer.TransferDate,
 			},
 			createFunc: func(ctx context.Context, input *domain.Transfer) (*domain.Transfer, error) {
 				return nil, nil
@@ -211,11 +211,11 @@ func TestCreateTransfer(t *testing.T) {
 			name: "Invalid payload create transfer no destination account",
 			path: "/api/transfers",
 			payload: map[string]any{
-				"title":          mockTransfer.Title,
-				"amount":         mockTransfer.Amount,
-				"note":           mockTransfer.Note,
-				"source_account": mockTransfer.SourceAccount,
-				"transfer_date":  mockTransfer.TransferDate,
+				"title":         mockTransfer.Title,
+				"amount":        mockTransfer.Amount,
+				"note":          mockTransfer.Note,
+				"from_account":  mockTransfer.SourceAccount,
+				"transfer_date": mockTransfer.TransferDate,
 			},
 			createFunc: func(ctx context.Context, input *domain.Transfer) (*domain.Transfer, error) {
 				return nil, nil
@@ -228,11 +228,11 @@ func TestCreateTransfer(t *testing.T) {
 			name: "Invalid payload create transfer no source account",
 			path: "/api/transfers",
 			payload: map[string]any{
-				"title":               mockTransfer.Title,
-				"amount":              mockTransfer.Amount,
-				"note":                mockTransfer.Note,
-				"destination_account": mockTransfer.DestinationAccount,
-				"transfer_date":       mockTransfer.TransferDate,
+				"title":         mockTransfer.Title,
+				"amount":        mockTransfer.Amount,
+				"note":          mockTransfer.Note,
+				"to_account":    mockTransfer.DestinationAccount,
+				"transfer_date": mockTransfer.TransferDate,
 			},
 			createFunc: func(ctx context.Context, input *domain.Transfer) (*domain.Transfer, error) {
 				return nil, nil
@@ -246,12 +246,12 @@ func TestCreateTransfer(t *testing.T) {
 			name: "Invalid payload amount",
 			path: "/api/transfers",
 			payload: map[string]any{
-				"title":               mockTransfer.Title,
-				"amount":              "invalid",
-				"source_account":      mockTransfer.SourceAccount,
-				"destination_account": mockTransfer.DestinationAccount,
-				"note":                mockTransfer.Note,
-				"transfer_date":       mockTransfer.TransferDate,
+				"title":         mockTransfer.Title,
+				"amount":        "invalid",
+				"from_account":  mockTransfer.SourceAccount,
+				"to_account":    mockTransfer.DestinationAccount,
+				"note":          mockTransfer.Note,
+				"transfer_date": mockTransfer.TransferDate,
 			},
 			createFunc: func(ctx context.Context, input *domain.Transfer) (*domain.Transfer, error) {
 				return nil, apperror.NewInternal(nil)
@@ -524,12 +524,12 @@ func TestUpdateTransfer(t *testing.T) {
 			name: "Succeded update transfer",
 			path: "/api/transfers/1",
 			payload: map[string]any{
-				"title":               mockTransfer.Title,
-				"amount":              mockTransfer.Amount,
-				"source_account":      mockTransfer.SourceAccount,
-				"destination_account": mockTransfer.DestinationAccount,
-				"note":                mockTransfer.Note,
-				"transfer_date":       "2026-02-11",
+				"title":         mockTransfer.Title,
+				"amount":        mockTransfer.Amount,
+				"from_account":  mockTransfer.SourceAccount,
+				"to_account":    mockTransfer.DestinationAccount,
+				"note":          mockTransfer.Note,
+				"transfer_date": "2026-02-11",
 			},
 			updateFunc: func(c context.Context, id int64, input *domain.Transfer) error {
 				return nil
@@ -605,7 +605,7 @@ func TestUpdateTransfer(t *testing.T) {
 			name: "Update invalid validation source account",
 			path: "/api/transfers/1",
 			payload: map[string]any{
-				"source_account": "",
+				"from_account": "",
 			},
 			updateFunc: func(c context.Context, id int64, input *domain.Transfer) error {
 				return nil
@@ -618,7 +618,7 @@ func TestUpdateTransfer(t *testing.T) {
 			name: "Update invalid validation destination account",
 			path: "/api/transfers/1",
 			payload: map[string]any{
-				"destination_account": "",
+				"to_account": "",
 			},
 			updateFunc: func(c context.Context, id int64, input *domain.Transfer) error {
 				return nil

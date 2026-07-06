@@ -1051,7 +1051,7 @@ const docTemplate = `{
             "required": [
                 "amount",
                 "destination_account",
-                "source_account",
+                "from_account",
                 "title",
                 "transfer_date"
             ],
@@ -1064,14 +1064,14 @@ const docTemplate = `{
                     "maxLength": 100,
                     "minLength": 1
                 },
-                "note": {
-                    "type": "string",
-                    "maxLength": 255
-                },
-                "source_account": {
+                "from_account": {
                     "type": "string",
                     "maxLength": 100,
                     "minLength": 1
+                },
+                "note": {
+                    "type": "string",
+                    "maxLength": 255
                 },
                 "title": {
                     "type": "string",
@@ -1247,14 +1247,14 @@ const docTemplate = `{
                     "maxLength": 100,
                     "minLength": 1
                 },
-                "note": {
-                    "type": "string",
-                    "maxLength": 255
-                },
-                "source_account": {
+                "from_account": {
                     "type": "string",
                     "maxLength": 100,
                     "minLength": 1
+                },
+                "note": {
+                    "type": "string",
+                    "maxLength": 255
                 },
                 "title": {
                     "type": "string",

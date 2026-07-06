@@ -13,8 +13,8 @@ type TransferResponse struct {
 	ID                 int64           `json:"id"`
 	Title              string          `json:"title"`
 	Amount             decimal.Decimal `json:"amount"`
-	SourceAccount      string          `json:"source_account"`
-	DestinationAccount string          `json:"destination_account"`
+	SourceAccount      string          `json:"from_account"`
+	DestinationAccount string          `json:"to_account"`
 	Note               string          `json:"note,omitempty"`
 	TransferDate       time.Time       `json:"income_date"`
 	IsDeleted          bool            `json:"is_deleted"`
