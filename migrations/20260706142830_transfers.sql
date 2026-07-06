@@ -2,7 +2,7 @@
 CREATE TABLE transfers (
     id SERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
-    amount DECIMAL(15,2) NOT NULL,
+    amount DECIMAL(15,2) CHECK (amount > 0) NOT NULL,
     source_account VARCHAR(100) NOT NULL,
     destination_account VARCHAR(100) NOT NULL,
     transfer_date DATE NOT NULL,

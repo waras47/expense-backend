@@ -16,7 +16,7 @@ END $$;
 CREATE TABLE debts (
     id SERIAL PRIMARY KEY,
     person_name VARCHAR(255) NOT NULL,
-    amount DECIMAL(15,2) NOT NULL,
+    amount DECIMAL(15,2) CHECK (amount > 0) NOT NULL,
     type debt_type NOT NULL,
     due_date DATE NOT NULL,
     note TEXT,

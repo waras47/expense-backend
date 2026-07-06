@@ -20,7 +20,7 @@ END $$;
 CREATE TABLE incomes (
     id SERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
-    amount DECIMAL(15,2) NOT NULL,
+    amount DECIMAL(15,2) CHECK (amount > 0) NOT NULL,
     -- Category: salary, freelance, business, investment, gift, other
     category income_categories DEFAULT 'OTHER' NOT NULL,
     note TEXT,
