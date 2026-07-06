@@ -34,3 +34,4 @@ CREATE TABLE incomes (
 -- +goose StatementEnd
 -- +goose Down
 DROP TABLE IF EXISTS incomes;
+DROP TYPE IF EXISTS income_categories;
